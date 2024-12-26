@@ -2,20 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+.uppercaseTitle {
+    @apply text-sm font-semibold uppercase;
+}
+
+.defaultText {
+    @apply text-textDefault;
+}
+
+.title {
+    @apply text-2xl font-semibold;
+}
+
+.link {
+    @apply defaultText cursor-pointer underline;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --text-default: #000000;
+    --primary: #007bff;
+    --secondary: #6c757d;
+    --gray: #6b7280;
+    --secondary-background: #f8f9fa;
+}
+
+.dark {
+    --background: #1a1a1a;
+    --text-default: #ffffff;
+    --primary: #0d6efd;
+    --secondary: #adb5bd;
+    --gray: #9ca3af;
+    --secondary-background: #2d2d2d;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --background: #2c2c2c;
+        --secondaryBackground: #3f3f3f;
+        --foreground: #919191;
+        --textDefault: #ffffff;
+        --primary: #2861a8;
+        --secondary: #5d85db;
+        --gray: #919191;
+    }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+    color: var(--foreground);
+    background: var(--background);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+div {
+    color: var(--textDefault);
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
 }

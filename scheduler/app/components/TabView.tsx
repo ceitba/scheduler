@@ -12,22 +12,27 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
 
   return (
     <div className="w-full">
-      <div className="flex space-x-2 mb-4 border-b border-secondaryBackground">
+      <div className="flex w-full relative">
+        <div className="absolute bottom-0 w-full border-b border-secondary" />
         {tabs.map((tab, index) => (
           <button
             key={index}
-            className={`px-4 py-2 ${
-              activeTab === index
-                ? 'text-secondary border-b-2 border-secondary'
-                : 'text-gray hover:text-textDefault'
-            }`}
+            className={`
+              relative flex-1 px-4 py-3 text-sm sm:text-base font-medium
+              ${activeTab === index 
+                ? 'border-b-2 border-primary bg-gray/5 text-primary' 
+                : 'text-default hover:bg-gray/5 hover:text-primary'
+              }
+            `}
             onClick={() => setActiveTab(index)}
           >
             {tab.label}
           </button>
         ))}
       </div>
-      <div className="mt-4">{tabs[activeTab].content}</div>
+      <div className="p-4">
+        {tabs[activeTab].content}
+      </div>
     </div>
   );
 };

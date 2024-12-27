@@ -11,11 +11,11 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        secondaryBackground: "var(--secondaryBackground)",
+        secondaryBackground: "var(--secondary-background)",
         gray: "var(--gray)",
         primary: "var(--primary)",
         secondary: "var(--secondary)",
-        textDefault: "var(--textDefault)",
+        textDefault: "var(--text-default)",
       },
     },
   },

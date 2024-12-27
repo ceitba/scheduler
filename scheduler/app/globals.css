@@ -21,22 +21,24 @@
 :root {
     --background: #ffffff;
     --text-default: #000000;
+    --foreground: #000000; 
     --primary: #007bff;
     --secondary: #6c757d;
     --gray: #6b7280;
-    --secondary-background: #f8f9fa;
+    --secondary-background: #eef0f2;
 }
 
 .dark {
     --background: #1a1a1a;
     --text-default: #ffffff;
+    --foreground: #ffffff; 
     --primary: #0d6efd;
     --secondary: #adb5bd;
     --gray: #9ca3af;
     --secondary-background: #2d2d2d;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
     :root {
         --background: #2c2c2c;
         --secondaryBackground: #3f3f3f;
@@ -46,7 +48,7 @@
         --secondary: #5d85db;
         --gray: #919191;
     }
-}
+} */
 
 body {
     color: var(--foreground);

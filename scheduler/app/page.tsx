@@ -12,11 +12,11 @@ export default function Home() {
       content: <CourseView />,
     },
     {
-      label: "Configuración",
+      label: "Opciones",
       content: <SettingsView />,
     },
     {
-      label: "Vista Previa",
+      label: "Calendario",
       content: <SchedulerPreview />,
     },
   ];

@@ -62,14 +62,22 @@
 import React, { useState } from "react";
 import SearchBox from "./SearchBox";
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
   TrashIcon,
   Bars3Icon,
+  PlusIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
-import PriorityToggle from "./PrioritySelector";
+import TooltipHeader from "./Tooltip";
+import DropdownSection from "./DropdownSection";
+import CommissionModal from "./ComissionModal";
 
-interface Commission {
+interface DragItem { 
+  id: string;
+  type: string; 
+  index: number; 
+}
+
+export interface Commission {
   id: string;
   name: string;
   schedule?: string;
@@ -98,8 +106,49 @@ interface YearData {
 
 const CourseView: React.FC = () => {
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
-  const [expandedYears, setExpandedYears] = useState<string[]>([]);
-  const [selectedCommission, setSelectedCommission] = useState<string>("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCourseForModal, setSelectedCourseForModal] = useState<Course | null>(null);
+
+  const moveItem = (fromIndex: number, toIndex: number) => {
+    const newCourses = [...selectedCourses];
+    const [movedItem] = newCourses.splice(fromIndex, 1);
+    newCourses.splice(toIndex, 0, movedItem);
+    setSelectedCourses(newCourses);
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex !== dropIndex) {
+      moveItem(dragIndex, dropIndex);
+    }
+  };
+
+  const handleAddCourseClick = (course: Course) => {
+    setSelectedCourseForModal(course);
+    setModalOpen(true);
+  };
+
+  const handleCommissionSelect = (commissionId: string) => {
+    if (selectedCourseForModal) {
+      const commission = commissionId === 'any' 
+        ? { id: 'any', name: 'Cualquier comisión' }
+        : selectedCourseForModal.commissions.find(c => c.id === commissionId) 
+          || selectedCourseForModal.commissions[0];
+          
+      handleAddCourse(selectedCourseForModal, commission);
+    }
+    setModalOpen(false);
+    setSelectedCourseForModal(null);
+  };
 
   const years: YearData[] = [
     {
@@ -230,12 +279,6 @@ const CourseView: React.FC = () => {
     },
   ];
 
-  const toggleYear = (year: string) => {
-    setExpandedYears((prev) =>
-      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
-    );
-  };
-
   const handleAddCourse = (course: Course, commission: Commission) => {
     if (!selectedCourses.find((c) => c.id === course.id)) {
       setSelectedCourses([
@@ -253,51 +296,38 @@ const CourseView: React.FC = () => {
     setSelectedCourses(selectedCourses.filter((c) => c.id !== courseId));
   };
 
-  const handlePriorityToggle = (courseId: string) => {
-    setSelectedCourses(
-      selectedCourses.map((course) =>
-        course.id === courseId
-          ? { ...course, isPriority: !course.isPriority }
-          : course
-      )
-    );
-  };
-
-  const handleCommissionChange = (courseId: string, commissionId: string) => {
-    setSelectedCourses(
-      selectedCourses.map((course) =>
-        course.id === courseId
-          ? { ...course, selectedCommission: commissionId }
-          : course
-      )
-    );
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="mx-auto py-2">
       <SearchBox />
-
+      
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-background border border-gray/20 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-textDefault mb-4">
-            Cursos Seleccionados
-          </h2>
+        <div className="bg-background shadow-md rounded-lg p-4">
+          <TooltipHeader
+            title="Cursos Seleccionados"
+            tooltip="Arrastra las materias para ordenarlas de forma decreciente según importancia."
+            className="mb-4"
+          />
           <div className="space-y-2">
-            {selectedCourses.map((course) => (
+            {selectedCourses.map((course, index) => (
               <div
                 key={course.id}
-                className="flex flex-col p-3 bg-secondaryBackground rounded-md space-y-2"
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                className="flex flex-col p-3 bg-secondaryBackground rounded-md space-y-2 cursor-move hover:shadow-sm transition-shadow"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Bars3Icon className="h-5 w-5 text-gray cursor-move" />
+                    <Bars3Icon className="h-5 w-5 text-gray" />
                     <span className="text-textDefault">{course.name}</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <PriorityToggle
-                      isPriority={course.isPriority}
-                      onChange={() => handlePriorityToggle(course.id)}
-                    />
+                    <span className="text-sm text-gray">
+                      {course.selectedCommission === 'any' 
+                        ? 'Cualquier comisión' 
+                        : `Comisión ${course.selectedCommission.toUpperCase()}`}
+                    </span>
                     <button
                       onClick={() => handleRemoveCourse(course.id)}
                       className="text-gray hover:text-red-500"
@@ -306,121 +336,76 @@ const CourseView: React.FC = () => {
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4 pl-8">
-                  <select
-                    value={course.selectedCommission}
-                    onChange={(e) =>
-                      handleCommissionChange(course.id, e.target.value)
-                    }
-                    className="bg-background border border-gray/20 rounded px-2 py-1 text-sm flex-1"
-                  >
-                    {course.commissions.map((comm) => (
-                      <option key={comm.id} value={comm.id}>
-                        {comm.name} - {comm.schedule}
-                      </option>
-                    ))}
-                  </select>
-                  {/* <select
-                    value={course.priority}
-                    onChange={(e) => handlePriorityChange(course.id, Number(e.target.value))}
-                    className="bg-background border border-gray/20 rounded px-2 py-1 text-sm w-32"
-                  >
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <option key={num} value={num}>
-                        Prioridad {num}
-                      </option>
-                    ))}
-                  </select> */}
-                </div>
               </div>
             ))}
             {selectedCourses.length === 0 && (
               <div className="text-gray text-center py-8">
-                No hay cursos seleccionados
+                No tiene cursos seleccionados
               </div>
             )}
           </div>
         </div>
 
-        {/* Available Courses Section */}
-        <div className="bg-background border border-gray/20 rounded-lg p-4">
+        <div className="bg-background shadow-md rounded-lg p-4">
           <h2 className="text-lg font-semibold text-textDefault mb-4">
             Cursos Disponibles
           </h2>
           <div className="space-y-4">
             {years.map((yearData) => (
-              <div
-                key={yearData.year}
-                className="border border-gray/20 rounded-lg"
-              >
-                <button
-                  onClick={() => toggleYear(yearData.year)}
-                  className="w-full flex justify-between items-center p-3 hover:bg-gray/5"
-                >
-                  <span className="font-medium">{yearData.year}</span>
-                  {expandedYears.includes(yearData.year) ? (
-                    <ChevronUpIcon className="h-5 w-5" />
-                  ) : (
-                    <ChevronDownIcon className="h-5 w-5" />
-                  )}
-                </button>
-
-                {expandedYears.includes(yearData.year) && (
-                  <div className="p-3 space-y-4">
-                    {yearData.cuatrimestres.map((cuatrimestre) => (
-                      <div key={cuatrimestre.number}>
-                        <h3 className="font-medium text-sm text-gray mb-2">
-                          Cuatrimestre {cuatrimestre.number}
-                        </h3>
-                        <div className="space-y-2">
-                          {cuatrimestre.courses.map((course) => (
-                            <div
-                              key={course.id}
-                              className="bg-secondaryBackground rounded-md p-3"
+              <DropdownSection key={yearData.year} title={yearData.year}>
+                {yearData.cuatrimestres.map((cuatrimestre) => (
+                  <div key={cuatrimestre.number} className="mt-4">
+                    <h3 className="text-sm font-semibold mb-2 uppercase text-secondary">
+                      Cuatrimestre {cuatrimestre.number}
+                    </h3>
+                    <div className="space-y-2">
+                      {cuatrimestre.courses.map((course) => {
+                        const isSelected = selectedCourses.some(
+                          (c) => c.id === course.id
+                        );
+                        return (
+                          <div
+                            key={course.id}
+                            className="flex items-center justify-between p-3 bg-secondaryBackground rounded-md"
+                          >
+                            <span className="text-textDefault">{course.name}</span>
+                            <button
+                              onClick={() =>
+                                isSelected
+                                  ? handleRemoveCourse(course.id)
+                                  : handleAddCourseClick(course)
+                              }
+                              className={`${
+                                isSelected
+                                  ? "text-green-500 hover:text-green-600"
+                                  : "text-primary hover:text-primaryDark"
+                              }`}
                             >
-                              <div className="font-medium mb-2">
-                                {course.name}
-                              </div>
-                              <div className="grid gap-2">
-                                {course.commissions.map((commission) => (
-                                  <button
-                                    key={commission.id}
-                                    onClick={() =>
-                                      handleAddCourse(course, commission)
-                                    }
-                                    disabled={selectedCourses.some(
-                                      (c) => c.id === course.id
-                                    )}
-                                    className={`w-full text-left px-3 py-2 rounded
-                                      ${
-                                        selectedCourses.some(
-                                          (c) => c.id === course.id
-                                        )
-                                          ? "bg-gray/10 text-gray cursor-not-allowed"
-                                          : "bg-background hover:bg-gray/10 text-textDefault"
-                                      }`}
-                                  >
-                                    <div className="flex justify-between items-center text-sm">
-                                      <span>{commission.name}</span>
-                                      <span className="text-gray">
-                                        {commission.schedule}
-                                      </span>
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                              {isSelected ? (
+                                <CheckIcon className="h-5 w-5" />
+                              ) : (
+                                <PlusIcon className="h-5 w-5" />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-              </div>
+                ))}
+              </DropdownSection>
             ))}
           </div>
         </div>
       </div>
+
+      <CommissionModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSelect={handleCommissionSelect}
+        commission={selectedCourseForModal?.commissions || []}
+        courseName={selectedCourseForModal?.name || ''}
+      />
     </div>
   );
 };

@@ -30,7 +30,7 @@ export default function Home() {
     <>
     <div className="">
     <TopBar />
-      <div className="container mx-auto">
+      <div className="">
         <TabView tabs={tabs} />
       </div>
     </div>

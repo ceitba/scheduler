@@ -12,26 +12,53 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
 
   return (
     <div className="w-full">
-      <div className="flex w-full relative">
-        <div className="absolute bottom-0 w-full border-b border-secondary" />
+      {/* Tab Navigation */}
+      <div className="flex w-full bg-secondaryBackground p-1.5 rounded-xl relative">
+        {/* Sliding Background */}
+        <div
+          className="absolute h-[calc(100%-12px)] top-1.5 transition-all duration-300 ease-out rounded-lg bg-primary"
+          style={{
+            width: `calc(${100 / tabs.length}% - 12px)`,
+            left: `calc(${(100 / tabs.length) * activeTab}% + 6px)`,
+            right: activeTab === tabs.length - 1 ? '6px' : 'auto',
+          }}
+        />
+        
+        {/* Tab Buttons */}
         {tabs.map((tab, index) => (
           <button
             key={index}
+            onClick={() => setActiveTab(index)}
             className={`
-              relative flex-1 px-4 py-3 text-sm sm:text-base font-medium
+              relative flex-1 px-4 py-3 text-sm font-medium rounded-lg
+              transition-colors duration-300 ease-out z-10
               ${activeTab === index 
-                ? 'border-b-2 border-primary bg-gray/5 text-primary' 
-                : 'text-default hover:bg-gray/5 hover:text-primary'
+                ? 'text-white' 
+                : 'text-gray hover:text-textDefault'
               }
             `}
-            onClick={() => setActiveTab(index)}
           >
             {tab.label}
           </button>
         ))}
       </div>
-      <div className="p-4">
-        {tabs[activeTab].content}
+
+      {/* Tab Content with Enhanced Fade Transition */}
+      <div className="mt-6">
+        {tabs.map((tab, index) => (
+          <div
+            key={index}
+            className={`
+              transform transition-all duration-300 ease-out
+              ${activeTab === index 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-4 hidden'
+              }
+            `}
+          >
+            {tab.content}
+          </div>
+        ))}
       </div>
     </div>
   );

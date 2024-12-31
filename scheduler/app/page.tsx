@@ -1,39 +1,5 @@
-"use client";
-import TabView from "./components/TabView";
-import CourseView from "./components/CourseView";
-import SettingsView from "./components/SettingsView";
-import SchedulerPreview from "./components/SchedulerPreview";
-import TopBar from "./components/Topbar";
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  const tabs = [
-    {
-      label: "Cursos",
-      content: <CourseView />,
-    },
-    {
-      label: "Opciones",
-      content: <SettingsView />,
-    },
-    {
-      label: "Calendario",
-      content: <SchedulerPreview />,
-    },
-  ];
-
-  const breadcrumbItems = [
-    { label: "Inicio", href: "/" },
-    { label: "Materias", href: "/subjects" },
-  ];
-
-  return (
-    <>
-    <div className="">
-    <TopBar />
-      <div className="">
-        <TabView tabs={tabs} />
-      </div>
-    </div>
-    </>
-  );
+  redirect('/S?plan=SREV-23'); // Redirect to Informática with latest plan by default
 }

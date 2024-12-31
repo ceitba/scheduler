@@ -1,25 +1,27 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-const SearchBox: React.FC = () => {
-  const [query, setQuery] = useState("");
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
-  };
-
+const SearchBox = () => {
   return (
-    <div className="relative flex items-center rounded-lg border border-gray/20 bg-background hover:border-gray/30 focus-within:border-secondary mx-1 md:mx-3">
-      <div className="pl-3">
-        <MagnifyingGlassIcon className="h-5 w-5 text-gray group-focus-within:text-textDefault" />
+    <div className="relative w-full">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        <MagnifyingGlassIcon 
+          className="h-5 w-5 text-gray transition-colors" 
+          aria-hidden="true" 
+        />
       </div>
       <input
-        className="w-full bg-transparent py-2 px-3 text-base placeholder:text-gray/70
-          text-textDefault focus:outline-none"
         type="text"
-        value={query}
-        onChange={handleInputChange}
-        placeholder="Buscar por código o nombre de materia"
+        placeholder="Buscar materia por nombre o codigo..."
+        className="w-full pl-10 pr-3 py-2.5
+          bg-transparent
+          border border-gray/20 rounded-lg
+          text-textDefault placeholder:text-gray
+          focus:border-primary focus:ring-1 focus:ring-primary/10
+          hover:border-gray/30
+          focus:outline-none
+          transition-all duration-200"
       />
     </div>
   );

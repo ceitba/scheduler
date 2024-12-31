@@ -9,17 +9,15 @@ interface TooltipHeaderProps {
 
 const TooltipHeader: React.FC<TooltipHeaderProps> = ({ title, tooltip, className = "" }) => {
   return (
-    <div className="relative inline-flex items-center gap-2">
-      <h2 className={`text-lg font-semibold text-textDefault ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
+      <h2 className="text-lg font-semibold text-textDefault">
         {title}
       </h2>
-      <div className="group relative">
-        <InformationCircleIcon className="h-5 w-5 text-gray/60" />
-        <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100
-          absolute bottom-full left-1/2 -translate-x-1/2 mb-2
-          bg-gray-800 text-textDefault p-2 rounded text-sm whitespace-nowrap">
+      <div className="group relative inline-block">
+        <InformationCircleIcon className="h-5 w-5 text-gray hover:text-primary cursor-help" />
+        <span className="pointer-events-none absolute -top-2 left-6 w-max opacity-0 transition-opacity group-hover:opacity-100 bg-background text-textDefault text-sm py-1 px-2 rounded shadow-lg border border-gray/20">
           {tooltip}
-        </div>
+        </span>
       </div>
     </div>
   );

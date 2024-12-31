@@ -17,7 +17,10 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
   const [modifyingSelection, setModifyingSelection] = useState(false);
   const dragOperation = useRef<'add' | 'remove' | null>(null);
 
-  const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  const dayNames = {
+    short: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'],
+    full: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
+  };
   
   const timeSlots = Array.from({ length: 14 }, (_, i) => {
     const hour = i + 8;
@@ -112,7 +115,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
 
   return (
     <div 
-      className="bg-background"
+      className="bg-background w-full"
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
@@ -124,54 +127,62 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
       </div>
       
       <div className="overflow-x-auto">
-        <div className="inline-flex select-none min-w-max flex-col p-1">
+        <div className="flex flex-col p-1 w-full min-w-[280px] gap-0.5">
           {/* Header row */}
-          <div className="flex">
-            <div className="w-[100px] p-2 rounded-lg bg-background text-sm font-medium text-center mr-0.5">
+          <div className="flex w-full">
+            <div className="w-[40px] md:w-[60px] lg:w-[80px] p-1 rounded-lg bg-background text-[10px] md:text-xs lg:text-sm font-medium text-center mr-0.5 shrink-0">
               #
             </div>
-            {days.map(day => (
-              <div
-                key={day}
-                className="w-[140px] p-2 rounded-lg bg-background text-sm font-medium text-center mx-0.5"
-              >
-                {day}
-              </div>
-            ))}
+            <div className="flex flex-1 gap-0.5">
+              {dayNames.short.map((day, index) => (
+                <div
+                  key={day}
+                  className="flex-1 p-1 rounded-lg bg-background text-[10px] md:text-xs lg:text-sm font-medium text-center"
+                >
+                  <span className="hidden lg:block">{dayNames.full[index]}</span>
+                  <span className="block lg:hidden">{day}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Time slots */}
-          {timeSlots.map((time, timeIndex) => (
-            <div key={time} className="flex">
-              <div className="w-[100px] p-2 rounded-lg bg-background text-xs text-gray text-center mr-0.5">
-                {time}
+          <div className="flex flex-col gap-0.5">
+            {timeSlots.map((time, timeIndex) => (
+              <div key={time} className="flex w-full">
+                <div className="w-[40px] md:w-[60px] lg:w-[80px] p-1 rounded-lg bg-background text-[10px] md:text-xs lg:text-sm text-gray text-center mr-0.5 shrink-0">
+                  <span className="hidden md:inline">{time.split(' - ')[0]}</span>
+                  <span className="inline md:hidden">{time.split(':')[0]}</span>
+                </div>
+                <div className="flex flex-1 gap-0.5">
+                  {dayNames.short.map((_, dayIndex) => {
+                    const isSelected = isBlockSelected(dayIndex, time);
+                    return (
+                      <div
+                        key={`${dayIndex}-${time}`}
+                        className="flex-1"
+                        onMouseDown={(e) => handleDragStart(dayIndex, time, e)}
+                        onMouseEnter={() => handleDragEnter(dayIndex, time)}
+                        onClick={(e) => handleClick(dayIndex, time, e)}
+                        style={{ userSelect: 'none' }}
+                      >
+                        <div
+                          className={`
+                            w-full h-5 md:h-6 lg:h-8 cursor-pointer
+                            rounded-lg transition-colors duration-100
+                            ${isSelected
+                              ? 'bg-primary'
+                              : 'bg-background hover:bg-secondaryBackground'
+                            }
+                          `}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              {days.map((_, dayIndex) => {
-                const isSelected = isBlockSelected(dayIndex, time);
-                return (
-                  <div
-                    key={`${dayIndex}-${time}`}
-                    className="w-[140px] mx-0.5"
-                    onMouseDown={(e) => handleDragStart(dayIndex, time, e)}
-                    onMouseEnter={() => handleDragEnter(dayIndex, time)}
-                    onClick={(e) => handleClick(dayIndex, time, e)}
-                    style={{ userSelect: 'none' }}
-                  >
-                    <div
-                      className={`
-                        w-full h-[1.75rem] cursor-pointer
-                        rounded-lg transition-colors duration-100
-                        ${isSelected
-                          ? 'bg-primary'
-                          : 'bg-background hover:bg-secondaryBackground'
-                        }
-                      `}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

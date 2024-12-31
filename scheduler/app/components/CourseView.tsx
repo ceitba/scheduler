@@ -80,7 +80,7 @@ const CourseView: React.FC<CourseViewProps> = ({
     <div className="mx-0 relative">
       <SearchBox />
       
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Selected Courses Section */}
         <div className="bg-secondaryBackground/30 rounded-xl p-4">
           <TooltipHeader
@@ -139,7 +139,7 @@ const CourseView: React.FC<CourseViewProps> = ({
                     return (
                       <div
                         key={course.id}
-                        className="flex items-center justify-between p-3 bg-secondaryBackground rounded-lg"
+                        className="flex items-center justify-between p-3 bg-secondaryBackground rounded-lg group"
                       >
                         <span className="text-textDefault">{course.name}</span>
                         <button
@@ -150,12 +150,15 @@ const CourseView: React.FC<CourseViewProps> = ({
                           }
                           className={`${
                             isSelected
-                              ? "text-green-500 hover:text-green-600"
+                              ? "text-primary hover:text-red-500 transition-colors"
                               : "text-primary hover:text-primaryDark"
                           }`}
                         >
                           {isSelected ? (
-                            <CheckIcon className="h-5 w-5" />
+                            <>
+                              <CheckIcon className="h-5 w-5 text-green-500 group-hover:hidden" />
+                              <TrashIcon className="h-5 w-5 text-red-500 hidden group-hover:block" />
+                            </>
                           ) : (
                             <PlusIcon className="h-5 w-5" />
                           )}

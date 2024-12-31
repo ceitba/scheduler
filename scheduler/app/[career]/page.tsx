@@ -101,7 +101,7 @@ export default function CareerPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <TopBar currentPlan={plan} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
         <TabView tabs={tabs} />
       </div>
 

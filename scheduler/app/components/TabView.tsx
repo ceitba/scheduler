@@ -16,7 +16,7 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
       <div className="flex w-full bg-secondaryBackground p-1.5 rounded-xl relative">
         {/* Sliding Background */}
         <div
-          className="absolute h-[calc(100%-12px)] top-1.5 transition-all duration-300 ease-out rounded-lg bg-primary"
+          className="absolute h-[calc(100%-12px)] top-1.5 transition-all duration-200 ease-out rounded-lg bg-primary"
           style={{
             width: `calc(${100 / tabs.length}% - 12px)`,
             left: `calc(${(100 / tabs.length) * activeTab}% + 6px)`,
@@ -31,7 +31,7 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
             onClick={() => setActiveTab(index)}
             className={`
               relative flex-1 px-4 py-3 text-sm font-medium rounded-lg
-              transition-colors duration-300 ease-out z-10
+              transition-colors duration-200 ease-out z-10
               ${activeTab === index 
                 ? 'text-white' 
                 : 'text-gray hover:text-textDefault'
@@ -43,16 +43,16 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
         ))}
       </div>
 
-      {/* Tab Content with Enhanced Fade Transition */}
+      {/* Tab Content */}
       <div className="mt-6">
         {tabs.map((tab, index) => (
           <div
             key={index}
             className={`
-              transform transition-all duration-300 ease-out
+              transform transition-all duration-200 ease-out
               ${activeTab === index 
                 ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-4 hidden'
+                : 'opacity-0 translate-y-2 absolute pointer-events-none'
               }
             `}
           >

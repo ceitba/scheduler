@@ -27,7 +27,7 @@ const DropdownSection: React.FC<DropdownSectionProps> = ({
       </div>
       {isOpen && (
         <div className="ml-6">
-          <hr className="border-t border-secondaryBackground" />
+          <hr className="border-none" />
           {children}
         </div>
       )}

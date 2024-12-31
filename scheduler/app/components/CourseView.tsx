@@ -8,7 +8,6 @@ import {
 } from "@heroicons/react/24/outline";
 import TooltipHeader from "./Tooltip";
 import DropdownSection from "./DropdownSection";
-import CommissionModal from "./ComissionModal";
 import { useSubjects, type Subject } from "../hooks/useSubjects";
 
 interface SelectedCourse extends Subject {
@@ -16,11 +15,14 @@ interface SelectedCourse extends Subject {
   isPriority: boolean;
 }
 
-const CourseView: React.FC = () => {
+interface CourseViewProps {
+  onCommissionSelect: (course: Subject) => void;
+  onAddCourse?: (handleAddCourse: (course: Subject, commission: { id: string; name: string }) => void) => void;
+}
+
+const CourseView: React.FC<CourseViewProps> = ({ onCommissionSelect, onAddCourse }) => {
   const { subjects, loading, error } = useSubjects();
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null);
 
   // Group subjects by year
   const subjectsByYear = subjects.reduce((acc, subject) => {
@@ -36,21 +38,20 @@ const CourseView: React.FC = () => {
   }, {} as Record<number, { year: string; subjects: Subject[] }>);
 
   const handleAddCourseClick = (course: Subject) => {
-    setSelectedCourseForModal(course);
-    setModalOpen(true);
-  };
-
-  const handleCommissionSelect = (commissionId: string) => {
-    if (selectedCourseForModal) {
-      const commission = commissionId === 'any' 
-        ? { id: 'any', name: 'Cualquier comisión' }
-        : selectedCourseForModal.commissions.find(c => c.id === commissionId) 
-          || selectedCourseForModal.commissions[0];
-          
-      handleAddCourse(selectedCourseForModal, commission);
+    // If the course is already selected, just remove it
+    if (selectedCourses.some(c => c.id === course.id)) {
+      handleRemoveCourse(course.id);
+      return;
     }
-    setModalOpen(false);
-    setSelectedCourseForModal(null);
+
+    // If the course has only one commission, add it directly
+    if (course.commissions.length === 1) {
+      handleAddCourse(course, course.commissions[0]);
+      return;
+    }
+
+    // Otherwise, trigger modal at page level
+    onCommissionSelect(course);
   };
 
   const handleAddCourse = (course: Subject, commission: { id: string; name: string }) => {
@@ -65,6 +66,13 @@ const CourseView: React.FC = () => {
       ]);
     }
   };
+
+  // Make handleAddCourse available to parent
+  React.useEffect(() => {
+    if (onAddCourse) {
+      onAddCourse(handleAddCourse);
+    }
+  }, [onAddCourse]);
 
   const handleRemoveCourse = (courseId: string) => {
     setSelectedCourses(selectedCourses.filter((c) => c.id !== courseId));
@@ -87,12 +95,12 @@ const CourseView: React.FC = () => {
   }
 
   return (
-    <div className="mx-0">
+    <div className="mx-0 relative">
       <SearchBox />
       
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Selected Courses Section */}
-        <div className="bg-background rounded-xl p-4 shadow-md">
+        <div className="bg-secondaryBackground/30 rounded-xl p-4">
           <TooltipHeader
             title="Cursos Seleccionados"
             tooltip="Arrastra las materias para ordenarlas según prioridad"
@@ -134,7 +142,7 @@ const CourseView: React.FC = () => {
         </div>
 
         {/* Available Courses Section */}
-        <div className="bg-background rounded-xl p-4 shadow-md">
+        <div className="bg-secondaryBackground/30 rounded-xl p-4">
           <h2 className="text-lg font-semibold text-textDefault mb-4">
             Cursos Disponibles
           </h2>
@@ -179,14 +187,6 @@ const CourseView: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <CommissionModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSelect={handleCommissionSelect}
-        commission={selectedCourseForModal?.commissions || []}
-        courseName={selectedCourseForModal?.name || ''}
-      />
     </div>
   );
 };

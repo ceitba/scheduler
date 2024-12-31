@@ -63,7 +63,7 @@ const CourseView: React.FC<CourseViewProps> = ({
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-bounce rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -82,7 +82,7 @@ const CourseView: React.FC<CourseViewProps> = ({
       
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Selected Courses Section */}
-        <div className="bg-secondaryBackground/30 rounded-xl p-4">
+        <div className="bg-secondaryBackground/30 rounded-xl">
           <TooltipHeader
             title="Cursos Seleccionados"
             tooltip="Arrastra las materias para ordenarlas según prioridad"
@@ -124,7 +124,7 @@ const CourseView: React.FC<CourseViewProps> = ({
         </div>
 
         {/* Available Courses Section */}
-        <div className="bg-secondaryBackground/30 rounded-xl p-4">
+        <div className="bg-secondaryBackground/30 rounded-xl">
           <h2 className="text-lg font-semibold text-textDefault mb-4">
             Cursos Disponibles
           </h2>

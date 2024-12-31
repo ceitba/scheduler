@@ -2,26 +2,17 @@
 import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-const SearchBox = () => {
+const SearchBox: React.FC = () => {
   return (
-    <div className="relative w-full">
-      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-        <MagnifyingGlassIcon 
-          className="h-5 w-5 text-gray transition-colors" 
-          aria-hidden="true" 
-        />
-      </div>
+    <div className="relative">
+      <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray" />
       <input
         type="text"
-        placeholder="Buscar materia por nombre o codigo..."
-        className="w-full pl-10 pr-3 py-2.5
-          bg-transparent
-          border border-gray/20 rounded-lg
-          text-textDefault placeholder:text-gray
-          focus:border-primary focus:ring-1 focus:ring-primary/10
-          hover:border-gray/30
-          focus:outline-none
-          transition-all duration-200"
+        placeholder="Buscar materias..."
+        className="w-full pl-10 pr-4 py-2 rounded-lg bg-secondaryBackground 
+          text-sm text-textDefault placeholder:text-gray
+          border border-transparent focus:border-gray focus:border-2
+          outline-none transition-colors"
       />
     </div>
   );

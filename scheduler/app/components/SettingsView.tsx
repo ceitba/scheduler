@@ -11,7 +11,7 @@ interface ScheduleSettings {
 const SettingsView: React.FC = () => {
   const [settings, setSettings] = useState<ScheduleSettings>({
     allowTimeOverlap: false,
-    avoidLocationChanges: true,
+    avoidLocationChanges: false,
     haveFreeDay: false,
     timeFormat: '24h'
   });

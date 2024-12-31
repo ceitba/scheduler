@@ -14,6 +14,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
   const [selectedBlocks, setSelectedBlocks] = useState<TimeBlock[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartCell, setDragStartCell] = useState<{ day: number; time: string } | null>(null);
+  const [modifyingSelection, setModifyingSelection] = useState(false);
   const dragOperation = useRef<'add' | 'remove' | null>(null);
 
   const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
@@ -29,11 +30,39 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
     );
   };
 
+  const handleClick = (day: number, time: string, e: React.MouseEvent) => {
+    if (!isDragging) {
+      // Toggle single cell on click
+      const isSelected = isBlockSelected(day, time);
+      let newBlocks = [...selectedBlocks];
+      
+      if (isSelected) {
+        newBlocks = newBlocks.filter(block => 
+          !(block.day === day && block.time === time)
+        );
+      } else {
+        newBlocks.push({ day, time, isBlocked: true });
+      }
+      
+      setSelectedBlocks(newBlocks);
+      onChange?.(newBlocks);
+    }
+  };
+
   const handleDragStart = (day: number, time: string, e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
     setDragStartCell({ day, time });
-    dragOperation.current = isBlockSelected(day, time) ? 'remove' : 'add';
+    
+    // Check if we're starting on an existing selection
+    const isSelected = isBlockSelected(day, time);
+    if (isSelected) {
+      setModifyingSelection(true);
+      dragOperation.current = 'remove';
+    } else {
+      setModifyingSelection(false);
+      dragOperation.current = 'add';
+    }
   };
 
   const handleDragEnter = (day: number, time: string) => {
@@ -50,12 +79,14 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
 
     let newBlocks = [...selectedBlocks];
 
+    // Remove blocks in the current selection area
     newBlocks = newBlocks.filter(block => 
       !(block.day >= minDay && block.day <= maxDay && 
         timeSlots.indexOf(block.time) >= minTime && 
         timeSlots.indexOf(block.time) <= maxTime)
     );
 
+    // Add new blocks if we're adding (not removing)
     if (dragOperation.current === 'add') {
       for (let d = minDay; d <= maxDay; d++) {
         for (let t = minTime; t <= maxTime; t++) {
@@ -76,6 +107,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
     setIsDragging(false);
     setDragStartCell(null);
     dragOperation.current = null;
+    setModifyingSelection(false);
   };
 
   return (
@@ -122,6 +154,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange }) => {
                     className="w-[140px] mx-0.5"
                     onMouseDown={(e) => handleDragStart(dayIndex, time, e)}
                     onMouseEnter={() => handleDragEnter(dayIndex, time)}
+                    onClick={(e) => handleClick(dayIndex, time, e)}
                     style={{ userSelect: 'none' }}
                   >
                     <div

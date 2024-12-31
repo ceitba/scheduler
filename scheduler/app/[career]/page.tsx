@@ -3,7 +3,7 @@ import { redirect, useSearchParams, useParams } from 'next/navigation';
 import TabView from "../components/TabView";
 import CourseView from "../components/CourseView";
 import SettingsView from "../components/SettingsView";
-import SchedulerPreview from "../components/SchedulerPreview";
+import { SchedulerPreview } from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
 import CommissionModal from "../components/CommissionModal";
 import { Subject } from "../hooks/useSubjects";

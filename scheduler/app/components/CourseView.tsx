@@ -16,13 +16,19 @@ interface SelectedCourse extends Subject {
 }
 
 interface CourseViewProps {
+  selectedCourses: SelectedCourse[];
   onCommissionSelect: (course: Subject) => void;
-  onAddCourse?: (handleAddCourse: (course: Subject, commission: { id: string; name: string }) => void) => void;
+  onAddCourse: (course: Subject, commission: { id: string; name: string }) => void;
+  onRemoveCourse: (courseId: string) => void;
 }
 
-const CourseView: React.FC<CourseViewProps> = ({ onCommissionSelect, onAddCourse }) => {
+const CourseView: React.FC<CourseViewProps> = ({ 
+  selectedCourses, 
+  onCommissionSelect, 
+  onAddCourse,
+  onRemoveCourse 
+}) => {
   const { subjects, loading, error } = useSubjects();
-  const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
 
   // Group subjects by year
   const subjectsByYear = subjects.reduce((acc, subject) => {
@@ -40,42 +46,18 @@ const CourseView: React.FC<CourseViewProps> = ({ onCommissionSelect, onAddCourse
   const handleAddCourseClick = (course: Subject) => {
     // If the course is already selected, just remove it
     if (selectedCourses.some(c => c.id === course.id)) {
-      handleRemoveCourse(course.id);
+      onRemoveCourse(course.id);
       return;
     }
 
     // If the course has only one commission, add it directly
     if (course.commissions.length === 1) {
-      handleAddCourse(course, course.commissions[0]);
+      onAddCourse(course, course.commissions[0]);
       return;
     }
 
     // Otherwise, trigger modal at page level
     onCommissionSelect(course);
-  };
-
-  const handleAddCourse = (course: Subject, commission: { id: string; name: string }) => {
-    if (!selectedCourses.find((c) => c.id === course.id)) {
-      setSelectedCourses([
-        ...selectedCourses,
-        {
-          ...course,
-          selectedCommission: commission.id,
-          isPriority: false,
-        },
-      ]);
-    }
-  };
-
-  // Make handleAddCourse available to parent
-  React.useEffect(() => {
-    if (onAddCourse) {
-      onAddCourse(handleAddCourse);
-    }
-  }, [onAddCourse]);
-
-  const handleRemoveCourse = (courseId: string) => {
-    setSelectedCourses(selectedCourses.filter((c) => c.id !== courseId));
   };
 
   if (loading) {
@@ -124,7 +106,7 @@ const CourseView: React.FC<CourseViewProps> = ({ onCommissionSelect, onAddCourse
                         : `Comisión ${course.selectedCommission.toUpperCase()}`}
                     </span>
                     <button
-                      onClick={() => handleRemoveCourse(course.id)}
+                      onClick={() => onRemoveCourse(course.id)}
                       className="text-gray hover:text-red-500"
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -163,7 +145,7 @@ const CourseView: React.FC<CourseViewProps> = ({ onCommissionSelect, onAddCourse
                         <button
                           onClick={() =>
                             isSelected
-                              ? handleRemoveCourse(course.id)
+                              ? onRemoveCourse(course.id)
                               : handleAddCourseClick(course)
                           }
                           className={`${

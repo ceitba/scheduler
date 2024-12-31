@@ -7,7 +7,18 @@ import SchedulerPreview from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
 import CommissionModal from "../components/CommissionModal";
 import { Subject } from "../hooks/useSubjects";
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+
+interface SelectedCourse extends Subject {
+  selectedCommission: string;
+  isPriority: boolean;
+}
+
+interface PageProps {
+  params: {
+    career: string;
+  };
+}
 
 const VALID_CAREERS = ['S'];
 
@@ -16,21 +27,13 @@ const CAREER_PLANS = {
   'S': ['SREV-23', 'SREV-19', 'SREV-14']
 } as const;
 
-interface PageProps {
-  params: {
-    career: string;
-  };
-}
-
 export default function CareerPage({ params }: PageProps) {
   const { career } = useParams();
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null);
-  const [handleAddCourseFunction, setHandleAddCourseFunction] = useState<
-    ((course: Subject, commission: { id: string; name: string }) => void) | null
-  >(null);
+  const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
 
   // Redirect to home if career code is invalid
   if (!VALID_CAREERS.includes(career as string)) {
@@ -42,13 +45,20 @@ export default function CareerPage({ params }: PageProps) {
   }
 
   const handleCommissionSelect = (commissionId: string) => {
-    if (selectedCourseForModal && handleAddCourseFunction) {
+    if (selectedCourseForModal) {
       const commission = commissionId === 'any'
         ? { id: 'any', name: 'Cualquier comisión' }
         : selectedCourseForModal.commissions.find(c => c.id === commissionId)
           || selectedCourseForModal.commissions[0];
 
-      handleAddCourseFunction(selectedCourseForModal, commission);
+      setSelectedCourses(prev => [
+        ...prev,
+        {
+          ...selectedCourseForModal,
+          selectedCommission: commission.id,
+          isPriority: false,
+        },
+      ]);
     }
     setModalOpen(false);
     setSelectedCourseForModal(null);
@@ -58,12 +68,23 @@ export default function CareerPage({ params }: PageProps) {
     {
       label: "Cursos",
       content: <CourseView 
+        selectedCourses={selectedCourses}
         onCommissionSelect={(course) => {
           setSelectedCourseForModal(course);
           setModalOpen(true);
         }}
-        onAddCourse={(handleAddCourse) => {
-          setHandleAddCourseFunction(() => handleAddCourse);
+        onAddCourse={(course, commission) => {
+          setSelectedCourses(prev => [
+            ...prev,
+            {
+              ...course,
+              selectedCommission: commission.id,
+              isPriority: false,
+            },
+          ]);
+        }}
+        onRemoveCourse={(courseId) => {
+          setSelectedCourses(prev => prev.filter(c => c.id !== courseId));
         }}
       />,
     },
@@ -93,4 +114,4 @@ export default function CareerPage({ params }: PageProps) {
       />
     </div>
   );
-} 
+}

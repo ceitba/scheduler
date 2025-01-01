@@ -47,16 +47,16 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
   };
 
   return (
-    <div className="w-full bg-background border-gray/20 relative z-50">
+    <div className="w-full bg-background border-gray/20 relative z-50 pt-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo or Brand */}
           <Link 
             href="/" 
-            className="flex-shrink-0 group hover:opacity-80 transition-opacity"
+            className="flex-shrink-0 group hover:opacity-80 transition-opacity flex flex-col justify-center"
           >
-            <h2 className="text-xl font-semibold text-primary group-hover:text-secondary">
-              Combinador de Horarios
+            <h2 className="text-xl font-semibold text-textDefault">
+              CEITBA | Combinador de Horarios
             </h2>
             <h2 className="font-medium text-gray">
               {careerName}
@@ -65,7 +65,7 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
 
           {/* Right side with Plan and Theme */}
           <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}

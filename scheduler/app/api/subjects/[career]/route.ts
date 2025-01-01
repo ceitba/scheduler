@@ -17,6 +17,7 @@ export async function GET(
         name: "Análisis Matemático I",
         semester: 1,
         year: 1,
+        credits: 6,
         commissions: [
           {
             id: "a",
@@ -36,6 +37,7 @@ export async function GET(
         name: "Taller de Programación III",
         semester: 2,
         year: 4,
+        credits: 6,
         commissions: [
           {
             id: "a",

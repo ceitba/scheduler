@@ -64,6 +64,10 @@ export default function CareerPage({ params }: PageProps) {
     setSelectedCourseForModal(null);
   };
 
+  const handleReorderCourses = (reorderedCourses: SelectedCourse[]) => {
+    setSelectedCourses(reorderedCourses);
+  };
+
   const tabs = [
     {
       label: "Cursos",
@@ -86,6 +90,7 @@ export default function CareerPage({ params }: PageProps) {
         onRemoveCourse={(courseId) => {
           setSelectedCourses(prev => prev.filter(c => c.id !== courseId));
         }}
+        onReorderCourses={handleReorderCourses}
       />,
     },
     {

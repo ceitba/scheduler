@@ -7,6 +7,7 @@ export interface Subject {
   code: string;
   semester: number;
   year: number;
+  credits: number;
   commissions: {
     id: string;
     name: string;

@@ -67,7 +67,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
 
       {/* Dropdown results */}
       {isOpen && query.length > 0 && (
-        <div className="absolute w-full mt-2 bg-background rounded-lg shadow-lg border border-gray/20 max-h-60 overflow-y-auto z-50">
+        <div className="absolute w-full mt-2 bg-background rounded-lg shadow-lg border-2 border-gray max-h-60 overflow-y-auto z-50">
           {filteredSubjects.length > 0 ? (
             filteredSubjects.map((subject) => (
               <button

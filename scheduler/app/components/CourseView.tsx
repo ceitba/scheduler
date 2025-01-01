@@ -25,33 +25,47 @@ const CourseView: React.FC<CourseViewProps> = ({
   onReorderCourses
 }) => {
   const { subjects, loading, error } = useSubjects();
+
+  // Group subjects by year and quarter
   const subjectsByYear = subjects.reduce((acc, subject) => {
     const year = subject.year || 0;
     if (!acc[year]) {
       acc[year] = {
         year: year === 0 ? 'ELECTIVAS' : `${year}° Año`,
-        subjects: []
+        subjects: {
+          '1': [],
+          '2': []
+        }
       };
     }
-    acc[year].subjects.push(subject);
-    return acc;
-  }, {} as Record<number, { year: string; subjects: Subject[] }>);
 
-  // Sort years to put ELECTIVAS at the bottom
+    // Add subject to appropriate quarter
+    const quarter = subject.semester?.toString() || '1';
+    acc[year].subjects[quarter as '1' | '2']?.push(subject);
+    
+    return acc;
+  }, {} as Record<number, { 
+    year: string; 
+    subjects: {
+      '1': Subject[];
+      '2': Subject[];
+    }
+  }>);
+
+  // Sort years (ELECTIVAS at the bottom)
   const sortedSubjectsByYear = Object.entries(subjectsByYear)
     .sort(([yearA], [yearB]) => {
       const a = parseInt(yearA);
       const b = parseInt(yearB);
-      if (a === 0) return 1;  // Always move ELECTIVAS to the end
-      if (b === 0) return -1; // Always keep ELECTIVAS at the end
-      return a - b;  // Sort years 1-5 numerically
+      if (a === 0) return 1;
+      if (b === 0) return -1;
+      return a - b;
     })
     .reduce((acc, [year, data]) => {
-      // For display purposes, make year 0 appear as if it's year 6
       const displayYear = parseInt(year) === 0 ? 6 : parseInt(year);
       acc[displayYear] = data;
       return acc;
-    }, {} as Record<number, { year: string; subjects: Subject[] }>);
+    }, {} as Record<number, typeof subjectsByYear[number]>);
 
   const handleSubjectSelect = (subject: Subject) => {
     if (selectedCourses.some(c => c.subject_id === subject.subject_id)) {

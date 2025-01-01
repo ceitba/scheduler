@@ -31,7 +31,7 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
             onClick={() => setActiveTab(index)}
             className={`
               relative flex-1 px-4 py-3 text-sm font-medium rounded-lg
-              transition-colors duration-200 ease-out z-10
+              transition-colors duration-200 ease-out z-10 select-none
               ${activeTab === index 
                 ? 'text-white' 
                 : 'text-gray hover:text-textDefault'

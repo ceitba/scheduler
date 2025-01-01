@@ -2,7 +2,7 @@
 import { redirect, useSearchParams, useParams } from 'next/navigation';
 import TabView from "../components/TabView";
 import CourseView from "../components/CourseView";
-import SettingsView from "../components/SettingsView";
+import { SettingsView } from "../components/SettingsView";
 import { SchedulerPreview } from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
 import CommissionModal from "../components/CommissionModal";
@@ -126,10 +126,6 @@ export default function CareerPage({ params }: PageProps) {
     setSchedules(generatedSchedules);
   };
 
-  const handleOptionsChange = (options: SchedulerOptions) => {
-    scheduler.setOptions(options);
-  };
-
   const tabs = [
     {
       label: "Cursos",
@@ -163,10 +159,7 @@ export default function CareerPage({ params }: PageProps) {
     },
     {
       label: "Opciones",
-      content: <SettingsView 
-        options={scheduler.getOptions()}
-        onOptionsChange={handleOptionsChange}
-      />,
+      content: <SettingsView />,
     },
     {
       label: "Calendario",

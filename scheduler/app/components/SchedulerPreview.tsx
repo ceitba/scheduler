@@ -18,7 +18,7 @@ export const SchedulerPreview: React.FC = () => {
       {/* Schedule Preview */}
       <div className="bg-background rounded-lg shadow-sm">
         <div className="flex items-center justify-between p-4 border-b border-gray/20">
-          <h2 className="text-lg font-medium">Vista previa del horario</h2>
+          <h2 className="text-lg font-medium">Vista previa de horarios</h2>
           <div>
             <button className="p-2 text-gray hover:bg-secondaryBackground rounded-lg">
               <ArrowLeftCircleIcon className="h-5 w-5" />
@@ -30,7 +30,7 @@ export const SchedulerPreview: React.FC = () => {
         </div>
         <div className="p-4">
           {/* Empty state preview */}
-          <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray/20 rounded-lg">
+          <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
             <div className="text-center text-gray mb-4">
               <CalendarDaysIcon className="h-8 w-8 mx-auto mb-2" />
               <p>No hay horarios generados</p>

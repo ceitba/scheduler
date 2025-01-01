@@ -53,21 +53,21 @@ const CourseView: React.FC<CourseViewProps> = ({
       return acc;
     }, {} as Record<number, { year: string; subjects: Subject[] }>);
 
-  const handleAddCourseClick = (course: Subject) => {
-    if (selectedCourses.some(c => c.subject_id === course.subject_id)) {
-      onRemoveCourse(course.subject_id);
+  const handleSubjectSelect = (subject: Subject) => {
+    if (selectedCourses.some(c => c.subject_id === subject.subject_id)) {
+      onRemoveCourse(subject.subject_id);
       return;
     }
 
-    if (course.commissions.length === 1) {
-      onAddCourse(course, { 
-        id: course.commissions[0].name,
-        name: course.commissions[0].name 
+    if (subject.commissions.length === 1) {
+      onAddCourse(subject, { 
+        id: subject.commissions[0].name,
+        name: subject.commissions[0].name 
       });
       return;
     }
 
-    onCommissionSelect(course);
+    onCommissionSelect(subject);
   };
 
   if (loading) {
@@ -88,7 +88,10 @@ const CourseView: React.FC<CourseViewProps> = ({
 
   return (
     <div className="mx-0 relative">
-      <SearchBox />
+      <SearchBox 
+        subjects={subjects}
+        onSelectSubject={handleSubjectSelect}
+      />
       
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <SelectedCoursesList 
@@ -99,7 +102,7 @@ const CourseView: React.FC<CourseViewProps> = ({
         <AvailableCoursesList
           courses={sortedSubjectsByYear}
           selectedCourses={selectedCourses}
-          onCourseClick={handleAddCourseClick}
+          onCourseClick={handleSubjectSelect}
         />
       </div>
     </div>

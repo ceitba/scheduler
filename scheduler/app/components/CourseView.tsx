@@ -34,14 +34,19 @@ const CourseView: React.FC<CourseViewProps> = ({
         year: year === 0 ? 'ELECTIVAS' : `${year}° Año`,
         subjects: {
           '1': [],
-          '2': []
+          '2': [],
+          'extra': []
         }
       };
     }
 
     // Add subject to appropriate quarter
     const quarter = subject.semester?.toString() || '1';
-    acc[year].subjects[quarter as '1' | '2']?.push(subject);
+    if (quarter === '1' || quarter === '2') {
+      acc[year].subjects[quarter]?.push(subject);
+    } else {
+      acc[year].subjects.extra.push(subject);
+    }
     
     return acc;
   }, {} as Record<number, { 
@@ -49,6 +54,7 @@ const CourseView: React.FC<CourseViewProps> = ({
     subjects: {
       '1': Subject[];
       '2': Subject[];
+      'extra': Subject[];
     }
   }>);
 

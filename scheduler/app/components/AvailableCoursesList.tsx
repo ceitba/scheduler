@@ -8,6 +8,7 @@ interface AvailableCoursesListProps {
     subjects: {
       '1': Subject[];
       '2': Subject[];
+      'extra': Subject[];
     }
   }>;
   selectedCourses: Subject[];
@@ -70,6 +71,14 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
                 selectedCourses={selectedCourses}
                 onCourseClick={onCourseClick}
               />
+              {yearData.subjects.extra.length > 0 && (
+                <QuarterSection
+                  title="EXTRA"
+                  subjects={yearData.subjects.extra}
+                  selectedCourses={selectedCourses}
+                  onCourseClick={onCourseClick}
+                />
+              )}
             </div>
           </DropdownSection>
         ))}

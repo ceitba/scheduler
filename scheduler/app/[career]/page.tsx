@@ -163,7 +163,11 @@ export default function CareerPage({ params }: PageProps) {
     },
     {
       label: "Calendario",
-      content: <SchedulerPreview schedules={schedules} onGenerateSchedules={handleGenerateSchedules} />,
+      content: <SchedulerPreview 
+        schedules={schedules} 
+        onGenerateSchedules={handleGenerateSchedules}
+        hasSubjects={selectedCourses.length > 0}
+      />,
     },
   ];
 

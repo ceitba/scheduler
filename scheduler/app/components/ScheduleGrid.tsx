@@ -68,11 +68,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
     return acc;
   }, {} as Record<string, Map<string, GroupedSlot>>);
 
-  const isTimeBlocked = (day: string, time: string) => {
-    return blockedTimes.some(block => 
-      block.day === day && block.from === time
-    );
-  };
+  // Convert blocked times to slot format for visualization
+  const blockedSlots = blockedTimes.map(block => ({
+    timeFrom: block.from,
+    timeTo: block.to,
+    day: block.day,
+    isBlocked: true
+  }));
 
   const getSlotsForDay = (day: string): GroupedSlot[] => {
     return Array.from(slotsByDay[day]?.values() || []);
@@ -145,14 +147,35 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                 {timeSlots.map((time) => (
                   <div
                     key={time}
-                    className={`absolute w-full h-12 ${
-                      isTimeBlocked(day, time) ? 'bg-gray-700/20' : 'bg-secondaryBackground'
-                    }`}
+                    className="absolute w-full h-12 bg-secondaryBackground"
                     style={{ top: (timeToMinutes(time) - 8 * 60) / 60 * 48 }}
                   />
                 ))}
 
-                {/* Slots */}
+                {/* Blocked time slots */}
+                {blockedSlots
+                  .filter(block => block.day === day)
+                  .map((block, index) => {
+                    const { top, height } = calculateSlotPosition(block.timeFrom, block.timeTo);
+                    return (
+                      <div
+                        key={`blocked-${block.day}-${block.timeFrom}-${index}`}
+                        className="absolute w-full p-1 bg-white border-2 border-dashed border-gray-300"
+                        style={{
+                          top: `${top}px`,
+                          height: `${height}px`,
+                          zIndex: 1
+                        }}
+                      >
+                        <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                          <div>Horario bloqueado</div>
+                          <div>{block.timeFrom} - {block.timeTo}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                {/* Course slots */}
                 {Array.from(overlappingGroups.values()).map((group, groupIndex) => (
                   <React.Fragment key={groupIndex}>
                     {group.map((slot, slotIndex) => {
@@ -174,6 +197,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             height: `${height}px`,
                             width,
                             left,
+                            zIndex: 2
                           }}
                         >
                           <div className="h-full flex flex-col justify-between text-[10px] leading-tight">

@@ -14,7 +14,7 @@ export class Scheduler {
   private options: SchedulerOptions = {
     allowOverlap: false,
     avoidBuildingChange: false,
-    allowFreeDay: true
+    allowFreeDay: false
   };
   private blockedTimes: TimeBlock[] = [];
   private possibleSchedules: PossibleSchedule[] = [];
@@ -117,7 +117,8 @@ export class Scheduler {
   private canAddSlots(schedule: ScheduleSlot[], newSlots: ScheduleSlot[]): boolean {
     if (this.options.allowOverlap) return true;
 
-    return newSlots.every(newSlot => 
+    // Check overlap with existing schedule slots
+    const noScheduleOverlap = newSlots.every(newSlot => 
       schedule.every(existingSlot => {
         if (existingSlot.day !== newSlot.day) return true;
 
@@ -129,6 +130,22 @@ export class Scheduler {
         return newEnd <= existingStart || newStart >= existingEnd;
       })
     );
+
+    // Check overlap with blocked times
+    const noBlockedOverlap = newSlots.every(newSlot =>
+      this.blockedTimes.every(blockedTime => {
+        if (blockedTime.day !== newSlot.day) return true;
+
+        const newStart = this.timeToMinutes(newSlot.timeFrom);
+        const newEnd = this.timeToMinutes(newSlot.timeTo);
+        const blockedStart = this.timeToMinutes(blockedTime.from);
+        const blockedEnd = this.timeToMinutes(blockedTime.to);
+
+        return newEnd <= blockedStart || newStart >= blockedEnd;
+      })
+    );
+
+    return noScheduleOverlap && noBlockedOverlap;
   }
 
   private timeToMinutes(time: string): number {
@@ -191,28 +208,40 @@ export class Scheduler {
   private createSchedule(slots: ScheduleSlot[]): PossibleSchedule {
     return {
       slots,
-      hasOverlap: this.hasTimeOverlaps(slots),
+      hasOverlap: this.hasTimeOverlap(slots),
       hasBuildingConflict: !this.checkBuildingChanges(slots),
       hasFreeDay: this.hasFreeDayOption(slots)
     };
   }
 
-  private hasTimeOverlaps(slots: ScheduleSlot[]): boolean {
-    const daySchedules = slots.reduce((acc, slot) => {
-      if (!acc[slot.day]) acc[slot.day] = [];
+  private hasTimeOverlap(slots: ScheduleSlot[]): boolean {
+    // Group slots by day
+    const slotsByDay = slots.reduce((acc, slot) => {
+      if (!acc[slot.day]) {
+        acc[slot.day] = [];
+      }
       acc[slot.day].push(slot);
       return acc;
     }, {} as Record<string, ScheduleSlot[]>);
 
-    return Object.values(daySchedules).some(daySlots => {
-      daySlots.sort((a, b) => this.timeToMinutes(a.timeFrom) - this.timeToMinutes(b.timeFrom));
-      
-      for (let i = 1; i < daySlots.length; i++) {
-        const prevEnd = this.timeToMinutes(daySlots[i - 1].timeTo);
-        const currStart = this.timeToMinutes(daySlots[i].timeFrom);
-        if (currStart < prevEnd) return true;
+    // Check for overlaps within each day
+    for (const daySlots of Object.values(slotsByDay)) {
+      // Sort slots by start time
+      daySlots.sort((a, b) => a.timeFrom.localeCompare(b.timeFrom));
+
+      // Check each pair of consecutive slots
+      for (let i = 0; i < daySlots.length - 1; i++) {
+        const currentSlot = daySlots[i];
+        const nextSlot = daySlots[i + 1];
+
+        // If the current slot ends after the next slot starts, there's an overlap
+        // But only if they're from different subjects
+        if (currentSlot.timeTo > nextSlot.timeFrom && currentSlot.subject_id !== nextSlot.subject_id) {
+          return true;
+        }
       }
-      return false;
-    });
+    }
+
+    return false;
   }
 } 

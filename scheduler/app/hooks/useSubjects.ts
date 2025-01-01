@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 
-interface Subject {
+export interface Subject {
   id: string;
   name: string;
   code: string;
@@ -19,7 +19,7 @@ interface SubjectsResponse {
   error?: string;
 }
 
-export const useSubjects = () => {
+export function useSubjects() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,6 @@ export const useSubjects = () => {
     const fetchSubjects = async () => {
       try {
         setLoading(true);
-        // TODO: change to use the ceitba API
         const response = await fetch(`/api/subjects/${career}?plan=${plan}`);
         if (!response.ok) {
           throw new Error('Failed to fetch subjects');
@@ -55,6 +54,4 @@ export const useSubjects = () => {
   }, [career, plan]);
 
   return { subjects, loading, error };
-};
-
-export type { Subject }; 
+} 

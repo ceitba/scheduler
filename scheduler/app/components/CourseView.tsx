@@ -139,30 +139,29 @@ const CourseView: React.FC<CourseViewProps> = ({
                     return (
                       <div
                         key={course.id}
-                        className="flex items-center justify-between p-3 bg-secondaryBackground rounded-lg group"
-                      >
-                        <span className="text-textDefault">{course.name}</span>
-                        <button
-                          onClick={() =>
+                        onClick={() =>
+                          isSelected
+                            ? onRemoveCourse(course.id)
+                            : handleAddCourseClick(course)
+                        }
+                        className={`flex items-center justify-between p-3 bg-secondaryBackground 
+                          rounded-lg group cursor-pointer hover:bg-secondaryBackground/70 ${
                             isSelected
-                              ? onRemoveCourse(course.id)
-                              : handleAddCourseClick(course)
-                          }
-                          className={`${
-                            isSelected
-                              ? "text-primary hover:text-red-500 transition-colors"
-                              : "text-primary hover:text-primaryDark"
+                              ? "text-green-500 hover:text-red-500"
+                              : "text-gray hover:text-primary"
                           }`}
-                        >
+                      >
+                        <span>{course.name}</span>
+                        <div>
                           {isSelected ? (
                             <>
-                              <CheckIcon className="h-5 w-5 text-green-500 group-hover:hidden" />
+                              <CheckIcon className="h-5 w-5 group-hover:hidden" />
                               <TrashIcon className="h-5 w-5 text-red-500 hidden group-hover:block" />
                             </>
                           ) : (
                             <PlusIcon className="h-5 w-5" />
                           )}
-                        </button>
+                        </div>
                       </div>
                     );
                   })}

@@ -1,22 +1,24 @@
-import { useState, ReactNode } from "react";
+import { ReactNode } from "react";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 interface DropdownSectionProps {
   title: string;
   children: ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-const DropdownSection: React.FC<DropdownSectionProps> = ({
-  title,
+const DropdownSection: React.FC<DropdownSectionProps> = ({ 
+  title, 
   children,
+  isOpen,
+  onToggle
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <div>
       <div
-        className="cursor-pointer select-none py-2 flex items-center uppercaseTitle "
-        onClick={() => setIsOpen(!isOpen)}
+        className="cursor-pointer select-none py-2 flex items-center uppercaseTitle"
+        onClick={onToggle}
       >
         {isOpen ? (
           <ChevronDownIcon className="h-4 w-4 mr-2" />

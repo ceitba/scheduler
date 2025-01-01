@@ -9,6 +9,7 @@ interface Plan {
   id: string;
 }
 
+// TODO: Check and modularize plans into a separate file
 const AVAILABLE_PLANS: { [key: string]: Plan[] } = {
   'BIO': [{ id: "BIO 22" }, { id: "Bio-13" }],
   'C': [{ id: "C23" }],
@@ -18,11 +19,11 @@ const AVAILABLE_PLANS: { [key: string]: Plan[] } = {
   'L': [{ id: "L09" }, { id: "L09-REV13" }, { id: "L09T" }],
   'LAES': [{ id: "A17" }, { id: "A22" }],
   'LN': [{ id: "L20" }],
-  'M': [{ id: "M22" }, { id: "M09-Rev18 (Marzo)" }, { id: "M09-Rev18 (Agosto)" }],
+  'M': [{ id: "M22" }, { id: "M09 - Rev18 (Marzo)" }, { id: "M09 - Rev18 (Agosto)" }],
   'N': [{ id: "N22" }, { id: "N18 Marzo" }, { id: "N18 Agosto" }],
   'P': [{ id: "P22" }, { id: "P05-Rev.18" }, { id: "P-13" }, { id: "P05" }],
   'Q': [{ id: "Q22" }, { id: "Q05-Rev18" }],
-  'S': [{ id: "S10-Rev23" }, { id: "S10-Rev18" }, { id: "S10A-Rev18" }],
+  'S': [{ id: "S10-Rev23" }, { id: "S10 - Rev18" }, { id: "S10 A - Rev18" }],
 };
 
 // Career mapping object

@@ -90,6 +90,7 @@ const CourseView: React.FC<CourseViewProps> = ({
     onCommissionSelect(subject);
   };
 
+  // TODO: Create custom loading component
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -107,13 +108,13 @@ const CourseView: React.FC<CourseViewProps> = ({
   }
 
   return (
-    <div className="mx-0 relative">
+    <div className="mx-0 relative overflow-hidden">
       <SearchBox 
         subjects={subjects}
         onSelectSubject={handleSubjectSelect}
       />
       
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden h-min">
         <SelectedCoursesList 
           courses={selectedCourses}
           onRemove={onRemoveCourse}

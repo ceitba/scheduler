@@ -23,6 +23,7 @@ interface PageProps {
 
 const VALID_CAREERS = ['BIO', 'C', 'E', 'I', 'K', 'L', 'LAES', 'LN', 'M', 'N', 'P', 'Q', 'S', 'X'];
 
+// TODO: Check and modularize plans into a separate file
 // Define valid plans for each career
 const CAREER_PLANS: Record<string, string[]> = {
   'BIO': ['BIO 22', 'Bio-13'],
@@ -33,11 +34,11 @@ const CAREER_PLANS: Record<string, string[]> = {
   'L': ['L09', 'L09-REV13', 'L09T'],
   'LAES': ['A17', 'A22'],
   'LN': ['L20'],
-  'M': ['M22', 'M09-Rev18 (Marzo)', 'M09-Rev18 (Agosto)'],
+  'M': ['M22', 'M09 - Rev18 (Marzo)', 'M09 - Rev18 (Agosto)'],
   'N': ['N22', 'N18 Marzo', 'N18 Agosto'],
   'P': ['P22', 'P05-Rev.18', 'P-13', 'P05'],
   'Q': ['Q22', 'Q05-Rev18'],
-  'S': ['S10-Rev23', 'S10-Rev18', 'S10A-Rev18']
+  'S': ['S10-Rev23', 'S10 - Rev18', 'S10 A - Rev18']
 };
 
 export default function CareerPage({ params }: PageProps) {

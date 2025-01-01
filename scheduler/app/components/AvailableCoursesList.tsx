@@ -1,6 +1,7 @@
 import { type Subject } from "../hooks/useSubjects";
 import DropdownSection from "./DropdownSection";
 import CourseCard from "./CourseCard";
+import { useState } from "react";
 
 interface AvailableCoursesListProps {
   courses: Record<number, { 
@@ -50,38 +51,49 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
   selectedCourses,
   onCourseClick,
 }) => {
+  const [openSection, setOpenSection] = useState<string | null>(null);
+
   return (
-    <div className="bg-secondaryBackground/30 rounded-xl">
-      <h2 className="text-lg font-semibold text-textDefault mb-4">
+    <div className="bg-secondaryBackground/30 rounded-xl max-h-[calc(80vh-12rem)] flex flex-col">
+      <h2 className="text-lg font-semibold text-textDefault p-4 pb-2">
         Cursos disponibles
       </h2>
-      <div className="space-y-4">
-        {Object.values(courses).map((yearData) => (
-          <DropdownSection key={yearData.year} title={yearData.year}>
-            <div className="space-y-4">
-              <QuarterSection
-                title="PRIMER CUATRIMESTRE"
-                subjects={yearData.subjects['1']}
-                selectedCourses={selectedCourses}
-                onCourseClick={onCourseClick}
-              />
-              <QuarterSection
-                title="SEGUNDO CUATRIMESTRE"
-                subjects={yearData.subjects['2']}
-                selectedCourses={selectedCourses}
-                onCourseClick={onCourseClick}
-              />
-              {yearData.subjects.extra.length > 0 && (
+      <div className="overflow-y-auto flex-1 px-4 pb-4">
+        <div className="space-y-2">
+          {Object.values(courses).map((yearData) => (
+            <DropdownSection 
+              key={yearData.year} 
+              title={yearData.year}
+              isOpen={openSection === yearData.year}
+              onToggle={() => setOpenSection(
+                openSection === yearData.year ? null : yearData.year
+              )}
+            >
+              <div className="space-y-4">
                 <QuarterSection
-                  title="EXTRA"
-                  subjects={yearData.subjects.extra}
+                  title="PRIMER CUATRIMESTRE"
+                  subjects={yearData.subjects['1']}
                   selectedCourses={selectedCourses}
                   onCourseClick={onCourseClick}
                 />
-              )}
-            </div>
-          </DropdownSection>
-        ))}
+                <QuarterSection
+                  title="SEGUNDO CUATRIMESTRE"
+                  subjects={yearData.subjects['2']}
+                  selectedCourses={selectedCourses}
+                  onCourseClick={onCourseClick}
+                />
+                {yearData.subjects.extra?.length > 0 && (
+                  <QuarterSection
+                    title="EXTRA"
+                    subjects={yearData.subjects.extra}
+                    selectedCourses={selectedCourses}
+                    onCourseClick={onCourseClick}
+                  />
+                )}
+              </div>
+            </DropdownSection>
+          ))}
+        </div>
       </div>
     </div>
   );

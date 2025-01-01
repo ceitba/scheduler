@@ -106,43 +106,24 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
   };
 
   return (
-    <div className="bg-secondaryBackground/30 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-4">
-        <TooltipHeader
-          title="Cursos seleccionados"
-          tooltip="Arrastra las materias para ordenarlas según prioridad"
-        />
-        {totalCredits > 0 && (
-          <div className="text-sm text-gray">
-            <span className="font-medium">{totalCredits}</span> créditos
+    <div className="bg-secondaryBackground/30 rounded-xl max-h-[calc(100vh-12rem)] p-4">
+      <h2 className="text-lg font-semibold text-textDefault mb-4">
+        Cursos seleccionados
+      </h2>
+      <div className="space-y-2 overflow-y-auto h-[calc(100%-4rem)]">
+        {courses.map((course, index) => (
+          <SortableItem
+            key={course.id}
+            course={course}
+            onRemove={onRemove}
+          />
+        ))}
+        {courses.length === 0 && (
+          <div className="text-gray text-center py-8">
+            No tiene cursos seleccionados
           </div>
         )}
       </div>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={courses.map(c => c.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="space-y-2">
-            {courses.map((course) => (
-              <SortableItem
-                key={course.id}
-                course={course}
-                onRemove={onRemove}
-              />
-            ))}
-            {courses.length === 0 && (
-              <div className="text-gray text-center py-8">
-                No tiene cursos seleccionados
-              </div>
-            )}
-          </div>
-        </SortableContext>
-      </DndContext>
     </div>
   );
 };

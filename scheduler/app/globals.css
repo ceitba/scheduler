@@ -65,3 +65,25 @@ div {
         text-wrap: balance;
     }
 }
+
+html, body {
+  overflow-x: hidden;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+/* If you need scrolling in specific containers, add this class */
+.scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%;
+  width: 100%;
+}

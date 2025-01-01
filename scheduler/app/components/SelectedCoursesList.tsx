@@ -35,7 +35,7 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: course.id });
+  } = useSortable({ id: course.subject_id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -53,7 +53,9 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
           <div className="cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
             <Bars3Icon className="h-5 w-5 text-gray" />
           </div>
-          <span className="text-textDefault">{course.name}</span>
+          <span className="text-textDefault">
+            ({course.subject_id}) {course.name}
+          </span>
         </div>
         <div className="flex items-center space-x-4">
           <span className="text-sm text-gray">
@@ -62,7 +64,7 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
               : `Comisión ${course.selectedCommission.toUpperCase()}`}
           </span>
           <button
-            onClick={() => onRemove(course.id)}
+            onClick={() => onRemove(course.subject_id)}
             className="text-gray hover:text-red-500"
           >
             <TrashIcon className="h-5 w-5" />

@@ -24,11 +24,11 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
             <div className="space-y-2">
               {yearData.subjects.map((course) => {
                 const isSelected = selectedCourses.some(
-                  (c) => c.id === course.id
+                  (c) => c.subject_id === course.subject_id
                 );
                 return (
                   <CourseCard
-                    key={course.id}
+                    key={course.subject_id}
                     course={course}
                     isSelected={isSelected}
                     onClick={() => onCourseClick(course)}

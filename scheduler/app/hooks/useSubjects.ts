@@ -1,23 +1,38 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import config from '@/app/config';
+import { denormalizePlanId } from '../utils/planUtils';
+
+interface Schedule {
+  day: string;
+  classroom: string;
+  building: string;
+  timeFrom: string;
+  timeTo: string;
+}
+
+interface Commission {
+  name: string;
+  schedule: Schedule[];
+}
 
 export interface Subject {
-  id: string;
+  subject_id: string;
   name: string;
-  code: string;
-  semester: number;
-  year: number;
   credits: number;
-  commissions: {
-    id: string;
-    name: string;
-    schedule?: string;
-  }[];
+  dependencies: string[];
+  credits_required: number | null;
+  commissions: Commission[];
+  year?: number;
+  semester?: number;
 }
 
 interface SubjectsResponse {
-  subjects: Subject[];
-  error?: string;
+  [category: string]: {
+    [year: string]: {
+      [semester: string]: Subject[];
+    };
+  };
 }
 
 export function useSubjects() {
@@ -27,23 +42,50 @@ export function useSubjects() {
   
   const { career } = useParams();
   const searchParams = useSearchParams();
-  const plan = searchParams.get('plan');
+  const normalizedPlan = searchParams.get('plan');
+  const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null;
 
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/subjects/${career}?plan=${plan}`);
+        const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.subjects}?plan=${plan}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          mode: 'cors',
+          credentials: 'omit'
+        });
+
         if (!response.ok) {
-          throw new Error('Failed to fetch subjects');
+          const errorText = await response.text();
+          throw new Error(`Failed to fetch subjects: ${response.status} ${errorText}`);
         }
+
         const data: SubjectsResponse = await response.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        setSubjects(data.subjects);
+        
+        // Flatten the nested structure into a single array of subjects
+        const flattenedSubjects: Subject[] = [];
+        Object.entries(data).forEach(([category, yearData]) => {
+          Object.entries(yearData).forEach(([year, semesterData]) => {
+            Object.entries(semesterData).forEach(([semester, subjects]) => {
+              subjects.forEach(subject => {
+                flattenedSubjects.push({
+                  ...subject,
+                  year: parseInt(year),
+                  semester: parseInt(semester)
+                });
+              });
+            });
+          });
+        });
+
+        setSubjects(flattenedSubjects);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Fetch error:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred while fetching subjects');
       } finally {
         setLoading(false);
       }

@@ -7,21 +7,40 @@ import { useParams, useRouter } from "next/navigation";
 
 interface Plan {
   id: string;
-  name: string;
 }
 
 const AVAILABLE_PLANS: { [key: string]: Plan[] } = {
-  'S': [
-    { id: "SREV-23", name: "Plan 2023" },
-    { id: "SREV-19", name: "Plan 2019" },
-    { id: "SREV-14", name: "Plan 2014" },
-  ]
+  'BIO': [{ id: "BIO 22" }, { id: "Bio-13" }],
+  'C': [{ id: "C23" }],
+  'E': [{ id: "E 11" }, { id: "E 11A" }],
+  'I': [{ id: "I22" }, { id: "I-13" }, { id: "I-13T" }],
+  'K': [{ id: "K22" }, { id: "K07-Rev.18" }, { id: "K07A-Rev.18" }],
+  'L': [{ id: "L09" }, { id: "L09-REV13" }, { id: "L09T" }],
+  'LAES': [{ id: "A17" }, { id: "A22" }],
+  'LN': [{ id: "L20" }],
+  'M': [{ id: "M22" }, { id: "M09-Rev18 (Marzo)" }, { id: "M09-Rev18 (Agosto)" }],
+  'N': [{ id: "N22" }, { id: "N18 Marzo" }, { id: "N18 Agosto" }],
+  'P': [{ id: "P22" }, { id: "P05-Rev.18" }, { id: "P-13" }, { id: "P05" }],
+  'Q': [{ id: "Q22" }, { id: "Q05-Rev18" }],
+  'S': [{ id: "S10-Rev23" }, { id: "S10-Rev18" }, { id: "S10A-Rev18" }],
 };
 
 // Career mapping object
 const CAREERS: { [key: string]: string } = {
-  "S": "Ingeniería Informática"
-  // Add more careers as needed
+  "BIO": "Bioingeniería",
+  "C": "Ingeniería Civil",
+  "E": "Ingeniería Electricista",
+  "I": "Ingeniería Industrial",
+  "K": "Ingeniería Electrónica",
+  "L": "Lic.en Administración y Sistemas",
+  "LAES": "Licenciatura en Analítica Empresarial y Social",
+  "LN": "Licenciatura en Negocios",
+  "M": "Ingeniería Mecánica",
+  "N": "Ingeniería Naval",
+  "P": "Ingeniería en Petróleo",
+  "Q": "Ingeniería Química",
+  "S": "Ingeniería en Informática",
+  "X": "Intercambio"
 };
 
 interface TopbarProps {
@@ -32,7 +51,7 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
   const params = useParams();
   const router = useRouter();
   const careerCode = params?.career as string || "S";
-  const careerName = CAREERS[careerCode] || "Carrera no encontrada";
+  const careerName = CAREERS[careerCode] || "";
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -71,7 +90,7 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center space-x-2 px-3 py-1 rounded-md hover:bg-secondaryBackground"
                 >
-                  <span className="font-medium">{currentPlanData?.name}</span>
+                  <span className="font-medium">{currentPlanData?.id}</span>
                   <ChevronDownIcon className="h-4 w-4 text-gray" />
                 </button>
 
@@ -89,7 +108,7 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
                               : "text-textDefault hover:bg-secondaryBackground"
                           }`}
                         >
-                          {plan.name}
+                          {plan.id}
                         </button>
                       ))}
                     </div>

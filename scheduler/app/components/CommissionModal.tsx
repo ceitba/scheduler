@@ -1,16 +1,37 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
+// Day translation mapping
+const DAY_TRANSLATIONS: Record<string, string> = {
+  'monday': 'Lun.',
+  'tuesday': 'Mar.',
+  'wednesday': 'Mie.',
+  'thursday': 'Jue.',
+  'friday': 'Vie.',
+  'saturday': 'Sab.',
+  'sunday': 'Dom.'
+};
+
+interface Schedule {
+  day: string;
+  classroom: string;
+  building: string;
+  timeFrom: string;
+  timeTo: string;
+}
+
+interface Commission {
+  name: string;
+  schedule: Schedule[];
+}
+
 interface CommissionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (commissionId: string) => void;
-  commission: {
-    id: string;
-    name: string;
-    schedule?: string;
-  }[];
+  commission: Commission[];
   courseName: string;
+  courseId: string;
 }
 
 const CommissionModal: React.FC<CommissionModalProps> = ({
@@ -19,8 +40,17 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
   onSelect,
   commission,
   courseName,
+  courseId,
 }) => {
   if (!isOpen) return null;
+
+  const formatSchedule = (schedule: Schedule) => {
+    const translatedDay = DAY_TRANSLATIONS[schedule.day.toLowerCase()] || schedule.day;
+    // Remove seconds from timestamps (assuming format like "HH:mm:ss")
+    const timeFrom = schedule.timeFrom.split(':').slice(0, 2).join(':');
+    const timeTo = schedule.timeTo.split(':').slice(0, 2).join(':');
+    return `${translatedDay} ${timeFrom}-${timeTo} (${schedule.building} ${schedule.classroom})`;
+  };
 
   return (
     <>
@@ -29,55 +59,60 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4 z-[101]">
-        <div className="bg-background rounded-xl p-6 w-full max-w-md relative">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 text-gray hover:text-red-500 transition-colors"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-
-          {/* Modal content */}
-          <h3 className="text-lg font-semibold text-textDefault mb-1">
-            Seleccionar Comisión
-          </h3>
-          <p className="text-sm text-gray mb-6">
-            {courseName}
-          </p>
-
-          <div className="space-y-2">
-            {/* Any commission option */}
+        <div className="bg-background rounded-xl w-full max-w-md relative flex flex-col max-h-[50vh]">
+          {/* Header - fixed */}
+          <div className="p-6 pb-0">
+            {/* Close button */}
             <button
-              onClick={() => onSelect('any')}
-              className="w-full p-3 text-left rounded-lg bg-secondaryBackground 
-                hover:bg-primary/10 hover:text-primary
-                transition-all duration-200 group"
+              onClick={onClose}
+              className="absolute right-4 top-4 text-gray hover:text-red-500 transition-colors"
             >
-              <span className="text-textDefault group-hover:text-primary transition-colors">
-                Cualquier comisión
-              </span>
+              <XMarkIcon className="h-5 w-5" />
             </button>
 
-            {/* Specific commissions */}
-            {commission.map((comm) => (
+            <h3 className="text-lg font-semibold text-textDefault mb-1">
+              Seleccionar Comisión
+            </h3>
+            <p className="text-sm text-gray mb-6">
+              ({courseId}) {courseName}
+            </p>
+          </div>
+
+          {/* Content - scrollable */}
+          <div className="p-6 pt-0 overflow-y-auto">
+            <div className="space-y-2">
+              {/* Any commission option */}
               <button
-                key={comm.id}
-                onClick={() => onSelect(comm.id)}
+                onClick={() => onSelect('any')}
                 className="w-full p-3 text-left rounded-lg bg-secondaryBackground 
                   hover:bg-primary/10 hover:text-primary
                   transition-all duration-200 group"
               >
                 <span className="text-textDefault group-hover:text-primary transition-colors">
-                  Comisión {comm.id.toUpperCase()}
+                  Cualquier comisión
                 </span>
-                {comm.schedule && (
-                  <span className="block text-sm text-gray group-hover:text-primary/70 transition-colors mt-1">
-                    {comm.schedule}
-                  </span>
-                )}
               </button>
-            ))}
+
+              {/* Specific commissions */}
+              {commission.map((comm) => (
+                <button
+                  key={comm.name}
+                  onClick={() => onSelect(comm.name)}
+                  className="w-full p-3 text-left rounded-lg bg-secondaryBackground 
+                    hover:bg-primary/10 hover:text-primary
+                    transition-all duration-200 group"
+                >
+                  <span className="text-textDefault group-hover:text-primary transition-colors">
+                    Comisión {comm.name.toUpperCase()}
+                  </span>
+                  {comm.schedule && comm.schedule.length > 0 && (
+                    <span className="block text-sm text-gray group-hover:text-primary/70 transition-colors mt-1">
+                      {comm.schedule.map(formatSchedule).join(', ')}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

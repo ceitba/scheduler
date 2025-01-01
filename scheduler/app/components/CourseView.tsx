@@ -25,12 +25,11 @@ const CourseView: React.FC<CourseViewProps> = ({
   onReorderCourses
 }) => {
   const { subjects, loading, error } = useSubjects();
-
   const subjectsByYear = subjects.reduce((acc, subject) => {
-    const year = subject.year;
+    const year = subject.year || 0;
     if (!acc[year]) {
       acc[year] = {
-        year: `${year}° Año`,
+        year: year === 0 ? 'ELECTIVAS' : `${year}° Año`,
         subjects: []
       };
     }
@@ -38,14 +37,33 @@ const CourseView: React.FC<CourseViewProps> = ({
     return acc;
   }, {} as Record<number, { year: string; subjects: Subject[] }>);
 
+  // Sort years to put ELECTIVAS at the bottom
+  const sortedSubjectsByYear = Object.entries(subjectsByYear)
+    .sort(([yearA], [yearB]) => {
+      const a = parseInt(yearA);
+      const b = parseInt(yearB);
+      if (a === 0) return 1;  // Always move ELECTIVAS to the end
+      if (b === 0) return -1; // Always keep ELECTIVAS at the end
+      return a - b;  // Sort years 1-5 numerically
+    })
+    .reduce((acc, [year, data]) => {
+      // For display purposes, make year 0 appear as if it's year 6
+      const displayYear = parseInt(year) === 0 ? 6 : parseInt(year);
+      acc[displayYear] = data;
+      return acc;
+    }, {} as Record<number, { year: string; subjects: Subject[] }>);
+
   const handleAddCourseClick = (course: Subject) => {
-    if (selectedCourses.some(c => c.id === course.id)) {
-      onRemoveCourse(course.id);
+    if (selectedCourses.some(c => c.subject_id === course.subject_id)) {
+      onRemoveCourse(course.subject_id);
       return;
     }
 
     if (course.commissions.length === 1) {
-      onAddCourse(course, course.commissions[0]);
+      onAddCourse(course, { 
+        id: course.commissions[0].name,
+        name: course.commissions[0].name 
+      });
       return;
     }
 
@@ -79,7 +97,7 @@ const CourseView: React.FC<CourseViewProps> = ({
           onReorder={onReorderCourses}
         />
         <AvailableCoursesList
-          courses={subjectsByYear}
+          courses={sortedSubjectsByYear}
           selectedCourses={selectedCourses}
           onCourseClick={handleAddCourseClick}
         />

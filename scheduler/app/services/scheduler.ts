@@ -9,22 +9,55 @@ import {
 } from "../types/scheduler";
 
 export class Scheduler {
-  private subjects: SchedulerSubject[];
-  private options: SchedulerOptions;
-  private blockedTimes: TimeBlock[];
+  private static instance: Scheduler;
+  private subjects: SchedulerSubject[] = [];
+  private options: SchedulerOptions = {
+    allowOverlap: false,
+    avoidBuildingChange: false,
+    allowFreeDay: true
+  };
+  private blockedTimes: TimeBlock[] = [];
   private possibleSchedules: PossibleSchedule[] = [];
 
-  constructor(
-    subjects: SchedulerSubject[],
-    options: SchedulerOptions,
-    blockedTimes: TimeBlock[] = []
-  ) {
+  private constructor() {}
+
+  public static getInstance(): Scheduler {
+    if (!Scheduler.instance) {
+      Scheduler.instance = new Scheduler();
+    }
+    return Scheduler.instance;
+  }
+
+  // State management methods
+  public setSubjects(subjects: SchedulerSubject[]): void {
     this.subjects = subjects;
+  }
+
+  public getSubjects(): SchedulerSubject[] {
+    return this.subjects;
+  }
+
+  public setOptions(options: SchedulerOptions): void {
     this.options = options;
+  }
+
+  public getOptions(): SchedulerOptions {
+    return this.options;
+  }
+
+  public setBlockedTimes(blockedTimes: TimeBlock[]): void {
     this.blockedTimes = blockedTimes;
   }
 
-  generateSchedules(): PossibleSchedule[] {
+  public getBlockedTimes(): TimeBlock[] {
+    return this.blockedTimes;
+  }
+
+  public getSchedules(): PossibleSchedule[] {
+    return this.possibleSchedules;
+  }
+
+  public generateSchedules(): PossibleSchedule[] {
     this.possibleSchedules = [];
     this.backtrack([], 0);
     return this.possibleSchedules;
@@ -50,9 +83,22 @@ export class Scheduler {
   }
 
   private getAvailableCommissions(subject: SchedulerSubject) {
-    return subject.selectedCommission === 'any' 
-      ? subject.commissions 
-      : subject.commissions.filter(c => c.name === subject.selectedCommission);
+    // If no commission is selected or explicitly set to 'any', return all commissions
+    if (!subject.selectedCommission || subject.selectedCommission === 'any') {
+      return subject.commissions;
+    }
+    
+    // Find the specific commission by name
+    const selectedCommission = subject.commissions.find(c => c.name === subject.selectedCommission);
+    
+    // If found, return only that commission, otherwise return all commissions as fallback
+    if (selectedCommission) {
+      console.log(`Using specific commission ${selectedCommission.name} for subject ${subject.name}`);
+      return [selectedCommission];
+    } else {
+      console.log(`Commission ${subject.selectedCommission} not found for subject ${subject.name}, using all commissions`);
+      return subject.commissions;
+    }
   }
 
   private createSlotsFromCommission(subject: SchedulerSubject, commission: Commission): ScheduleSlot[] {

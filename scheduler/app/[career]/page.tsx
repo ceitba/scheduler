@@ -7,8 +7,10 @@ import { SchedulerPreview } from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
 import CommissionModal from "../components/CommissionModal";
 import { Subject } from "../hooks/useSubjects";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils';
+import { Scheduler } from '../services/scheduler';
+import { PossibleSchedule, SchedulerOptions } from '../types/scheduler';
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -49,6 +51,17 @@ export default function CareerPage({ params }: PageProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
+  const [schedules, setSchedules] = useState<PossibleSchedule[]>([]);
+  const scheduler = Scheduler.getInstance();
+
+  // Initialize scheduler with state
+  useEffect(() => {
+    scheduler.setSubjects(selectedCourses);
+  }, [selectedCourses]);
+
+  useEffect(() => {
+    setSchedules(scheduler.getSchedules());
+  }, []);
 
   // Redirect to home if career code is invalid
   if (!VALID_CAREERS.includes(career as string)) {
@@ -68,17 +81,23 @@ export default function CareerPage({ params }: PageProps) {
     if (selectedCourseForModal) {
       const commission = commissionId === 'any'
         ? { name: 'any' }
-        : selectedCourseForModal.commissions.find(c => c.name === commissionId)
-          || selectedCourseForModal.commissions[0];
+        : selectedCourseForModal.commissions.find(c => c.name === commissionId);
 
-      setSelectedCourses(prev => [
-        ...prev,
+      if (!commission) {
+        console.error(`Commission ${commissionId} not found for course ${selectedCourseForModal.name}`);
+        return;
+      }
+
+      const updatedCourses = [
+        ...selectedCourses,
         {
           ...selectedCourseForModal,
           selectedCommission: commission.name,
           isPriority: false,
         },
-      ]);
+      ];
+      setSelectedCourses(updatedCourses);
+      scheduler.setSubjects(updatedCourses);
     }
     setModalOpen(false);
     setSelectedCourseForModal(null);
@@ -86,6 +105,29 @@ export default function CareerPage({ params }: PageProps) {
 
   const handleReorderCourses = (reorderedCourses: SelectedCourse[]) => {
     setSelectedCourses(reorderedCourses);
+    scheduler.setSubjects(reorderedCourses.map(course => ({
+      ...course,
+      selectedCommission: course.selectedCommission === 'any' ? 'any' : course.selectedCommission
+    })));
+  };
+
+  const handleGenerateSchedules = () => {
+    // Log scheduler state
+    console.log('Generating schedules with the following configuration:');
+    console.log('Selected Courses:', selectedCourses.map(course => ({
+      name: course.name,
+      selectedCommission: course.selectedCommission
+    })));
+    console.log('Scheduler Options:', scheduler.getOptions());
+    console.log('Blocked Times:', scheduler.getBlockedTimes());
+
+    const generatedSchedules = scheduler.generateSchedules();
+    console.log('Generated Schedules:', generatedSchedules);
+    setSchedules(generatedSchedules);
+  };
+
+  const handleOptionsChange = (options: SchedulerOptions) => {
+    scheduler.setOptions(options);
   };
 
   const tabs = [
@@ -98,28 +140,37 @@ export default function CareerPage({ params }: PageProps) {
           setModalOpen(true);
         }}
         onAddCourse={(course, commission) => {
-          setSelectedCourses(prev => [
-            ...prev,
+          const updatedCourses = [
+            ...selectedCourses,
             {
               ...course,
-              selectedCommission: commission.id,
+              selectedCommission: commission.name,
               isPriority: false,
             },
-          ]);
+          ];
+          setSelectedCourses(updatedCourses);
+          scheduler.setSubjects(updatedCourses);
+          setSchedules([]);
         }}
         onRemoveCourse={(courseId) => {
-          setSelectedCourses(prev => prev.filter(c => c.subject_id !== courseId));
+          const updatedCourses = selectedCourses.filter(c => c.subject_id !== courseId);
+          setSelectedCourses(updatedCourses);
+          scheduler.setSubjects(updatedCourses);
+          setSchedules([]);
         }}
         onReorderCourses={handleReorderCourses}
       />,
     },
     {
       label: "Opciones",
-      content: <SettingsView />,
+      content: <SettingsView 
+        options={scheduler.getOptions()}
+        onOptionsChange={handleOptionsChange}
+      />,
     },
     {
       label: "Calendario",
-      content: <SchedulerPreview />,
+      content: <SchedulerPreview schedules={schedules} onGenerateSchedules={handleGenerateSchedules} />,
     },
   ];
 

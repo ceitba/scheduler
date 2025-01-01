@@ -1,52 +1,58 @@
-import React, { useState } from "react";
-import WeeklyCalendar from "./WeeklyCalendar";
-import Checkbox from "./Checkbox";
+import React from "react";
+import { SchedulerOptions } from "../types/scheduler";
 
-interface ScheduleSettings {
-  allowTimeOverlap: boolean;
-  avoidLocationChanges: boolean;
-  haveFreeDay: boolean;
-  timeFormat: '12h' | '24h';
+interface SettingsViewProps {
+  options: SchedulerOptions;
+  onOptionsChange: (options: SchedulerOptions) => void;
 }
 
-const SettingsView: React.FC = () => {
-  const [settings, setSettings] = useState<ScheduleSettings>({
-    allowTimeOverlap: false,
-    avoidLocationChanges: false,
-    haveFreeDay: false,
-    timeFormat: '24h'
-  });
-  
+const SettingsView: React.FC<SettingsViewProps> = ({ options, onOptionsChange }) => {
   return (
-    <div className="bg-background rounded-lg p-4 space-y-3">
-      <h3 className="font-medium text-textDefault mb-3">Prioridades</h3>
-      
-      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
-        <Checkbox
-          id="allowOverlap"
-          checked={settings.allowTimeOverlap}
-          onChange={(checked) => setSettings(prev => ({ ...prev, allowTimeOverlap: checked }))}
-          label="Permitir superposición de horarios"
-        />
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Opciones de horario</h2>
+        
+        <div className="space-y-2">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={options.allowOverlap}
+              onChange={(e) => onOptionsChange({
+                ...options,
+                allowOverlap: e.target.checked
+              })}
+              className="rounded border-gray"
+            />
+            <span>Permitir superposición de horarios</span>
+          </label>
 
-        <Checkbox
-          id="avoidChanges"
-          checked={settings.avoidLocationChanges}
-          onChange={(checked) => setSettings(prev => ({ ...prev, avoidLocationChanges: checked }))}
-          label="Evitar cambios de sede en un mismo día"
-        />
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={options.avoidBuildingChange}
+              onChange={(e) => onOptionsChange({
+                ...options,
+                avoidBuildingChange: e.target.checked
+              })}
+              className="rounded border-gray"
+            />
+            <span>Evitar cambios de edificio en el mismo día</span>
+          </label>
 
-        <Checkbox
-          id="freeDay"
-          checked={settings.haveFreeDay}
-          onChange={(checked) => setSettings(prev => ({ ...prev, haveFreeDay: checked }))}
-          label="Tener un día libre"
-        />
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={options.allowFreeDay}
+              onChange={(e) => onOptionsChange({
+                ...options,
+                allowFreeDay: e.target.checked
+              })}
+              className="rounded border-gray"
+            />
+            <span>Permitir día libre</span>
+          </label>
+        </div>
       </div>
-
-      <WeeklyCalendar 
-        onChange={(blocks) => console.log('Blocked times:', blocks)} 
-      />
     </div>
   );
 };

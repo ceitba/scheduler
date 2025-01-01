@@ -46,12 +46,12 @@ export const SettingsView: React.FC = () => {
           label="Permitir superposición de horarios"
         />
 
-        <Checkbox
+        {/* <Checkbox
           id="avoidChanges"
           checked={settings.avoidLocationChanges}
           onChange={(checked) => setSettings(prev => ({ ...prev, avoidLocationChanges: checked }))}
           label="Evitar cambios de sede en un mismo día"
-        />
+        /> */}
 
         <Checkbox
           id="freeDay"

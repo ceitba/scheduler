@@ -8,7 +8,6 @@ const config: Config = {
   ],
   safelist: [
     { pattern: /bg-subject_color_\d/, variants: ["hover", "focus"] },
-    { pattern: /border-subject_border_\d/, variants: ["hover", "focus"] },
   ],
   theme: {
     extend: {
@@ -32,16 +31,6 @@ const config: Config = {
         subject_color_8: "var(--subject-color-8)",
         subject_color_9: "var(--subject-color-9)",
         subject_color_10: "var(--subject-color-10)",
-        subject_border_1: "var(--subject-border-1)",
-        subject_border_2: "var(--subject-border-2)",
-        subject_border_3: "var(--subject-border-3)",
-        subject_border_4: "var(--subject-border-4)",
-        subject_border_5: "var(--subject-border-5)",
-        subject_border_6: "var(--subject-border-6)",
-        subject_border_7: "var(--subject-border-7)",
-        subject_border_8: "var(--subject-border-8)",
-        subject_border_9: "var(--subject-border-9)",
-        subject_border_10: "var(--subject-border-10)",
 
       },
     },

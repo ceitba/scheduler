@@ -230,7 +230,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     return (
                       <div
                         key={`blocked-${block.day}-${block.timeFrom}-${index}`}
-                        className={`absolute w-full border-2 border-dashed border-gray rounded-md bg-surface
+                        className={`absolute w-full border-2 border-dashed border-secondary rounded-md bg-surface
                           ${!hasOverlap ? "bg-surface p-1" : ""}`}
                         style={{
                           top: `${top}px`,
@@ -271,7 +271,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             className={`absolute p-1 rounded-md ${
                               hasOverlap
                                 ? "opacity-70 bg-red-500/20 border-red-500/40"
-                                : `${getSubjectColor(slot.subject_id).bg} ${getSubjectColor(slot.subject_id).border}`
+                                : `${getSubjectColor(slot.subject_id).bg}`
                             }`}
                             style={{
                               top: `${top}px`,

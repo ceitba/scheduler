@@ -106,46 +106,54 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
-      <div className="flex flex-wrap gap-4 text-sm text-gray">
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              schedule.hasOverlap ? "bg-red-500" : "bg-green-500"
-            }`}
-          />
-          <span>
-            {schedule.hasOverlap ? "Tiene superposición" : "Sin superposición"}
-          </span>
+      <div className="flex flex-col gap-2 lg:flex-row lg:justify-between">
+        <div className="flex flex-wrap gap-2 text-sm text-gray items-center">
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasOverlap ? "bg-red-500" : "bg-green-500"
+              }`}
+            />
+            <span>
+              {schedule.hasOverlap
+                ? "Tiene superposición"
+                : "Sin superposición"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasBuildingConflict ? "bg-red-500" : "bg-green-500"
+              }`}
+            />
+            <span>
+              {schedule.hasBuildingConflict
+                ? "Conflicto de edificios"
+                : "Sin conflicto de edificios"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasFreeDay ? "bg-green-500" : "bg-gray-500"
+              }`}
+            />
+            <span>
+              {schedule.hasFreeDay ? "Tiene día libre" : "Sin día libre"}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              schedule.hasBuildingConflict ? "bg-red-500" : "bg-green-500"
-            }`}
-          />
-          <span>
-            {schedule.hasBuildingConflict
-              ? "Conflicto de edificios"
-              : "Sin conflicto de edificios"}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              schedule.hasFreeDay ? "bg-green-500" : "bg-gray-500"
-            }`}
-          />
-          <span>
-            {schedule.hasFreeDay ? "Tiene día libre" : "Sin día libre"}
-          </span>
-        </div>
+        <div className="flex items-center gap-2 text-xs text-gray">
+            <div className="w-5 h-5 border-2 border-dashed border-gray rounded-md bg-surface"></div>
+            <span>Horario bloqueado</span>
+          </div>
       </div>
     );
   };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="bg-background rounded-lg shadow-sm">
+      <div className="bg-background rounded-lg">
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end px-4">
           <Checkbox
             id="allowOverlap"
@@ -222,13 +230,13 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
               <div className="text-center text-gray mb-4">
                 <CalendarDaysIcon className="h-8 w-8 mx-auto mb-2" />
-                <p className="mb-2">
+                <div className="mb-2 text-sm">
                   {!hasSubjects
                     ? "No hay materias seleccionadas"
                     : !hasAttemptedGeneration
                     ? "Clic para generar posibles combinaciones"
                     : "No hay combinaciones posibles. Intenta una nueva combinación"}
-                </p>
+                </div>
               </div>
 
               {hasSubjects && !hasAttemptedGeneration && (

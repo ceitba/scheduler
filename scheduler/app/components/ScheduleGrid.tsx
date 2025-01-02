@@ -201,8 +201,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     style={{ top: ((timeToMinutes(time) - 8 * 60) / 60) * 48 }}
                   />
                 ))}
-                 {/* Blocked time slots */}
-                 {blockedSlots
+                {/* Blocked time slots */}
+                {blockedSlots
                   .filter((slot) => slot.day === day)
                   .map((block, index) => {
                     const blockStart = timeToMinutes(block.timeFrom);
@@ -298,6 +298,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
           })}
         </div>
       </div>
+      
     </div>
   );
 };

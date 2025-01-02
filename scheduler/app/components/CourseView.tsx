@@ -108,13 +108,14 @@ const CourseView: React.FC<CourseViewProps> = ({
   }
 
   return (
-    <div className="mx-0 relative overflow-hidden">
+    <div className="max-w-7xl mx-auto">
       <SearchBox 
         subjects={subjects}
         onSelectSubject={handleSubjectSelect}
       />
       
-      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden h-min">
+      {/* <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden h-min"> */}
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SelectedCoursesList 
           courses={selectedCourses}
           onRemove={onRemoveCourse}

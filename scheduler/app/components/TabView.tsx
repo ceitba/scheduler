@@ -11,7 +11,7 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       {/* Tab Navigation */}
       <div className="flex w-full bg-secondaryBackground p-1.5 rounded-xl relative">
         {/* Sliding Background */}
@@ -45,11 +45,12 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
 
       {/* Tab Content */}
       <div className="mt-6">
+        <div className='relative h-full'>
         {tabs.map((tab, index) => (
           <div
             key={index}
             className={`
-              transform transition-all duration-200 ease-out
+              transform transition-all duration-200 ease-out absolute w-full
               ${activeTab === index 
                 ? 'opacity-100 translate-y-0' 
                 : 'opacity-0 translate-y-2 absolute pointer-events-none'
@@ -59,6 +60,8 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
             {tab.content}
           </div>
         ))}
+        </div>
+        
       </div>
     </div>
   );

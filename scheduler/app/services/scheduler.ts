@@ -118,7 +118,7 @@ export class Scheduler {
     if (this.options.allowOverlap) return true;
 
     // Check overlap with existing schedule slots
-    const noScheduleOverlap = newSlots.every(newSlot => 
+    return newSlots.every(newSlot => 
       schedule.every(existingSlot => {
         if (existingSlot.day !== newSlot.day) return true;
 
@@ -132,20 +132,22 @@ export class Scheduler {
     );
 
     // Check overlap with blocked times
-    const noBlockedOverlap = newSlots.every(newSlot =>
-      this.blockedTimes.every(blockedTime => {
-        if (blockedTime.day !== newSlot.day) return true;
+    // const noBlockedOverlap = newSlots.every(newSlot =>
+    //   this.blockedTimes.every(blockedTime => {
+    //     if (blockedTime.day !== newSlot.day) return true;
 
-        const newStart = this.timeToMinutes(newSlot.timeFrom);
-        const newEnd = this.timeToMinutes(newSlot.timeTo);
-        const blockedStart = this.timeToMinutes(blockedTime.from);
-        const blockedEnd = this.timeToMinutes(blockedTime.to);
+    //     const newStart = this.timeToMinutes(newSlot.timeFrom);
+    //     const newEnd = this.timeToMinutes(newSlot.timeTo);
+    //     const blockedStart = this.timeToMinutes(blockedTime.from);
+    //     const blockedEnd = this.timeToMinutes(blockedTime.to);
 
-        return newEnd <= blockedStart || newStart >= blockedEnd;
-      })
-    );
+    //     return newEnd <= blockedStart || newStart >= blockedEnd;
+    //   })
+    // );
 
-    return noScheduleOverlap && noBlockedOverlap;
+    // return noScheduleOverlap && noBlockedOverlap;
+    // return noScheduleOverlap;
+
   }
 
   private timeToMinutes(time: string): number {
@@ -154,7 +156,7 @@ export class Scheduler {
   }
 
   private isValidSchedule(schedule: ScheduleSlot[]): boolean {
-    if (!this.checkBlockedTimes(schedule)) return false;
+    // if (!this.checkBlockedTimes(schedule)) return false;
     if (this.options.avoidBuildingChange && !this.checkBuildingChanges(schedule)) return false;
     if (this.options.allowFreeDay && !this.hasFreeDayOption(schedule)) return false;
     return true;

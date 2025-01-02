@@ -1,6 +1,6 @@
-import React from 'react';
-import { ScheduleSlot, TimeBlock } from '../types/scheduler';
-import { Scheduler } from '../services/scheduler';
+import React from "react";
+import { ScheduleSlot, TimeBlock } from "../types/scheduler";
+import { Scheduler } from "../services/scheduler";
 
 interface ScheduleGridProps {
   slots: ScheduleSlot[];
@@ -10,7 +10,7 @@ interface GroupedSlot {
   subject: string;
   subject_id: string;
   commission: string;
-  rooms: Array<{ classroom: string; building: string; }>;
+  rooms: Array<{ classroom: string; building: string }>;
   timeFrom: string;
   timeTo: string;
 }
@@ -20,14 +20,14 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   const blockedTimes = scheduler.getBlockedTimes();
   const timeSlots = Array.from({ length: 14 }, (_, i) => {
     const hour = i + 8;
-    return `${hour.toString().padStart(2, '0')}:00`;
+    return `${hour.toString().padStart(2, "0")}:00`;
   });
 
-  const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
-  const dayNames = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'];
+  const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
+  const dayNames = ["Lun", "Mar", "Mie", "Jue", "Vie"];
 
   const timeToMinutes = (time: string): number => {
-    const [hours, minutes] = time.split(':').map(Number);
+    const [hours, minutes] = time.split(":").map(Number);
     return hours * 60 + (minutes || 0);
   };
 
@@ -51,9 +51,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
 
     const key = `${slot.subject_id}-${slot.commission}-${slot.timeFrom}`;
     const existingSlot = acc[slot.day].get(key);
-    
+
     if (existingSlot) {
-      existingSlot.rooms.push({ classroom: slot.classroom, building: slot.building });
+      existingSlot.rooms.push({
+        classroom: slot.classroom,
+        building: slot.building,
+      });
     } else {
       acc[slot.day].set(key, {
         subject: slot.subject,
@@ -61,30 +64,32 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
         commission: slot.commission,
         timeFrom: slot.timeFrom,
         timeTo: slot.timeTo,
-        rooms: [{ classroom: slot.classroom, building: slot.building }]
+        rooms: [{ classroom: slot.classroom, building: slot.building }],
       });
     }
-    
+
     return acc;
   }, {} as Record<string, Map<string, GroupedSlot>>);
 
   // Convert blocked times to slot format for visualization
-  const blockedSlots = blockedTimes.map(block => ({
+  const blockedSlots = blockedTimes.map((block) => ({
     timeFrom: block.from,
     timeTo: block.to,
     day: block.day,
-    isBlocked: true
+    isBlocked: true,
   }));
 
   const getSlotsForDay = (day: string): GroupedSlot[] => {
     return Array.from(slotsByDay[day]?.values() || []);
   };
 
-  const formatRooms = (rooms: Array<{ classroom: string; building: string; }>) => {
+  const formatRooms = (
+    rooms: Array<{ classroom: string; building: string }>
+  ) => {
     if (rooms.length === 1) {
       return `${rooms[0].classroom} (${rooms[0].building})`;
     }
-    return rooms.map(r => r.classroom).join(', ');
+    return rooms.map((r) => r.classroom).join(", ");
   };
 
   return (
@@ -110,7 +115,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
           {/* Time labels */}
           <div className="relative">
             {timeSlots.map((time) => (
-              <div key={time} className="h-12 flex items-start justify-center text-xs text-gray pt-2">
+              <div
+                key={time}
+                className="h-12 flex items-start justify-center text-xs text-gray pt-2"
+              >
                 {time}
               </div>
             ))}
@@ -120,43 +128,61 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
           {days.map((day) => {
             const daySlots = getSlotsForDay(day);
             const overlappingGroups = new Map<string, GroupedSlot[]>();
-            
+
             // Group overlapping slots
-            daySlots.forEach(slot => {
+            daySlots.forEach((slot) => {
               const slotStart = timeToMinutes(slot.timeFrom);
               const slotEnd = timeToMinutes(slot.timeTo);
-              
+
               let foundGroup = false;
               for (const [timeKey, group] of overlappingGroups.entries()) {
-                const [groupStart, groupEnd] = timeKey.split('-').map(Number);
+                const [groupStart, groupEnd] = timeKey.split("-").map(Number);
                 if (slotStart < groupEnd && slotEnd > groupStart) {
                   group.push(slot);
                   foundGroup = true;
                   break;
                 }
               }
-              
+
               if (!foundGroup) {
                 overlappingGroups.set(`${slotStart}-${slotEnd}`, [slot]);
               }
             });
 
             return (
-              <div key={day} className="relative h-[672px]"> {/* 14 hours * 48px */}
+              <div key={day} className="relative h-[672px]">
+                {" "}
+                {/* 14 hours * 48px */}
                 {/* Background grid lines */}
                 {timeSlots.map((time) => (
                   <div
                     key={time}
                     className="absolute w-full h-12 bg-secondaryBackground"
-                    style={{ top: (timeToMinutes(time) - 8 * 60) / 60 * 48 }}
+                    style={{ top: ((timeToMinutes(time) - 8 * 60) / 60) * 48 }}
                   />
                 ))}
-
                 {/* Blocked time slots */}
                 {blockedSlots
-                  .filter(block => block.day === day)
+                  .filter((block) => {
+                    if (block.day !== day) return false;
+
+                    // Check if any course slot overlaps this block
+                    const hasOverlap = daySlots.some((slot) => {
+                      const blockStart = timeToMinutes(block.timeFrom);
+                      const blockEnd = timeToMinutes(block.timeTo);
+                      const slotStart = timeToMinutes(slot.timeFrom);
+                      const slotEnd = timeToMinutes(slot.timeTo);
+
+                      return slotStart < blockEnd && slotEnd > blockStart;
+                    });
+
+                    return !hasOverlap;
+                  })
                   .map((block, index) => {
-                    const { top, height } = calculateSlotPosition(block.timeFrom, block.timeTo);
+                    const { top, height } = calculateSlotPosition(
+                      block.timeFrom,
+                      block.timeTo
+                    );
                     return (
                       <div
                         key={`blocked-${block.day}-${block.timeFrom}-${index}`}
@@ -164,55 +190,71 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                         style={{
                           top: `${top}px`,
                           height: `${height}px`,
-                          zIndex: 1
+                          zIndex: 1,
                         }}
                       >
                         <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
                           <div>Horario bloqueado</div>
-                          <div>{block.timeFrom} - {block.timeTo}</div>
+                          <div>
+                            {block.timeFrom} - {block.timeTo}
+                          </div>
                         </div>
                       </div>
                     );
                   })}
-
                 {/* Course slots */}
-                {Array.from(overlappingGroups.values()).map((group, groupIndex) => (
-                  <React.Fragment key={groupIndex}>
-                    {group.map((slot, slotIndex) => {
-                      const { top, height } = calculateSlotPosition(slot.timeFrom, slot.timeTo);
-                      const hasOverlap = group.length > 1;
-                      const width = hasOverlap ? `${100 / group.length}%` : '100%';
-                      const left = hasOverlap ? `${(slotIndex * 100) / group.length}%` : '0';
+                {Array.from(overlappingGroups.values()).map(
+                  (group, groupIndex) => (
+                    <React.Fragment key={groupIndex}>
+                      {group.map((slot, slotIndex) => {
+                        const { top, height } = calculateSlotPosition(
+                          slot.timeFrom,
+                          slot.timeTo
+                        );
+                        const hasOverlap = group.length > 1;
+                        const width = hasOverlap
+                          ? `${100 / group.length}%`
+                          : "100%";
+                        const left = hasOverlap
+                          ? `${(slotIndex * 100) / group.length}%`
+                          : "0";
 
-                      return (
-                        <div
-                          key={`${slot.subject_id}-${slot.commission}-${slot.timeFrom}`}
-                          className={`absolute p-1 rounded-md ${
-                            hasOverlap
-                              ? 'opacity-70 bg-red-500/20'
-                              : 'bg-primary/10 border border-primary'
-                          }`}
-                          style={{
-                            top: `${top}px`,
-                            height: `${height}px`,
-                            width,
-                            left,
-                            zIndex: 2
-                          }}
-                        >
-                          <div className="h-full flex flex-col justify-between text-[10px] leading-tight">
-                            <div className="font-medium truncate">{slot.subject}</div>
-                            <div className="text-gray truncate">
-                              <div>Com. {slot.commission}</div>
-                              <div className="truncate">{formatRooms(slot.rooms)}</div>
-                              <div className="truncate">{slot.timeFrom} - {slot.timeTo}</div>
+                        return (
+                          <div
+                            key={`${slot.subject_id}-${slot.commission}-${slot.timeFrom}`}
+                            className={`absolute p-1 rounded-md ${
+                              hasOverlap
+                                ? "opacity-70 bg-red-500/20"
+                                : "bg-primary/10 border border-primary"
+                            }`}
+                            style={{
+                              top: `${top}px`,
+                              height: `${height}px`,
+                              width,
+                              left,
+                              zIndex: 2,
+                            }}
+                          >
+                            <div className="h-full flex flex-col justify-between text-[10px] leading-tight">
+                              <div className="font-medium truncate">
+                                {slot.subject}
+                              </div>
+                              <div className="text-gray truncate">
+                                <div>Com. {slot.commission}</div>
+                                <div className="truncate">
+                                  {formatRooms(slot.rooms)}
+                                </div>
+                                <div className="truncate">
+                                  {slot.timeFrom} - {slot.timeTo}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </React.Fragment>
-                ))}
+                        );
+                      })}
+                    </React.Fragment>
+                  )
+                )}
               </div>
             );
           })}
@@ -222,4 +264,4 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   );
 };
 
-export default ScheduleGrid; 
+export default ScheduleGrid;

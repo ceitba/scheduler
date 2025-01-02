@@ -1,4 +1,8 @@
-import { Bars3Icon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BookOpenIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import TooltipHeader from "./Tooltip";
 import { type Subject } from "../hooks/useSubjects";
 import {
@@ -29,14 +33,14 @@ interface SortableItemProps {
 }
 
 const dayNames: Record<string, string> = {
-  "MONDAY": "Lun",
-  "TUESDAY": "Mar", 
-  "WEDNESDAY": "Mie",
-  "THURSDAY": "Jue",
-  "FRIDAY": "Vie",
-  "SATURDAY": "Sab",
-  "SUNDAY": "Dom",
- };
+  MONDAY: "Lun",
+  TUESDAY: "Mar",
+  WEDNESDAY: "Mie",
+  THURSDAY: "Jue",
+  FRIDAY: "Vie",
+  SATURDAY: "Sab",
+  SUNDAY: "Dom",
+};
 
 const SortableItem = ({ course, onRemove }: SortableItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -47,29 +51,33 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
     transition,
   };
 
-  const groupedSchedule = (course.commissions
-    .find((c) => c.name === course.selectedCommission)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ?.schedule.reduce((acc: { [key: string]: any }, schedule) => {
-      const key = `${schedule.day}-${schedule.timeFrom}-${schedule.timeTo}`;
-      if (!acc[key]) {
-        acc[key] = {
-          day: schedule.day,
-          timeFrom: schedule.timeFrom,
-          timeTo: schedule.timeTo,
-          classrooms: [schedule.classroom]
-        };
-      } else {
-        acc[key].classrooms.push(schedule.classroom);
-      }
-      return acc;
-    }, {}) ?? {});
-  
-  {Object.values(groupedSchedule).map((schedule, i) => (
-    <div key={i} className="text-xs text-gray">
-      {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} - {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(', ')}
-    </div>
-  ))}
+  const groupedSchedule =
+    course.commissions
+      .find((c) => c.name === course.selectedCommission)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ?.schedule.reduce((acc: { [key: string]: any }, schedule) => {
+        const key = `${schedule.day}-${schedule.timeFrom}-${schedule.timeTo}`;
+        if (!acc[key]) {
+          acc[key] = {
+            day: schedule.day,
+            timeFrom: schedule.timeFrom,
+            timeTo: schedule.timeTo,
+            classrooms: [schedule.classroom],
+          };
+        } else {
+          acc[key].classrooms.push(schedule.classroom);
+        }
+        return acc;
+      }, {}) ?? {};
+
+  {
+    Object.values(groupedSchedule).map((schedule, i) => (
+      <div key={i} className="text-xs text-gray">
+        {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} -{" "}
+        {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(", ")}
+      </div>
+    ));
+  }
 
   return (
     <div
@@ -90,11 +98,12 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
             <span className="text-textDefault">
               ({course.subject_id}) {course.name}
             </span>
-              {Object.values(groupedSchedule).map((schedule, i) => (
-            <div key={i} className="text-xs text-gray">
-              {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} - {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(', ')}
-            </div>
-          ))}
+            {Object.values(groupedSchedule).map((schedule, i) => (
+              <div key={i} className="text-xs text-gray">
+                {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} -{" "}
+                {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(", ")}
+              </div>
+            ))}
           </div>
         </div>
         <div className="flex items-center space-x-4">
@@ -162,6 +171,11 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
           </div>
         )}
       </div>
+      {courses.length === 0 && (
+          <div className="text-sm text-gray text-center">
+            No hay cursos seleccionados
+          </div>
+      )}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

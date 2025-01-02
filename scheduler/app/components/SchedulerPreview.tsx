@@ -230,13 +230,13 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
               <div className="text-center text-gray mb-4">
                 <CalendarDaysIcon className="h-8 w-8 mx-auto mb-2" />
-                <p className="mb-2">
+                <div className="mb-2 text-sm">
                   {!hasSubjects
                     ? "No hay materias seleccionadas"
                     : !hasAttemptedGeneration
                     ? "Clic para generar posibles combinaciones"
                     : "No hay combinaciones posibles. Intenta una nueva combinación"}
-                </p>
+                </div>
               </div>
 
               {hasSubjects && !hasAttemptedGeneration && (

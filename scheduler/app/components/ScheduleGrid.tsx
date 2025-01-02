@@ -6,6 +6,14 @@ interface ScheduleGridProps {
   slots: ScheduleSlot[];
 }
 
+interface TimeSegment {
+  from: string;
+  to: string;
+  hasContent: boolean;
+  showBottomBorder?: boolean;
+  showTopBorder?: boolean;
+}
+
 interface GroupedSlot {
   subject: string;
   subject_id: string;
@@ -15,18 +23,67 @@ interface GroupedSlot {
   timeTo: string;
 }
 
-interface BlockedGroupSlot {
-  timeFrom: string;
-  timeTo: string;
-}
-
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   const scheduler = Scheduler.getInstance();
   const blockedTimes = scheduler.getBlockedTimes();
+
   const timeSlots = Array.from({ length: 14 }, (_, i) => {
     const hour = i + 8;
     return `${hour.toString().padStart(2, "0")}:00`;
   });
+
+  const splitBlockedTime = (
+    blockStart: string,
+    blockEnd: string,
+    overlappingSlots: GroupedSlot[]
+  ): TimeSegment[] => {
+    const segments: TimeSegment[] = [];
+    let currentTime = blockStart;
+
+    // Sort overlapping slots by start time
+    const sortedSlots = [...overlappingSlots].sort(
+      (a, b) => timeToMinutes(a.timeFrom) - timeToMinutes(b.timeFrom)
+    );
+
+    sortedSlots.forEach((slot) => {
+      // If there's a gap before the slot, add it as a segment with content
+      if (timeToMinutes(currentTime) < timeToMinutes(slot.timeFrom)) {
+        segments.push({
+          from: currentTime,
+          to: slot.timeFrom,
+          hasContent: true,
+          showBottomBorder: false,
+          showTopBorder: false,
+        });
+      }
+
+      // Add the overlapping segment without content
+      if (timeToMinutes(currentTime) < timeToMinutes(slot.timeTo)) {
+        segments.push({
+          from:
+            timeToMinutes(currentTime) < timeToMinutes(slot.timeFrom)
+              ? slot.timeFrom
+              : currentTime,
+          to: slot.timeTo,
+          hasContent: false,
+          showBottomBorder: false,
+        });
+        currentTime = slot.timeTo;
+      }
+    });
+
+    // Add remaining time as a segment with content
+    if (timeToMinutes(currentTime) < timeToMinutes(blockEnd)) {
+      segments.push({
+        from: currentTime,
+        to: blockEnd,
+        hasContent: true,
+        showBottomBorder: true,
+      });
+    }
+
+    return segments;
+  };
 
   const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
   const dayNames = ["Lun", "Mar", "Mie", "Jue", "Vie"];
@@ -217,8 +274,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                   />
                 ))}
                 {/* Blocked time slots */}
+                {/* Blocked time slots */}
                 {blockedSlots
-                  .filter((block) => block.day === day) // Only filter by day, not by overlap
+                  .filter((slot) => slot.day === day)
                   .map((block, index) => {
                     const blockStart = timeToMinutes(block.timeFrom);
                     const blockEnd = timeToMinutes(block.timeTo);
@@ -235,87 +293,91 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                           timeToMinutes(a.timeFrom) - timeToMinutes(b.timeFrom)
                       );
 
-                    // If no overlap, show the full block
-                    if (overlappingSlots.length === 0) {
-                      const { top, height } = calculateSlotPosition(
-                        block.timeFrom,
-                        block.timeTo
-                      );
-                      return (
-                        <div
-                          key={`blocked-${block.day}-${block.timeFrom}-${index}`}
-                          className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
-                          style={{
-                            top: `${top}px`,
-                            height: `${height}px`,
-                            zIndex: 1,
-                          }}
-                        >
-                          <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
-                            <div className="truncate">
-                              {block.timeFrom} - {block.timeTo}
-                            </div>
+                    const { top, height } = calculateSlotPosition(
+                      block.timeFrom,
+                      block.timeTo
+                    );
+
+                    return overlappingSlots.length === 0 ? (
+                      // If no overlap, render the full block
+                      <div
+                        key={`blocked-${block.day}-${block.timeFrom}-${index}`}
+                        className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
+                        style={{
+                          top: `${top}px`,
+                          height: `${height}px`,
+                          zIndex: 1,
+                        }}
+                      >
+                        <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                          <div className="truncate">
+                            {block.timeFrom} - {block.timeTo}
                           </div>
                         </div>
-                      );
-                    }
-
-                    // If there is overlap, split the block and show parts before and after
-                    return overlappingSlots.map((slot, slotIndex) => {
-                      const parts = [];
-
-                      // Part before the class if exists
-                      if (blockStart < timeToMinutes(slot.timeFrom)) {
+                      </div>
+                    ) : (
+                      // If there are overlaps, split into segments
+                      // splitBlockedTime(block.timeFrom, block.timeTo, overlappingSlots).map((segment, segIndex) => {
+                      //   const { top, height } = calculateSlotPosition(segment.from, segment.to);
+                      //   return (
+                      //     <div
+                      //       key={`blocked-segment-${block.day}-${segIndex}`}
+                      //       className={`absolute w-full ${
+                      //         segment.hasContent
+                      //           ? "border-2 border-dashed border-gray bg-surface p-1 rounded-md"
+                      //           : "border-x-2 border-dashed border-gray"
+                      //       }`}
+                      //       style={{
+                      //         top: `${top}px`,
+                      //         height: `${height}px`,
+                      //         zIndex: 1,
+                      //       }}
+                      //     >
+                      //       {segment.hasContent && (
+                      //         <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                      //           <div className="truncate">
+                      //             {block.timeFrom} - {block.timeTo}
+                      //           </div>
+                      //         </div>
+                      //       )}
+                      //     </div>
+                      //   );
+                      // })
+                      splitBlockedTime(
+                        block.timeFrom,
+                        block.timeTo,
+                        overlappingSlots
+                      ).map((segment, segIndex, segments) => {
                         const { top, height } = calculateSlotPosition(
-                          block.timeFrom,
-                          slot.timeFrom
+                          segment.from,
+                          segment.to
                         );
-                        parts.push(
+                        return (
                           <div
-                            key={`blocked-before-${block.day}-${block.timeFrom}-${slotIndex}`}
-                            className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
+                            key={`blocked-segment-${block.day}-${segIndex}`}
+                            className={`absolute w-full border-x-2 border-dashed border-gray
+              ${segment.hasContent ? "bg-surface p-1" : ""} 
+              ${segIndex === 0 ? "border-t-2" : ""}
+              ${segIndex === segments.length - 1 ? "border-b-2" : ""}
+              ${segIndex === 0 ? "rounded-t-md" : ""}
+              ${segIndex === segments.length - 1 ? "rounded-b-md" : ""}`}
                             style={{
                               top: `${top}px`,
                               height: `${height}px`,
                               zIndex: 1,
                             }}
                           >
-                            <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
-                              <div className="truncate">
-                                {block.timeFrom} - {slot.timeFrom}
+                            {segment.hasContent && (
+                              <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                                <div className="truncate">
+                                  {block.timeFrom} - {block.timeTo}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         );
-                      }
-
-                      // Part after the class if exists
-                      if (blockEnd > timeToMinutes(slot.timeTo)) {
-                        const { top, height } = calculateSlotPosition(
-                          slot.timeTo,
-                          block.timeTo
-                        );
-                        parts.push(
-                          <div
-                            key={`blocked-after-${block.day}-${block.timeFrom}-${slotIndex}`}
-                            className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
-                            style={{
-                              top: `${top}px`,
-                              height: `${height}px`,
-                              zIndex: 1,
-                            }}
-                          >
-                            <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
-                              <div className="truncate">
-                                {slot.timeTo} - {block.timeTo}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      return parts;
-                    });
+                      })
+                    );
                   })}
                 {/* Course slots */}
                 {Array.from(overlappingGroups.values()).map(

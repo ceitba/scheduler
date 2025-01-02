@@ -245,7 +245,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                                   {formatRooms(slot.rooms)}
                                 </div>
                                 <div className="truncate">
-                                  {slot.timeFrom} - {slot.timeTo}
+                                  {slot.timeFrom.slice(0,5)} - {slot.timeTo.slice(0,5)}
                                 </div>
                               </div>
                             </div>

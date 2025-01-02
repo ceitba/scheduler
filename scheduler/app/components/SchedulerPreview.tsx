@@ -106,46 +106,54 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
-      <div className="flex flex-wrap gap-4 text-sm text-gray">
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              schedule.hasOverlap ? "bg-red-500" : "bg-green-500"
-            }`}
-          />
-          <span>
-            {schedule.hasOverlap ? "Tiene superposición" : "Sin superposición"}
-          </span>
+      <div className="flex flex-row justify-between items-center">
+        <div className="flex flex-wrap gap-4 text-sm text-gray">
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasOverlap ? "bg-red-500" : "bg-green-500"
+              }`}
+            />
+            <span>
+              {schedule.hasOverlap
+                ? "Tiene superposición"
+                : "Sin superposición"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasBuildingConflict ? "bg-red-500" : "bg-green-500"
+              }`}
+            />
+            <span>
+              {schedule.hasBuildingConflict
+                ? "Conflicto de edificios"
+                : "Sin conflicto de edificios"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasFreeDay ? "bg-green-500" : "bg-gray-500"
+              }`}
+            />
+            <span>
+              {schedule.hasFreeDay ? "Tiene día libre" : "Sin día libre"}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              schedule.hasBuildingConflict ? "bg-red-500" : "bg-green-500"
-            }`}
-          />
-          <span>
-            {schedule.hasBuildingConflict
-              ? "Conflicto de edificios"
-              : "Sin conflicto de edificios"}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              schedule.hasFreeDay ? "bg-green-500" : "bg-gray-500"
-            }`}
-          />
-          <span>
-            {schedule.hasFreeDay ? "Tiene día libre" : "Sin día libre"}
-          </span>
-        </div>
+        <div className="mt-4 flex items-center gap-2 text-xs text-gray">
+            <div className="w-6 h-6 border-2 border-dashed border-gray rounded-md bg-surface"></div>
+            <span>Horario bloqueado</span>
+          </div>
       </div>
     );
   };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="bg-background rounded-lg shadow-sm">
+      <div className="bg-background rounded-lg">
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end px-4">
           <Checkbox
             id="allowOverlap"

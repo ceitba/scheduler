@@ -54,7 +54,7 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   return (
-    <div className="bg-secondaryBackground/30 rounded-xl max-h-[calc(80vh-12rem)] flex flex-col">
+    <div className="bg-secondaryBackground/30 rounded-xl flex flex-col">
       <h2 className="text-lg font-semibold text-textDefault p-4 pb-2">
         Cursos disponibles
       </h2>

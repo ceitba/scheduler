@@ -116,11 +116,13 @@ const CourseView: React.FC<CourseViewProps> = ({
       
       {/* <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden h-min"> */}
       <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="lg:sticky top-4 h-max">
         <SelectedCoursesList 
           courses={selectedCourses}
           onRemove={onRemoveCourse}
           onReorder={onReorderCourses}
         />
+        </div>
         <AvailableCoursesList
           courses={sortedSubjectsByYear}
           selectedCourses={selectedCourses}

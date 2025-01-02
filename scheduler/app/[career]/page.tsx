@@ -175,6 +175,7 @@ export default function CareerPage({ params }: PageProps) {
           hasSubjects={selectedCourses.length > 0}
         />
       ),
+      onClick: handleGenerateSchedules
     },
   ];
 

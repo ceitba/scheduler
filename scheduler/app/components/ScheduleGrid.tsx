@@ -132,6 +132,15 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
     return rooms.map((r) => r.classroom).join(", ");
   };
 
+  const getSubjectColor = (subjectId: string) => {
+    const index = (Math.round(parseFloat(subjectId) * 100) % 10) + 1;
+    console.log(index);
+    return {
+      bg: `bg-subject_color_${index}`,
+      border: `border-subject_border_${index}`,
+    };
+};
+
   return (
     <div className="w-full">
       <div className="w-full">
@@ -229,13 +238,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                           zIndex: 1,
                         }}
                       >
-                        {!hasOverlap && (
+                        {/* {!hasOverlap && (
                           <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
                             <div className="truncate">
                               {block.timeFrom} - {block.timeTo}
                             </div>
                           </div>
-                        )}
+                        )} */}
                       </div>
                     );
                   })}
@@ -261,8 +270,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             key={`${slot.subject_id}-${slot.commission}-${slot.timeFrom}`}
                             className={`absolute p-1 rounded-md ${
                               hasOverlap
-                                ? "opacity-70 bg-red-500/20"
-                                : "bg-blue-500/10 border border-primary"
+                                ? "opacity-70 bg-red-500/20 border-red-500/40"
+                                : `${getSubjectColor(slot.subject_id).bg} ${getSubjectColor(slot.subject_id).border}`
                             }`}
                             style={{
                               top: `${top}px`,

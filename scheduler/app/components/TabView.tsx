@@ -4,6 +4,7 @@ interface TabViewProps {
   tabs: {
     label: string;
     content: React.ReactNode;
+    onClick?: () => void; 
   }[];
 }
 
@@ -28,7 +29,10 @@ const TabView: React.FC<TabViewProps> = ({ tabs }) => {
         {tabs.map((tab, index) => (
           <button
             key={index}
-            onClick={() => setActiveTab(index)}
+            onClick={() => {
+              setActiveTab(index);
+              if (tab.onClick) tab.onClick();
+            }}
             className={`
               relative flex-1 px-4 py-3 text-sm font-medium rounded-lg
               transition-colors duration-200 ease-out z-10 select-none

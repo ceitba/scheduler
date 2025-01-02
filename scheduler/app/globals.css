@@ -26,6 +26,7 @@
     --secondary: #6c757d;
     --gray: #6b7280;
     --secondary-background: #eef0f2;
+    --surface: #ffffff;
 }
 
 .dark {
@@ -36,6 +37,7 @@
     --secondary: #adb5bd;
     --gray: #9ca3af;
     --secondary-background: #2d2d2d;
+    --surface: #242424;
 }
 
 body {

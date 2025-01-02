@@ -186,7 +186,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     return (
                       <div
                         key={`blocked-${block.day}-${block.timeFrom}-${index}`}
-                        className="absolute w-full p-1 bg-white border-2 border-dashed border-gray-300"
+                        className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
                         style={{
                           top: `${top}px`,
                           height: `${height}px`,
@@ -194,8 +194,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                         }}
                       >
                         <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
-                          <div>Horario bloqueado</div>
-                          <div>
+                          {/* <div>Horario bloqueado</div> */}
+                          <div className="truncate">
                             {block.timeFrom} - {block.timeTo}
                           </div>
                         </div>

@@ -17,6 +17,7 @@ const config: Config = {
         secondary: "var(--secondary)",
         textDefault: "var(--text-default)",
         border: "var(--border)",
+        surface: "var(--surface)"
       },
     },
   },

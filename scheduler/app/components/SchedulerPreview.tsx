@@ -152,7 +152,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto h-fit space-y-6">
       <div className="bg-background rounded-lg">
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end px-4">
           <Checkbox

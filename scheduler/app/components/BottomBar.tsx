@@ -1,38 +1,35 @@
-import { FaInstagram, FaLinkedin } from 'react-icons/fa';
-import { MdEmail } from 'react-icons/md';
+import Link from 'next/link';
 
-export default function BottomBar() {
+const BottomBar = () => {
   return (
-    <div className="w-full bg-secondaryBackground">
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 flex justify-center items-center gap-6">
-        <a
-          href="mailto:ceitba@itba.edu.ar"
-          className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+    <footer className="w-full py-4 px-4 text-center">
+      <div className="flex items-center justify-center space-x-2 text-sm text-gray">
+        <Link 
+          href="https://github.com/urielsv/scheduler" 
           target="_blank"
-          rel="noopener noreferrer"
+          className="hover:text-primary transition-colors duration-200"
         >
-          <MdEmail className="w-5 h-5" />
-          <span>Email</span>
-        </a>
-        <a
-          href="https://www.instagram.com/ceitba"
-          className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+          GitHub
+        </Link>
+        <span>•</span>
+        <Link 
+          href="https://ceitba.org.ar" 
           target="_blank"
-          rel="noopener noreferrer"
+          className="hover:text-primary transition-colors duration-200"
         >
-          <FaInstagram className="w-5 h-5" />
-          <span>Instagram</span>
-        </a>
-        <a
-          href="https://www.linkedin.com/in/ceitba"
-          className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+          CEITBA
+        </Link>
+        <span>•</span>
+        <Link 
+          href="https://www.itba.edu.ar" 
           target="_blank"
-          rel="noopener noreferrer"
+          className="hover:text-primary transition-colors duration-200"
         >
-          <FaLinkedin className="w-5 h-5" />
-          <span>LinkedIn</span>
-        </a>
+          ITBA
+        </Link>
       </div>
-    </div>
+    </footer>
   );
-} 
+};
+
+export default BottomBar; 

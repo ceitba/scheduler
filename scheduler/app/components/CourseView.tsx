@@ -4,6 +4,7 @@ import { useSubjects, type Subject } from "../hooks/useSubjects";
 import SelectedCoursesList from "./SelectedCoursesList";
 import AvailableCoursesList from "./AvailableCoursesList";
 import LoadingDots from "./LoadingDots";
+import { useParams } from "next/navigation";
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -26,53 +27,68 @@ const CourseView: React.FC<CourseViewProps> = ({
   onReorderCourses
 }) => {
   const { subjects, loading, error } = useSubjects();
+  const { career } = useParams();
+  const isExchange = career === 'X';
 
-  // Group subjects by year and quarter
-  const subjectsByYear = subjects.reduce((acc, subject) => {
-    const year = subject.year || 0;
-    if (!acc[year]) {
-      acc[year] = {
-        year: year === 0 ? 'ELECTIVAS' : `${year}° Año`,
-        subjects: {
-          '1': [],
-          '2': [],
-          'extra': []
+  // For exchanges, we'll show all subjects in a flat list
+  const subjectsByYear = isExchange 
+    ? {
+        1: {
+          year: 'Materias Disponibles',
+          subjects: {
+            '1': subjects,
+            '2': [],
+            'extra': []
+          }
         }
-      };
-    }
+      }
+    : subjects.reduce((acc, subject) => {
+        const year = subject.year || 0;
+        if (!acc[year]) {
+          acc[year] = {
+            year: year === 0 ? 'ELECTIVAS' : `${year}° Año`,
+            subjects: {
+              '1': [],
+              '2': [],
+              'extra': []
+            }
+          };
+        }
 
-    // Add subject to appropriate quarter
-    const quarter = subject.semester?.toString() || '1';
-    if (quarter === '1' || quarter === '2') {
-      acc[year].subjects[quarter]?.push(subject);
-    } else {
-      acc[year].subjects.extra.push(subject);
-    }
-    
-    return acc;
-  }, {} as Record<number, { 
-    year: string; 
-    subjects: {
-      '1': Subject[];
-      '2': Subject[];
-      'extra': Subject[];
-    }
-  }>);
+        // Add subject to appropriate quarter
+        const quarter = subject.semester?.toString() || '1';
+        if (quarter === '1' || quarter === '2') {
+          acc[year].subjects[quarter]?.push(subject);
+        } else {
+          acc[year].subjects.extra.push(subject);
+        }
+        
+        return acc;
+      }, {} as Record<number, { 
+        year: string; 
+        subjects: {
+          '1': Subject[];
+          '2': Subject[];
+          'extra': Subject[];
+        }
+      }>);
 
-  // Sort years (ELECTIVAS at the bottom)
-  const sortedSubjectsByYear = Object.entries(subjectsByYear)
-    .sort(([yearA], [yearB]) => {
-      const a = parseInt(yearA);
-      const b = parseInt(yearB);
-      if (a === 0) return 1;
-      if (b === 0) return -1;
-      return a - b;
-    })
-    .reduce((acc, [year, data]) => {
-      const displayYear = parseInt(year) === 0 ? 6 : parseInt(year);
-      acc[displayYear] = data;
-      return acc;
-    }, {} as Record<number, typeof subjectsByYear[number]>);
+  // Sort years (ELECTIVAS at the bottom) - only for non-exchange careers
+  const sortedSubjectsByYear = isExchange 
+    ? subjectsByYear
+    : Object.entries(subjectsByYear)
+        .sort(([yearA], [yearB]) => {
+          const a = parseInt(yearA);
+          const b = parseInt(yearB);
+          if (a === 0) return 1;
+          if (b === 0) return -1;
+          return a - b;
+        })
+        .reduce((acc, [year, data]) => {
+          const displayYear = parseInt(year) === 0 ? 6 : parseInt(year);
+          acc[displayYear] = data;
+          return acc;
+        }, {} as Record<number, typeof subjectsByYear[number]>);
 
   const handleSubjectSelect = (subject: Subject) => {
     if (selectedCourses.some(c => c.subject_id === subject.subject_id)) {
@@ -114,19 +130,19 @@ const CourseView: React.FC<CourseViewProps> = ({
         onSelectSubject={handleSubjectSelect}
       />
       
-      {/* <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden h-min"> */}
       <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="lg:sticky top-4 h-max">
-        <SelectedCoursesList 
-          courses={selectedCourses}
-          onRemove={onRemoveCourse}
-          onReorder={onReorderCourses}
-        />
+          <SelectedCoursesList 
+            courses={selectedCourses}
+            onRemove={onRemoveCourse}
+            onReorder={onReorderCourses}
+          />
         </div>
         <AvailableCoursesList
           courses={sortedSubjectsByYear}
           selectedCourses={selectedCourses}
           onCourseClick={handleSubjectSelect}
+          isExchange={isExchange}
         />
       </div>
     </div>

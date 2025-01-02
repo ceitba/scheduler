@@ -5,7 +5,7 @@ interface WeeklyScheduleVisualizerProps {
   blockedTimes?: TimeBlock[];
 }
 
-const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+const DAYS = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES'];
 const HOURS = Array.from({ length: 14 }, (_, i) => i + 8); // 8:00 to 21:00
 
 const generateTimeLabel = (hour: number) => {

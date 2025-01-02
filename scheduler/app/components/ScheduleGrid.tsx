@@ -15,6 +15,11 @@ interface GroupedSlot {
   timeTo: string;
 }
 
+interface BlockedGroupSlot {
+  timeFrom: string;
+  timeTo: string;
+}
+
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   const scheduler = Scheduler.getInstance();
   const blockedTimes = scheduler.getBlockedTimes();
@@ -72,13 +77,63 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   }, {} as Record<string, Map<string, GroupedSlot>>);
 
   // Convert blocked times to slot format for visualization
-  const blockedSlots = blockedTimes.map((block) => ({
-    timeFrom: block.from,
-    timeTo: block.to,
-    day: block.day,
-    isBlocked: true,
-  }));
+  // const blockedSlots = blockedTimes.map((block) => ({
+  //   timeFrom: block.from,
+  //   timeTo: block.to,
+  //   day: block.day,
+  //   isBlocked: true,
+  // }));
 
+  // First, add this function to group consecutive blocked times
+  const groupConsecutiveBlockedTimes = (blocks: TimeBlock[]): TimeBlock[] => {
+    // Sort blocks by day and time
+    const sortedBlocks = [...blocks].sort((a, b) => {
+      if (a.day !== b.day) return a.day.localeCompare(b.day);
+      return timeToMinutes(a.from) - timeToMinutes(b.from);
+    });
+
+    const groupedBlocks: TimeBlock[] = [];
+    let currentGroup: TimeBlock | null = null;
+
+    sortedBlocks.forEach((block) => {
+      if (!currentGroup) {
+        currentGroup = { ...block };
+        return;
+      }
+
+      // Check if blocks are on the same day and consecutive
+      if (
+        currentGroup.day === block.day &&
+        timeToMinutes(currentGroup.to) === timeToMinutes(block.from)
+      ) {
+        // Extend current group
+        currentGroup.to = block.to;
+      } else {
+        // Push current group and start new one
+        groupedBlocks.push(currentGroup);
+        currentGroup = { ...block };
+      }
+    });
+
+    // Don't forget to push the last group
+    if (currentGroup) {
+      groupedBlocks.push(currentGroup);
+    }
+
+    return groupedBlocks;
+  };
+
+  // Then modify the blockedSlots creation:
+  const blockedSlots = groupConsecutiveBlockedTimes(blockedTimes).map(
+    (block) => ({
+      timeFrom: block.from,
+      timeTo: block.to,
+      day: block.day,
+      isBlocked: true,
+    })
+  );
+
+  // The rest of your ScheduleGrid component remains the same
   const getSlotsForDay = (day: string): GroupedSlot[] => {
     return Array.from(slotsByDay[day]?.values() || []);
   };
@@ -163,44 +218,104 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                 ))}
                 {/* Blocked time slots */}
                 {blockedSlots
-                  .filter((block) => {
-                    if (block.day !== day) return false;
-
-                    // Check if any course slot overlaps this block
-                    const hasOverlap = daySlots.some((slot) => {
-                      const blockStart = timeToMinutes(block.timeFrom);
-                      const blockEnd = timeToMinutes(block.timeTo);
-                      const slotStart = timeToMinutes(slot.timeFrom);
-                      const slotEnd = timeToMinutes(slot.timeTo);
-
-                      return slotStart < blockEnd && slotEnd > blockStart;
-                    });
-
-                    return !hasOverlap;
-                  })
+                  .filter((block) => block.day === day) // Only filter by day, not by overlap
                   .map((block, index) => {
-                    const { top, height } = calculateSlotPosition(
-                      block.timeFrom,
-                      block.timeTo
-                    );
-                    return (
-                      <div
-                        key={`blocked-${block.day}-${block.timeFrom}-${index}`}
-                        className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
-                        style={{
-                          top: `${top}px`,
-                          height: `${height}px`,
-                          zIndex: 1,
-                        }}
-                      >
-                        <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
-                          {/* <div>Horario bloqueado</div> */}
-                          <div className="truncate">
-                            {block.timeFrom} - {block.timeTo}
+                    const blockStart = timeToMinutes(block.timeFrom);
+                    const blockEnd = timeToMinutes(block.timeTo);
+
+                    // Find overlapping slots
+                    const overlappingSlots = daySlots
+                      .filter((slot) => {
+                        const slotStart = timeToMinutes(slot.timeFrom);
+                        const slotEnd = timeToMinutes(slot.timeTo);
+                        return slotStart < blockEnd && slotEnd > blockStart;
+                      })
+                      .sort(
+                        (a, b) =>
+                          timeToMinutes(a.timeFrom) - timeToMinutes(b.timeFrom)
+                      );
+
+                    // If no overlap, show the full block
+                    if (overlappingSlots.length === 0) {
+                      const { top, height } = calculateSlotPosition(
+                        block.timeFrom,
+                        block.timeTo
+                      );
+                      return (
+                        <div
+                          key={`blocked-${block.day}-${block.timeFrom}-${index}`}
+                          className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
+                          style={{
+                            top: `${top}px`,
+                            height: `${height}px`,
+                            zIndex: 1,
+                          }}
+                        >
+                          <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                            <div className="truncate">
+                              {block.timeFrom} - {block.timeTo}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
+                      );
+                    }
+
+                    // If there is overlap, split the block and show parts before and after
+                    return overlappingSlots.map((slot, slotIndex) => {
+                      const parts = [];
+
+                      // Part before the class if exists
+                      if (blockStart < timeToMinutes(slot.timeFrom)) {
+                        const { top, height } = calculateSlotPosition(
+                          block.timeFrom,
+                          slot.timeFrom
+                        );
+                        parts.push(
+                          <div
+                            key={`blocked-before-${block.day}-${block.timeFrom}-${slotIndex}`}
+                            className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
+                            style={{
+                              top: `${top}px`,
+                              height: `${height}px`,
+                              zIndex: 1,
+                            }}
+                          >
+                            <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                              <div className="truncate">
+                                {block.timeFrom} - {slot.timeFrom}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Part after the class if exists
+                      if (blockEnd > timeToMinutes(slot.timeTo)) {
+                        const { top, height } = calculateSlotPosition(
+                          slot.timeTo,
+                          block.timeTo
+                        );
+                        parts.push(
+                          <div
+                            key={`blocked-after-${block.day}-${block.timeFrom}-${slotIndex}`}
+                            className="absolute w-full p-1 bg-surface border-2 border-dashed border-gray rounded-md"
+                            style={{
+                              top: `${top}px`,
+                              height: `${height}px`,
+                              zIndex: 1,
+                            }}
+                          >
+                            <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                              <div className="truncate">
+                                {slot.timeTo} - {block.timeTo}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return parts;
+                    });
                   })}
                 {/* Course slots */}
                 {Array.from(overlappingGroups.values()).map(
@@ -225,7 +340,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             className={`absolute p-1 rounded-md ${
                               hasOverlap
                                 ? "opacity-70 bg-red-500/20"
-                                : "bg-primary/10 border border-primary"
+                                : "bg-blue-500/10 border border-primary"
                             }`}
                             style={{
                               top: `${top}px`,
@@ -245,7 +360,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                                   {formatRooms(slot.rooms)}
                                 </div>
                                 <div className="truncate">
-                                  {slot.timeFrom.slice(0,5)} - {slot.timeTo.slice(0,5)}
+                                  {slot.timeFrom.slice(0, 5)} -{" "}
+                                  {slot.timeTo.slice(0, 5)}
                                 </div>
                               </div>
                             </div>

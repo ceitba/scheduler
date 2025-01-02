@@ -152,12 +152,10 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             checked={settings.allowTimeOverlap}
             onChange={(checked) => {
               setSettings((prev) => ({ ...prev, allowTimeOverlap: checked }));
-              // Update scheduler options immediately
               scheduler.setOptions({
                 ...scheduler.getOptions(),
                 allowOverlap: checked,
               });
-              // Regenerate if we've already generated once
               if (hasAttemptedGeneration) {
                 onGenerateSchedules();
               }
@@ -170,12 +168,10 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             checked={settings.haveFreeDay}
             onChange={(checked) => {
               setSettings((prev) => ({ ...prev, haveFreeDay: checked }));
-              // Update scheduler options immediately
               scheduler.setOptions({
                 ...scheduler.getOptions(),
                 allowFreeDay: checked,
               });
-              // Regenerate if we've already generated once
               if (hasAttemptedGeneration) {
                 onGenerateSchedules();
               }

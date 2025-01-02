@@ -1,15 +1,15 @@
-import React from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import React from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 // Day translation mapping
 const DAY_TRANSLATIONS: Record<string, string> = {
-  'monday': 'Lun.',
-  'tuesday': 'Mar.',
-  'wednesday': 'Mie.',
-  'thursday': 'Jue.',
-  'friday': 'Vie.',
-  'saturday': 'Sab.',
-  'sunday': 'Dom.'
+  monday: "Lun.",
+  tuesday: "Mar.",
+  wednesday: "Mie.",
+  thursday: "Jue.",
+  friday: "Vie.",
+  saturday: "Sab.",
+  sunday: "Dom.",
 };
 
 interface Schedule {
@@ -44,14 +44,6 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const formatSchedule = (schedule: Schedule) => {
-    const translatedDay = DAY_TRANSLATIONS[schedule.day.toLowerCase()] || schedule.day;
-    // Remove seconds from timestamps (assuming format like "HH:mm:ss")
-    const timeFrom = schedule.timeFrom.split(':').slice(0, 2).join(':');
-    const timeTo = schedule.timeTo.split(':').slice(0, 2).join(':');
-    return `${translatedDay} ${timeFrom}-${timeTo} (${schedule.building} ${schedule.classroom})`;
-  };
-
   return (
     <>
       {/* Full page backdrop */}
@@ -83,7 +75,7 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
             <div className="space-y-2">
               {/* Any commission option */}
               <button
-                onClick={() => onSelect('any')}
+                onClick={() => onSelect("any")}
                 className="w-full p-3 text-left rounded-lg bg-secondaryBackground 
                   hover:bg-primary/10 hover:text-primary
                   transition-all duration-200 group"
@@ -107,7 +99,14 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
                   </span>
                   {comm.schedule && comm.schedule.length > 0 && (
                     <span className="block text-sm text-gray group-hover:text-primary/70 transition-colors mt-1">
-                      {comm.schedule.map(formatSchedule).join(', ')}
+                      {/* {comm.schedule.map(formatSchedule).join(`\t`)} */}
+                      {comm.schedule.map((s, i) => (
+                        <div key={i} className="text-xs text-gray">
+                          {DAY_TRANSLATIONS[s.day.toLowerCase()]}{" "}
+                          {s.timeFrom.slice(0, 5)} - {s.timeTo.slice(0, 5)} |{" "}
+                          {s.classroom}
+                        </div>
+                      ))}
                     </span>
                   )}
                 </button>
@@ -120,4 +119,4 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
   );
 };
 
-export default CommissionModal; 
+export default CommissionModal;

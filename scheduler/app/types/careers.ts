@@ -23,6 +23,13 @@ export const CAREERS: Record<string, string> = {
   "S": "Ingeniería en Informática"
 };
 
+// Special career for exchanges
+export const EXCHANGE_CAREER = {
+  id: "X",
+  name: "Intercambios",
+  icon: "🌎"
+};
+
 export const AVAILABLE_PLANS: Record<string, Plan[]> = {
   'BIO': [{ id: "BIO 22" }, { id: "Bio-13" }],
   'C': [{ id: "C23" }],
@@ -35,7 +42,8 @@ export const AVAILABLE_PLANS: Record<string, Plan[]> = {
   'N': [{ id: "N22" }, { id: "N18 Marzo" }, { id: "N18 Agosto" }],
   'P': [{ id: "P22" }, { id: "P05-Rev.18" }, { id: "P-13" }, { id: "P05" }],
   'Q': [{ id: "Q22" }, { id: "Q05-Rev18" }],
-  'S': [{ id: "S10-Rev23" }, { id: "S10 - Rev18" }, { id: "S10 A - Rev18" }]
+  'S': [{ id: "S10-Rev23" }, { id: "S10 - Rev18" }, { id: "S10 A - Rev18" }],
+  'X': [{ id: "IN23" }]
 };
 
 // Helper function to get the latest plan for a career
@@ -46,7 +54,7 @@ export const getLatestPlan = (careerId: string): string => {
 
 // Career icons mapping
 export const CAREER_METADATA: Record<string, { icon: string }> = {
-  "BIO": { icon: "🔬" },
+  "BIO": { icon: "🥬" },
   "C": { icon: "🏗️" },
   "I": { icon: "🏭" },
   "K": { icon: "🔌" },

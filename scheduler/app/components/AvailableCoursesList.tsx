@@ -14,6 +14,7 @@ interface AvailableCoursesListProps {
   }>;
   selectedCourses: Subject[];
   onCourseClick: (course: Subject) => void;
+  isExchange?: boolean;
 }
 
 const QuarterSection: React.FC<{
@@ -21,13 +22,14 @@ const QuarterSection: React.FC<{
   subjects: Subject[];
   selectedCourses: Subject[];
   onCourseClick: (course: Subject) => void;
-}> = ({ title, subjects, selectedCourses, onCourseClick }) => {
+  showTitle?: boolean;
+}> = ({ title, subjects, selectedCourses, onCourseClick, showTitle = true }) => {
   if (!subjects?.length) return null;
   
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-medium text-gray">{title}</h3>
-      <div className="space-y-2 ml-2">
+      {showTitle && <h3 className="text-sm font-medium text-gray">{title}</h3>}
+      <div className={`space-y-2 ${showTitle ? 'ml-2' : ''}`}>
         {subjects.map((course) => {
           const isSelected = selectedCourses.some(
             (c) => c.subject_id === course.subject_id
@@ -50,8 +52,30 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
   courses,
   selectedCourses,
   onCourseClick,
+  isExchange = false
 }) => {
   const [openSection, setOpenSection] = useState<string | null>(null);
+
+  if (isExchange) {
+    // For exchanges, show a flat list of all subjects
+    const exchangeSubjects = Object.values(courses)[0]?.subjects['1'] || [];
+    return (
+      <div className="bg-secondaryBackground/30 rounded-xl flex flex-col">
+        <h2 className="text-lg font-semibold text-textDefault p-4 pb-2">
+          Cursos disponibles
+        </h2>
+        <div className="overflow-y-auto flex-1 px-4 pb-4">
+          <QuarterSection
+            title=""
+            subjects={exchangeSubjects}
+            selectedCourses={selectedCourses}
+            onCourseClick={onCourseClick}
+            showTitle={false}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-secondaryBackground/30 rounded-xl flex flex-col">

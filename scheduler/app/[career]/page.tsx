@@ -5,12 +5,14 @@ import CourseView from "../components/CourseView";
 import { SettingsView } from "../components/SettingsView";
 import { SchedulerPreview } from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
+import BottomBar from "../components/BottomBar";
 import CommissionModal from "../components/CommissionModal";
 import { Subject } from "../hooks/useSubjects";
 import { useState, useEffect } from 'react';
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils';
 import { Scheduler } from '../services/scheduler';
 import { PossibleSchedule } from '../types/scheduler';
+import { AVAILABLE_PLANS } from '../types/careers';
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -23,25 +25,7 @@ interface PageProps {
   }>;
 }
 
-const VALID_CAREERS = ['BIO', 'C', 'E', 'I', 'K', 'L', 'LAES', 'LN', 'M', 'N', 'P', 'Q', 'S', 'X'];
-
-// TODO: Check and modularize plans into a separate file
-// Define valid plans for each career
-const CAREER_PLANS: Record<string, string[]> = {
-  'BIO': ['BIO 22', 'Bio-13'],
-  'C': ['C23'],
-  'E': ['E 11', 'E 11A'],
-  'I': ['I22', 'I-13', 'I-13T'],
-  'K': ['K22', 'K07-Rev.18', 'K07A-Rev.18'],
-  'L': ['L09', 'L09-REV13', 'L09T'],
-  'LAES': ['A17', 'A22'],
-  'LN': ['L20'],
-  'M': ['M22', 'M09 - Rev18 (Marzo)', 'M09 - Rev18 (Agosto)'],
-  'N': ['N22', 'N18 Marzo', 'N18 Agosto'],
-  'P': ['P22', 'P05-Rev.18', 'P-13', 'P05'],
-  'Q': ['Q22', 'Q05-Rev18'],
-  'S': ['S10-Rev23', 'S10 - Rev18', 'S10 A - Rev18']
-};
+const VALID_CAREERS = Object.keys(AVAILABLE_PLANS);
 
 export default function CareerPage({ params }: PageProps) {
   const { career } = useParams();
@@ -69,11 +53,11 @@ export default function CareerPage({ params }: PageProps) {
   }
 
   // If no plan is specified or plan is invalid, redirect to the default plan
-  const validPlans = CAREER_PLANS[career as keyof typeof CAREER_PLANS]
-    .map(p => normalizePlanId(p));
+  const validPlans = AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS]
+    .map(p => normalizePlanId(p.id));
   
   if (!normalizedPlan || !validPlans.includes(normalizedPlan)) {
-    const defaultPlan = normalizePlanId(CAREER_PLANS[career as keyof typeof CAREER_PLANS][0]);
+    const defaultPlan = normalizePlanId(AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS][0].id);
     redirect(`/${career}?plan=${defaultPlan}`);
   }
 
@@ -178,8 +162,6 @@ export default function CareerPage({ params }: PageProps) {
         <TabView tabs={tabs} />
       </div>
 
-      {/* <BottomBar /> */}
-
       <CommissionModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -188,6 +170,7 @@ export default function CareerPage({ params }: PageProps) {
         courseName={selectedCourseForModal?.name || ''}
         courseId={selectedCourseForModal?.subject_id || ''}
       />
+      {/* <BottomBar /> */}
     </div>
   );
 }

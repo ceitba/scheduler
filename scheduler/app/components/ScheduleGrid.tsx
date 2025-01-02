@@ -110,7 +110,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
           {/* Time labels */}
           <div className="relative">
             {timeSlots.map((time) => (
-              <div key={time} className="h-12 flex items-center justify-center text-xs text-gray">
+              <div key={time} className="h-12 flex items-start justify-center text-xs text-gray pt-2">
                 {time}
               </div>
             ))}

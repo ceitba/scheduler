@@ -17,15 +17,15 @@ export async function GET(
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch subjects');
+      throw new Error('Error al obtener los horarios');
     }
 
     const data = await response.json();
     return Response.json(data);
   } catch (error) {
-    console.error('Error fetching subjects:', error);
+    console.error('Error al obtener los horarios:', error);
     return Response.json(
-      { error: 'Failed to fetch subjects' },
+      { error: 'Error al obtener los horarios' },
       { status: 500 }
     );
   }

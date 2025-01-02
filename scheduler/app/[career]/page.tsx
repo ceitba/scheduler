@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils';
 import { Scheduler } from '../services/scheduler';
 import { PossibleSchedule, SchedulerOptions } from '../types/scheduler';
+import BottomBar from "../components/BottomBar";
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -172,11 +173,13 @@ export default function CareerPage({ params }: PageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <TopBar currentPlan={plan || ''} />
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 flex-grow">
         <TabView tabs={tabs} />
       </div>
+
+      {/* <BottomBar /> */}
 
       <CommissionModal
         isOpen={modalOpen}

@@ -3,34 +3,29 @@ import React, { useEffect, useState } from "react";
 import ClickeableIcon from "./ClickeableIcon";
 
 const ThemeSwitcher = () => {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-        return localStorage.theme || 'light';
-    }
-    return 'light';
-});
+  const [theme, setTheme] = useState('light');
+  const [mounted, setMounted] = useState(false);
 
-useEffect(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-        if (localStorage.theme) {
-            setTheme(localStorage.theme);
-            document.documentElement.classList.add(localStorage.theme);
-        } else {
-            localStorage.theme = 'light';
-            document.documentElement.classList.add('light');
-        }
-    }
-}, []);
+  // Only run once when component mounts
+  useEffect(() => {
+    setMounted(true);
+    const storedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(storedTheme);
+    document.documentElement.classList.add(storedTheme);
+  }, []);
 
-const toggleTheme = () => {
-  const newTheme = theme === 'light' ? 'dark' : 'light';
-  if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.theme = newTheme;
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
+    setTheme(newTheme);
+    document.documentElement.classList.remove(theme);
+    document.documentElement.classList.add(newTheme);
+  };
+
+  // Don't render anything until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return null;
   }
-  setTheme(newTheme);
-  document.documentElement.classList.remove(theme);
-  document.documentElement.classList.add(newTheme);
-};
 
   return (
     <ClickeableIcon

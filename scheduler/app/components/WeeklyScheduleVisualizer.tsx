@@ -54,7 +54,7 @@ const WeeklyScheduleVisualizer: React.FC<WeeklyScheduleVisualizerProps> = ({
         <div className="space-y-4">
           <div className="h-12" /> {/* Header spacer */}
           {HOURS.map(hour => (
-            <div key={hour} className="h-16 text-sm text-gray flex items-center justify-end pr-2">
+            <div key={hour} className="h-16 text-sm text-gray flex items-start justify-end pr-2 pt-2">
               {generateTimeLabel(hour)}
             </div>
           ))}

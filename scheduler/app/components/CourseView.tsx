@@ -3,6 +3,7 @@ import SearchBox from "./SearchBox";
 import { useSubjects, type Subject } from "../hooks/useSubjects";
 import SelectedCoursesList from "./SelectedCoursesList";
 import AvailableCoursesList from "./AvailableCoursesList";
+import LoadingDots from "./LoadingDots";
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -90,11 +91,10 @@ const CourseView: React.FC<CourseViewProps> = ({
     onCommissionSelect(subject);
   };
 
-  // TODO: Create custom loading component
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-bounce rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingDots size="lg" color="bg-primary" />
       </div>
     );
   }

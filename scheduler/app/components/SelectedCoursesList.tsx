@@ -8,15 +8,15 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -28,14 +28,17 @@ interface SortableItemProps {
   onRemove: (id: string) => void;
 }
 
+const dayNames: Record<string, string> = {
+  "MONDAY": "Lun",
+  "TUESDAY": "Mar", 
+  "WEDNESDAY": "Mie",
+  "THURSDAY": "Jue",
+  "FRIDAY": "Vie"
+ };
+
 const SortableItem = ({ course, onRemove }: SortableItemProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: course.subject_id });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: course.subject_id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -50,17 +53,31 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+          <div
+            className="cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
             <Bars3Icon className="h-5 w-5 text-gray" />
           </div>
-          <span className="text-textDefault">
-            ({course.subject_id}) {course.name}
-          </span>
+          <div>
+            <span className="text-textDefault">
+              ({course.subject_id}) {course.name}
+            </span>
+            {course.commissions
+              .find((c) => c.name === course.selectedCommission)
+              ?.schedule.map((s, i) => (
+                <div key={i} className="text-xs text-gray">
+                  {dayNames[s.day]} {s.timeFrom.slice(0,5)} - {s.timeTo.slice(0,5) 
+                  } | {s.classroom}
+                </div>
+              ))}
+          </div>
         </div>
         <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray">
-            {course.selectedCommission === 'any'
-              ? 'Cualquier comisión'
+          <span className="text-xs text-gray text-end">
+            {course.selectedCommission === "any"
+              ? "Cualquier comisión"
               : `Comisión ${course.selectedCommission.toUpperCase()}`}
           </span>
           <button
@@ -84,7 +101,7 @@ interface SelectedCoursesListProps {
 const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
   courses,
   onRemove,
-  onReorder
+  onReorder,
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -99,8 +116,12 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      const oldIndex = courses.findIndex((course) => course.subject_id === active.id);
-      const newIndex = courses.findIndex((course) => course.subject_id === over.id);
+      const oldIndex = courses.findIndex(
+        (course) => course.subject_id === active.id
+      );
+      const newIndex = courses.findIndex(
+        (course) => course.subject_id === over.id
+      );
       onReorder(arrayMove(courses, oldIndex, newIndex));
     }
   };
@@ -124,7 +145,7 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={courses.map(c => c.subject_id)}
+          items={courses.map((c) => c.subject_id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-2">
@@ -142,4 +163,4 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
   );
 };
 
-export default SelectedCoursesList; 
+export default SelectedCoursesList;

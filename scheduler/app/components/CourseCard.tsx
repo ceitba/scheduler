@@ -14,9 +14,20 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isSelected, onClick }) 
       className="flex items-center justify-between p-3 bg-secondaryBackground 
         rounded-lg group cursor-pointer hover:bg-secondaryBackground/70"
     >
+      <div className="flex flex-row space-x-2">
       <span className="text-textDefault">
-        ({course.subject_id}) {course.name}
+        ({course.subject_id}) 
       </span>
+      <div className="flex flex-col">
+      <span className="text-textDefault">
+      {course.name}
+      </span>
+      <span className="text-xs text-gray">
+        {course.credits} créditos
+      </span>
+      </div>     
+      </div>
+       
       <div>
         {isSelected ? (
           <div className="flex items-center">

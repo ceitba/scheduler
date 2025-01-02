@@ -51,7 +51,7 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4 z-[101]">
-        <div className="bg-background rounded-xl w-full max-w-md relative flex flex-col max-h-[50vh]">
+        <div className="bg-background rounded-xl w-full max-w-md relative flex flex-col max-h-[70vh]">
           {/* Header - fixed */}
           <div className="p-6 pb-0">
             {/* Close button */}

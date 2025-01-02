@@ -106,8 +106,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
-      <div className="flex flex-row justify-between items-center">
-        <div className="flex flex-wrap gap-4 text-sm text-gray">
+      <div className="flex flex-col gap-2 lg:flex-row lg:justify-between">
+        <div className="flex flex-wrap gap-2 text-sm text-gray items-center">
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
@@ -143,8 +143,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             </span>
           </div>
         </div>
-        <div className="mt-4 flex items-center gap-2 text-xs text-gray">
-            <div className="w-6 h-6 border-2 border-dashed border-gray rounded-md bg-surface"></div>
+        <div className="flex items-center gap-2 text-xs text-gray">
+            <div className="w-5 h-5 border-2 border-dashed border-gray rounded-md bg-surface"></div>
             <span>Horario bloqueado</span>
           </div>
       </div>

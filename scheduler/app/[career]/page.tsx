@@ -158,7 +158,7 @@ export default function CareerPage({ params }: PageProps) {
       />,
     },
     {
-      label: "Opciones",
+      label: "Adicionales",
       content: <SettingsView />,
     },
     {

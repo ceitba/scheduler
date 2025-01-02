@@ -35,31 +35,8 @@ export const SettingsView: React.FC = () => {
   };
   
   return (
-    <div className="bg-background rounded-lg p-4 space-y-3">
-      <h3 className="font-medium text-textDefault mb-3">Prioridades</h3>
-      
-      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
-        <Checkbox
-          id="allowOverlap"
-          checked={settings.allowTimeOverlap}
-          onChange={(checked) => setSettings(prev => ({ ...prev, allowTimeOverlap: checked }))}
-          label="Permitir superposición de horarios"
-        />
-
-        {/* <Checkbox
-          id="avoidChanges"
-          checked={settings.avoidLocationChanges}
-          onChange={(checked) => setSettings(prev => ({ ...prev, avoidLocationChanges: checked }))}
-          label="Evitar cambios de sede en un mismo día"
-        /> */}
-
-        <Checkbox
-          id="freeDay"
-          checked={settings.haveFreeDay}
-          onChange={(checked) => setSettings(prev => ({ ...prev, haveFreeDay: checked }))}
-          label="Tener un día libre"
-        />
-      </div>
+    <div className="bg-background rounded-lg">
+      {/* <h3 className="font-medium text-textDefault mb-3">Prioridades</h3> */}
 
       <WeeklyCalendar 
         onChange={handleBlockedTimesChange}

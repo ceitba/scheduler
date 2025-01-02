@@ -47,6 +47,30 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
     transition,
   };
 
+  const groupedSchedule = (course.commissions
+    .find((c) => c.name === course.selectedCommission)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ?.schedule.reduce((acc: { [key: string]: any }, schedule) => {
+      const key = `${schedule.day}-${schedule.timeFrom}-${schedule.timeTo}`;
+      if (!acc[key]) {
+        acc[key] = {
+          day: schedule.day,
+          timeFrom: schedule.timeFrom,
+          timeTo: schedule.timeTo,
+          classrooms: [schedule.classroom]
+        };
+      } else {
+        acc[key].classrooms.push(schedule.classroom);
+      }
+      return acc;
+    }, {}) ?? {});
+  
+  {Object.values(groupedSchedule).map((schedule, i) => (
+    <div key={i} className="text-xs text-gray">
+      {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} - {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(', ')}
+    </div>
+  ))}
+
   return (
     <div
       ref={setNodeRef}
@@ -66,14 +90,11 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
             <span className="text-textDefault">
               ({course.subject_id}) {course.name}
             </span>
-            {course.commissions
-              .find((c) => c.name === course.selectedCommission)
-              ?.schedule.map((s, i) => (
-                <div key={i} className="text-xs text-gray">
-                  {dayNames[s.day]} {s.timeFrom.slice(0,5)} - {s.timeTo.slice(0,5) 
-                  } | {s.classroom}
-                </div>
-              ))}
+              {Object.values(groupedSchedule).map((schedule, i) => (
+            <div key={i} className="text-xs text-gray">
+              {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} - {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(', ')}
+            </div>
+          ))}
           </div>
         </div>
         <div className="flex items-center space-x-4">

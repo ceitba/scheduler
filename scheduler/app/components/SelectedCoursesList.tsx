@@ -33,7 +33,9 @@ const dayNames: Record<string, string> = {
   "TUESDAY": "Mar", 
   "WEDNESDAY": "Mie",
   "THURSDAY": "Jue",
-  "FRIDAY": "Vie"
+  "FRIDAY": "Vie",
+  "SATURDAY": "Sab",
+  "SUNDAY": "Dom",
  };
 
 const SortableItem = ({ course, onRemove }: SortableItemProps) => {

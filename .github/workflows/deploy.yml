@@ -17,5 +17,5 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }} 
           script: |
             cd CEITBA-API/
-            git pull 
+            git pull -v
           

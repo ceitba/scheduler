@@ -10,8 +10,7 @@ import { Subject } from "../hooks/useSubjects";
 import { useState, useEffect } from 'react';
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils';
 import { Scheduler } from '../services/scheduler';
-import { PossibleSchedule, SchedulerOptions } from '../types/scheduler';
-import BottomBar from "../components/BottomBar";
+import { PossibleSchedule } from '../types/scheduler';
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -19,9 +18,9 @@ interface SelectedCourse extends Subject {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     career: string;
-  };
+  }>;
 }
 
 const VALID_CAREERS = ['BIO', 'C', 'E', 'I', 'K', 'L', 'LAES', 'LN', 'M', 'N', 'P', 'Q', 'S', 'X'];

@@ -112,8 +112,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
 
   const blockedSlots = groupConsecutiveBlockedTimes(blockedTimes).map(
     (block) => ({
-      timeFrom: block.from,
-      timeTo: block.to,
+      from: block.from,
+      to: block.to,
       day: block.day,
       isBlocked: true,
     })
@@ -224,11 +224,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                   />
                 ))}
                 {/* Blocked time slots */}
-                {blockedSlots
+                {blockedTimes
                   .filter((slot) => slot.day === day)
                   .map((block, index) => {
-                    const blockStart = timeToMinutes(block.timeFrom);
-                    const blockEnd = timeToMinutes(block.timeTo);
+                    const blockStart = timeToMinutes(block.from);
+                    const blockEnd = timeToMinutes(block.to);
 
                     const hasOverlap = daySlots.some((slot) => {
                       const slotStart = timeToMinutes(slot.timeFrom);
@@ -236,13 +236,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     });
 
                     const { top, height } = calculateSlotPosition(
-                      block.timeFrom,
-                      block.timeTo
+                      block.from,
+                      block.to
                     );
 
                     return (
                       <div
-                        key={`blocked-${block.day}-${block.timeFrom}-${index}`}
+                        key={`blocked-${block.day}-${block.from}-${index}`}
                         className={`absolute w-full border-2 border-dashed border-secondary bg-surface
                           ${!hasOverlap ? "bg-surface p-1" : ""}`}
                         style={{
@@ -251,13 +251,18 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                           zIndex: 1,
                         }}
                       >
-                        {/* {!hasOverlap && (
+                        {!hasOverlap && (
                           <div className="h-full flex flex-col justify-center items-center text-[10px] text-gray">
+                            {block.label && (
+                              <div className="font-medium truncate mb-0.5">
+                                {block.label}
+                              </div>
+                            )}
                             <div className="truncate">
-                              {block.timeFrom} - {block.timeTo}
+                              {block.from} - {block.to}
                             </div>
                           </div>
-                        )} */}
+                        )}
                       </div>
                     );
                   })}

@@ -10,6 +10,7 @@ export interface TimeBlock {
   day: string;    // "MONDAY", "TUESDAY", etc.
   from: string;   // "HH:mm:ss"
   to: string;     // "HH:mm:ss"
+  label?: string; // Optional label for the block
 }
 
 export interface ScheduleSlot {

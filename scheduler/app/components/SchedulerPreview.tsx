@@ -202,7 +202,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           const style = clonedDoc.createElement('style');
           style.textContent = `
             * { 
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              font-family: Arial, Roboto, sans-serif !important;
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
             }
@@ -270,7 +270,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           const style = clonedDoc.createElement('style');
           style.textContent = `
             * { 
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              font-family: Arial, Roboto, sans-serif !important;
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
             }

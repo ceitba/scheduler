@@ -20,7 +20,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
       { name: 'name', weight: 0.7 },
       { name: 'subject_id', weight: 0.3 }
     ],
-    threshold: 0.3, // 0.0 = perfect match, 1.0 = match anything
+    threshold: 0.35, // 0.0 = perfect match, 1.0 = match anything
     includeScore: true,
     minMatchCharLength: 2,
     shouldSort: true,

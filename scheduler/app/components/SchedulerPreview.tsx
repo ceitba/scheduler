@@ -71,7 +71,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   // Filter schedules based on overlap option
   const filteredSchedules = schedules.filter((schedule) => {
     const options = scheduler.getOptions();
-    return options.allowOverlap || !schedule.hasOverlap;
+    return (options.allowOverlap || !schedule.hasOverlap) && (!options.allowFreeDay || schedule.hasFreeDay);
   });
 
   const handleGenerateClick = () => {
@@ -140,7 +140,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
-                schedule.hasFreeDay ? "bg-green-500" : "bg-gray-500"
+                schedule.hasFreeDay ? "bg-green-500" : "bg-red-500"
               }`}
             />
             <span>
@@ -239,7 +239,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-gray/20">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-medium">Vista previa de horarios</h2>
-            {hasSchedules && (
+            {hasSubjects && hasSchedules && (
               <span className="text-sm text-gray">
                 Opción {currentScheduleIndex + 1} de {filteredSchedules.length}
               </span>
@@ -247,22 +247,26 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           </div>
 
           <div className="flex gap-2">
-            {hasSchedules && (
+            {hasSubjects && hasSchedules && (
               <>
-                <button
-                  onClick={handlePrevSchedule}
-                  className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
-                  title="Anterior horario"
-                >
-                  <ArrowLeftCircleIcon className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={handleNextSchedule}
-                  className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
-                  title="Siguiente horario"
-                >
-                  <ArrowRightCircleIcon className="h-5 w-5" />
-                </button>
+                {filteredSchedules.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevSchedule}
+                      className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
+                      title="Anterior horario"
+                    >
+                      <ArrowLeftCircleIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={handleNextSchedule}
+                      className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
+                      title="Siguiente horario"
+                    >
+                      <ArrowRightCircleIcon className="h-5 w-5" />
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={() => setIsSaveModalOpen(true)}
                   className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"

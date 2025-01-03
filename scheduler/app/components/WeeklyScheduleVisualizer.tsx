@@ -1,4 +1,9 @@
 import { ScheduleSlot, TimeBlock } from "../types/scheduler";
+import { useState, useRef } from 'react';
+import { FiSave } from 'react-icons/fi';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import SaveModal from './SaveModal';
 
 interface WeeklyScheduleVisualizerProps {
   schedule: ScheduleSlot[];
@@ -45,76 +50,60 @@ const getHeight = (startTime: string, endTime: string) => {
 
 const WeeklyScheduleVisualizer: React.FC<WeeklyScheduleVisualizerProps> = ({
   schedule,
-  blockedTimes = []
+  blockedTimes = [],
 }) => {
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const scheduleRef = useRef<HTMLDivElement>(null);
+
+  const handleSaveAsPDF = async () => {
+    if (!scheduleRef.current) return;
+    
+    const canvas = await html2canvas(scheduleRef.current);
+    const imgData = canvas.toDataURL('image/png');
+    
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save('horario.pdf');
+  };
+
+  const handleSaveAsImage = async () => {
+    if (!scheduleRef.current) return;
+    
+    const canvas = await html2canvas(scheduleRef.current);
+    const link = document.createElement('a');
+    link.download = 'horario.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+
+  const handleExportToCalendar = () => {
+    // TODO: Implement Google Calendar export
+    console.log('Export to Google Calendar');
+  };
+
+  const handleShareLink = () => {
+    // TODO: Implement share link functionality
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    alert('¡Enlace copiado al portapapeles!');
+  };
+
   return (
-    <div className="bg-background rounded-lg p-4 shadow-sm">
-      <div className="grid grid-cols-[auto,repeat(5,1fr)] gap-2">
-        {/* Time labels column */}
-        <div className="space-y-4">
-          <div className="h-12" /> {/* Header spacer */}
-          {HOURS.map(hour => (
-            <div key={hour} className="h-16 text-sm text-gray flex items-start justify-end pr-2 pt-2">
-              {generateTimeLabel(hour)}
-            </div>
-          ))}
-        </div>
-
-        {/* Days columns */}
-        {DAYS.map(day => (
-          <div key={day} className="relative">
-            {/* Day header */}
-            <div className="h-12 flex items-center justify-center font-medium">
-              {day}
-            </div>
-
-            {/* Time grid */}
-            <div className="relative h-[52rem] bg-secondaryBackground/30 rounded-lg">
-              {/* Hour lines */}
-              {HOURS.map(hour => (
-                <div
-                  key={hour}
-                  className="absolute w-full h-[4rem] border-t border-gray/10"
-                  style={{ top: `${((hour - 8) * 4)}rem` }}
-                />
-              ))}
-
-              {/* Blocked times */}
-              {blockedTimes
-                .filter(block => block.day === day)
-                .map((block, index) => (
-                  <div
-                    key={index}
-                    className="absolute w-full bg-gray/20"
-                    style={{
-                      top: `${getTopPosition(block.from)}%`,
-                      height: `${getHeight(block.from, block.to)}%`,
-                    }}
-                  />
-                ))}
-
-              {/* Schedule slots */}
-              {schedule
-                .filter(slot => slot.day === day)
-                .map((slot, index) => (
-                  <div
-                    key={index}
-                    style={getSlotStyle(slot)}
-                    className="text-xs"
-                  >
-                    <div className="font-medium mb-1">{slot.subject}</div>
-                    <div className="text-gray">
-                      Com. {slot.commission}
-                      <br />
-                      {slot.building} - {slot.classroom}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <>
+      <SaveModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        onSaveAsPDF={handleSaveAsPDF}
+        onSaveAsImage={handleSaveAsImage}
+        onExportToCalendar={handleExportToCalendar}
+        onShareLink={handleShareLink}
+      />
+    </>
   );
 };
 

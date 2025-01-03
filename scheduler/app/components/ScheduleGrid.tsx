@@ -127,7 +127,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
     rooms: Array<{ classroom: string; building: string }>
   ) => {
     if (rooms.length === 1) {
-      return `${rooms[0].classroom} (${rooms[0].building})`;
+      return `${rooms[0].classroom}`;
     }
     return rooms.map((r) => r.classroom).join(", ");
   };
@@ -285,7 +285,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                               <div className="font-medium truncate">
                                 {slot.subject}
                               </div>
-                              <div className="text-gray truncate">
+                              <div className="truncate">
                                 <div>Com. {slot.commission}</div>
                                 <div className="truncate">
                                   {formatRooms(slot.rooms)}

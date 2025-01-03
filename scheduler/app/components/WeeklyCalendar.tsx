@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TimeBlock } from '../types/scheduler';
+import { CheckCircleIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 interface WeeklyCalendarProps {
   onChange?: (blocks: TimeBlock[]) => void;
@@ -97,7 +98,35 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
   return (
     <div className="bg-background rounded-lg px-4">
       <h3 className="font-medium text-textDefault mb-2">Horarios bloqueados</h3>
-      <p className="text-sm text-gray mb-4">Estos horarios se mostrarán en el calendario generado</p>
+      <div className="text-sm text-textDefault mb-4">
+      Los horarios bloqueados son períodos específicos en los que no deseas tener clases programadas. Estos espacios se reservan para:
+      <div className="space-y-3 mt-4">
+            <div className="flex items-start gap-3">
+              <CheckCircleIcon className="h-6 w-6 text-green-500 mt-1" />
+              <div>
+                <h3 className="text-textDefault">Actividades personales</h3>
+                <p className="text-gray">Trabajo, almuerzo, ejercicio, tiempo en familia</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <CheckCircleIcon className="h-6 w-6 text-green-500 mt-1" />
+              <div>
+                <h3>Tiempos de traslado</h3>
+                <p className="text-gray">Viajes hacia y desde la universidad</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <CheckCircleIcon className="h-6 w-6 text-green-500 mt-1" />
+              <div>
+                <h3>Compromisos fijos</h3>
+                <p className="text-gray">Otras actividades académicas, cursos o responsabilidades</p>
+              </div>
+            </div>
+          </div>
+
+      </div>
       
       <div className="w-full">
         <div className="w-full">

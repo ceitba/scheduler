@@ -109,36 +109,31 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   return (
     <div className="w-full">
       <div className="w-full">
-        {/* Header with days */}
         <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5 mb-0.5">
-          <div className="h-8 flex items-center justify-center text-xs min-w-[50px] font-medium text-gray">
+          <div id="hora-header" className="h-12 flex items-center justify-start pl-2 text-xs min-w-[50px] font-medium text-gray">
             Hora
           </div>
-          {dayNames.map((day) => (
+          {dayNames.map((day, index) => (
             <div
               key={day}
-              className="h-8 flex items-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"
+              id={`day-header-${index + 1}`}
+              className="h-12 flex items-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"
             >
               {day}
             </div>
           ))}
         </div>
-
-        {/* Time grid */}
         <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5">
-          {/* Time labels */}
-          <div className="relative min-w-[50px]">
+          <div id="time-column" className="flex flex-col min-w-[50px]">
             {timeSlots.map((time) => (
               <div
                 key={time}
-                className="h-12 flex items-start justify-center text-xs text-gray"
+                className="h-12 flex items-center justify-start pl-2 text-xs text-gray/70"
               >
                 {time}
               </div>
             ))}
           </div>
-
-          {/* Day columns */}
           {days.map((day) => {
             const daySlots = getSlotsForDay(day);
             const overlappingGroups = new Map<string, GroupedSlot[]>();

@@ -45,6 +45,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const scheduleRef = useRef<HTMLDivElement>(null);
 
+  const timeSlots = Array.from({ length: 14 }, (_, i) => {
+    const hour = i + 8;
+    return `${hour.toString().padStart(2, '0')}:00`;
+  });
+
   useEffect(() => {
     const currentOptionsString = JSON.stringify(scheduler.getOptions());
     const currentSubjectsString = JSON.stringify(scheduler.getSubjects());
@@ -158,23 +163,81 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1400px';
+    wrapper.style.width = '1920px';
+    wrapper.style.height = '1080px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
-    wrapper.style.padding = '40px';
+    wrapper.style.padding = '60px';
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.boxSizing = 'border-box';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
-    clone.style.height = 'auto';
+    clone.style.height = '100%';
     clone.style.position = 'static';
     clone.style.transform = 'none';
     clone.style.margin = '0';
+    clone.style.display = 'flex';
+    clone.style.flexDirection = 'column';
+    clone.style.gap = '20px';
     
-    // Copy computed styles
-    const computedStyles = window.getComputedStyle(element);
-    for (const style of computedStyles) {
-      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
+    // Update day headers
+    const dayHeaders = clone.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div');
+    const fullDayNames: { [key: string]: string } = {
+      'Lun': 'Lunes',
+      'Mar': 'Martes',
+      'Mie': 'Miércoles',
+      'Jue': 'Jueves',
+      'Vie': 'Viernes'
+    };
+    
+    dayHeaders.forEach((header: Element, index) => {
+      if (index === 0) {
+        // This is the "Hora" header
+        (header as HTMLElement).style.fontSize = '14px';
+        (header as HTMLElement).style.fontWeight = '500';
+        (header as HTMLElement).style.color = '#666';
+        (header as HTMLElement).style.background = 'none';
+      } else {
+        // These are the day headers
+        const text = header.textContent?.trim() || '';
+        Object.entries(fullDayNames).forEach(([short, full]) => {
+          if (text.includes(short)) {
+            header.textContent = full;
+          }
+        });
+        (header as HTMLElement).style.fontSize = '24px';
+        (header as HTMLElement).style.fontWeight = '600';
+        (header as HTMLElement).style.padding = '16px';
+        (header as HTMLElement).style.textAlign = 'center';
+        (header as HTMLElement).style.backgroundColor = '#2A2A2A';
+        (header as HTMLElement).style.borderRadius = '8px';
+        (header as HTMLElement).style.height = '48px';
+        (header as HTMLElement).style.display = 'flex';
+        (header as HTMLElement).style.alignItems = 'center';
+        (header as HTMLElement).style.justifyContent = 'center';
+      }
+    });
+
+    // Style time column
+    const timeColumn = clone.querySelector('.space-y-0\\.5');
+    if (timeColumn) {
+      const timeSlots = timeColumn.querySelectorAll('div');
+      timeSlots.forEach((slot: Element) => {
+        (slot as HTMLElement).style.fontSize = '12px';
+        (slot as HTMLElement).style.color = '#666';
+        (slot as HTMLElement).style.background = 'none';
+      });
     }
+    
+    // Ensure all grid cells have proper spacing
+    const gridCells = clone.querySelectorAll('.grid');
+    gridCells.forEach((cell: Element) => {
+      (cell as HTMLElement).style.gap = '8px';
+      (cell as HTMLElement).style.padding = '12px';
+    });
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -186,6 +249,10 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         allowTaint: true,
         logging: false,
         backgroundColor: null,
+        width: 1920,
+        height: 1080,
+        windowWidth: 1920,
+        windowHeight: 1080,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement('style');
           style.textContent = `
@@ -194,8 +261,66 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
             }
+            /* Day headers */
+            [id^="day-header-"] {
+              font-size: 24px !important;
+              font-weight: 600 !important;
+              padding: 16px !important;
+              text-align: center !important;
+              background-color: #2A2A2A !important;
+              border-radius: 8px !important;
+              height: 48px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              margin-bottom: 8px !important;
+            }
+            /* Hora text */
+            #hora-header {
+              font-size: 14px !important;
+              font-weight: 500 !important;
+              color: #666 !important;
+              background: none !important;
+              padding-left: 8px !important;
+              height: 48px !important;
+              display: flex !important;
+              align-items: center !important;
+              margin-bottom: 8px !important;
+            }
+            /* Time column */
+            #time-column {
+              min-width: 50px !important;
+            }
+            #time-column > div {
+              font-size: 12px !important;
+              color: #666 !important;
+              background: none !important;
+              height: 48px !important;
+              display: flex !important;
+              align-items: center !important;
+              padding-left: 8px !important;
+            }
           `;
           clonedDoc.head.appendChild(style);
+
+          // Update day headers text
+          const dayHeaders = clonedDoc.querySelectorAll('[id^="day-header-"]');
+          const fullDayNames: { [key: string]: string } = {
+            'Lun': 'Lunes',
+            'Mar': 'Martes',
+            'Mie': 'Miércoles',
+            'Jue': 'Jueves',
+            'Vie': 'Viernes'
+          };
+          
+          dayHeaders.forEach((header: Element) => {
+            const text = header.textContent?.trim() || '';
+            Object.entries(fullDayNames).forEach(([short, full]) => {
+              if (text.includes(short)) {
+                header.textContent = full;
+              }
+            });
+          });
         }
       });
 
@@ -226,23 +351,81 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1400px';
+    wrapper.style.width = '1920px';
+    wrapper.style.height = '1080px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
-    wrapper.style.padding = '40px';
+    wrapper.style.padding = '60px';
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.boxSizing = 'border-box';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
-    clone.style.height = 'auto';
+    clone.style.height = '100%';
     clone.style.position = 'static';
     clone.style.transform = 'none';
     clone.style.margin = '0';
+    clone.style.display = 'flex';
+    clone.style.flexDirection = 'column';
+    clone.style.gap = '20px';
     
-    // Copy computed styles
-    const computedStyles = window.getComputedStyle(element);
-    for (const style of computedStyles) {
-      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
+    // Update day headers
+    const dayHeaders = clone.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div');
+    const fullDayNames: { [key: string]: string } = {
+      'Lun': 'Lunes',
+      'Mar': 'Martes',
+      'Mie': 'Miércoles',
+      'Jue': 'Jueves',
+      'Vie': 'Viernes'
+    };
+    
+    dayHeaders.forEach((header: Element, index) => {
+      if (index === 0) {
+        // This is the "Hora" header
+        (header as HTMLElement).style.fontSize = '14px';
+        (header as HTMLElement).style.fontWeight = '500';
+        (header as HTMLElement).style.color = '#666';
+        (header as HTMLElement).style.background = 'none';
+      } else {
+        // These are the day headers
+        const text = header.textContent?.trim() || '';
+        Object.entries(fullDayNames).forEach(([short, full]) => {
+          if (text.includes(short)) {
+            header.textContent = full;
+          }
+        });
+        (header as HTMLElement).style.fontSize = '24px';
+        (header as HTMLElement).style.fontWeight = '600';
+        (header as HTMLElement).style.padding = '16px';
+        (header as HTMLElement).style.textAlign = 'center';
+        (header as HTMLElement).style.backgroundColor = '#2A2A2A';
+        (header as HTMLElement).style.borderRadius = '8px';
+        (header as HTMLElement).style.height = '48px';
+        (header as HTMLElement).style.display = 'flex';
+        (header as HTMLElement).style.alignItems = 'center';
+        (header as HTMLElement).style.justifyContent = 'center';
+      }
+    });
+
+    // Style time column
+    const timeColumn = clone.querySelector('.space-y-0\\.5');
+    if (timeColumn) {
+      const timeSlots = timeColumn.querySelectorAll('div');
+      timeSlots.forEach((slot: Element) => {
+        (slot as HTMLElement).style.fontSize = '12px';
+        (slot as HTMLElement).style.color = '#666';
+        (slot as HTMLElement).style.background = 'none';
+      });
     }
+    
+    // Ensure all grid cells have proper spacing
+    const gridCells = clone.querySelectorAll('.grid');
+    gridCells.forEach((cell: Element) => {
+      (cell as HTMLElement).style.gap = '8px';
+      (cell as HTMLElement).style.padding = '12px';
+    });
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -254,6 +437,10 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         allowTaint: true,
         logging: false,
         backgroundColor: null,
+        width: 1920,
+        height: 1080,
+        windowWidth: 1920,
+        windowHeight: 1080,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement('style');
           style.textContent = `
@@ -262,8 +449,66 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
             }
+            /* Day headers */
+            [id^="day-header-"] {
+              font-size: 24px !important;
+              font-weight: 600 !important;
+              padding: 16px !important;
+              text-align: center !important;
+              background-color: #2A2A2A !important;
+              border-radius: 8px !important;
+              height: 48px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              margin-bottom: 8px !important;
+            }
+            /* Hora text */
+            #hora-header {
+              font-size: 14px !important;
+              font-weight: 500 !important;
+              color: #666 !important;
+              background: none !important;
+              padding-left: 8px !important;
+              height: 48px !important;
+              display: flex !important;
+              align-items: center !important;
+              margin-bottom: 8px !important;
+            }
+            /* Time column */
+            #time-column {
+              min-width: 50px !important;
+            }
+            #time-column > div {
+              font-size: 12px !important;
+              color: #666 !important;
+              background: none !important;
+              height: 48px !important;
+              display: flex !important;
+              align-items: center !important;
+              padding-left: 8px !important;
+            }
           `;
           clonedDoc.head.appendChild(style);
+
+          // Update day headers text
+          const dayHeaders = clonedDoc.querySelectorAll('[id^="day-header-"]');
+          const fullDayNames: { [key: string]: string } = {
+            'Lun': 'Lunes',
+            'Mar': 'Martes',
+            'Mie': 'Miércoles',
+            'Jue': 'Jueves',
+            'Vie': 'Viernes'
+          };
+          
+          dayHeaders.forEach((header: Element) => {
+            const text = header.textContent?.trim() || '';
+            Object.entries(fullDayNames).forEach(([short, full]) => {
+              if (text.includes(short)) {
+                header.textContent = full;
+              }
+            });
+          });
         }
       });
 
@@ -360,7 +605,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             )}
           </div>
         </div>
-        <div className="py-4">
+        <div className="py-4" ref={scheduleRef}>
           {!hasSubjects ? (
             <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray">
               <div className="text-center text-gray mb-4">
@@ -377,10 +622,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             </div>
           ) : (
             <>
-              <div ref={scheduleRef}>
+              <div>
                 <ScheduleGrid slots={filteredSchedules[currentScheduleIndex].slots} />
               </div>
-
               {/* Schedule Info */}
               <div className="mt-4">
                 {renderScheduleInfo(filteredSchedules[currentScheduleIndex])}

@@ -52,7 +52,7 @@ const EditModal: React.FC<EditModalProps> = ({ block, onSave, onClose, onDelete 
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            className="w-full px-3 py-2 border border-gray/20 rounded-lg bg-secondaryBackground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-3 py-2 border border-gray rounded-lg bg-secondaryBackground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Ej: Almuerzo, Trabajo, etc."
           />
         </div>

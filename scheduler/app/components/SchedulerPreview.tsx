@@ -158,23 +158,18 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1400px';
+    wrapper.style.width = '1920px';
+    wrapper.style.height = '1080px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
     wrapper.style.padding = '40px';
+    wrapper.style.overflow = 'hidden';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
-    clone.style.height = 'auto';
-    clone.style.position = 'static';
-    clone.style.transform = 'none';
-    clone.style.margin = '0';
-    
-    // Copy computed styles
-    const computedStyles = window.getComputedStyle(element);
-    for (const style of computedStyles) {
-      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
-    }
+    clone.style.height = '100%';
+    clone.style.transform = 'scale(1)';
+    clone.style.transformOrigin = 'top left';
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -186,6 +181,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         allowTaint: true,
         logging: false,
         backgroundColor: null,
+        width: 1920,
+        height: 1080,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement('style');
           style.textContent = `
@@ -196,6 +193,27 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             }
           `;
           clonedDoc.head.appendChild(style);
+
+          // Update day headers text
+          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div');
+          const fullDayNames: { [key: string]: string } = {
+            'Lun': 'Lunes',
+            'Mar': 'Martes',
+            'Mie': 'Miércoles',
+            'Jue': 'Jueves',
+            'Vie': 'Viernes'
+          };
+          
+          dayHeaders.forEach((header: Element, index) => {
+            if (index > 0) { // Skip "Hora" header
+              const text = header.textContent?.trim() || '';
+              Object.entries(fullDayNames).forEach(([short, full]) => {
+                if (text.includes(short)) {
+                  header.textContent = full;
+                }
+              });
+            }
+          });
         }
       });
 
@@ -226,23 +244,18 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1400px';
+    wrapper.style.width = '1920px';
+    wrapper.style.height = '1080px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
     wrapper.style.padding = '40px';
+    wrapper.style.overflow = 'hidden';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
-    clone.style.height = 'auto';
-    clone.style.position = 'static';
-    clone.style.transform = 'none';
-    clone.style.margin = '0';
-    
-    // Copy computed styles
-    const computedStyles = window.getComputedStyle(element);
-    for (const style of computedStyles) {
-      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
-    }
+    clone.style.height = '100%';
+    clone.style.transform = 'scale(1)';
+    clone.style.transformOrigin = 'top left';
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -254,6 +267,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         allowTaint: true,
         logging: false,
         backgroundColor: null,
+        width: 1920,
+        height: 1080,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement('style');
           style.textContent = `
@@ -264,6 +279,27 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             }
           `;
           clonedDoc.head.appendChild(style);
+
+          // Update day headers text
+          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div');
+          const fullDayNames: { [key: string]: string } = {
+            'Lun': 'Lunes',
+            'Mar': 'Martes',
+            'Mie': 'Miércoles',
+            'Jue': 'Jueves',
+            'Vie': 'Viernes'
+          };
+          
+          dayHeaders.forEach((header: Element, index) => {
+            if (index > 0) { // Skip "Hora" header
+              const text = header.textContent?.trim() || '';
+              Object.entries(fullDayNames).forEach(([short, full]) => {
+                if (text.includes(short)) {
+                  header.textContent = full;
+                }
+              });
+            }
+          });
         }
       });
 
@@ -361,7 +397,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             )}
           </div>
         </div>
-        <div className="py-4">
+        <div className="py-4" ref={scheduleRef}>
           {!hasSubjects ? (
             <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray">
               <div className="text-center text-gray mb-4">
@@ -378,10 +414,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             </div>
           ) : (
             <>
-              <div ref={scheduleRef}>
+              <div>
                 <ScheduleGrid slots={filteredSchedules[currentScheduleIndex].slots} />
               </div>
-
               {/* Schedule Info */}
               <div className="mt-4">
                 {renderScheduleInfo(filteredSchedules[currentScheduleIndex])}

@@ -160,7 +160,22 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
   const handleMouseUp = useCallback(() => {
     if (selection) {
       const { day, startHour, endHour } = selection;
-      if (endHour && Math.abs(endHour - startHour) > 1) {
+      // For single click or small drags, create a 1-hour block
+      if (endHour && (Math.abs(endHour - startHour) <= 1)) {
+        const newBlock: LabeledTimeBlock = {
+          id: crypto.randomUUID(),
+          day,
+          from: `${startHour.toString().padStart(2, '0')}:00`,
+          to: `${(startHour + 1).toString().padStart(2, '0')}:00`
+        };
+        
+        if (!hasOverlap(newBlock)) {
+          setSelectedBlocks(prev => [...prev, newBlock]);
+          onChange?.([...selectedBlocks, newBlock]);
+        }
+      } 
+      // For longer drags, create a block with the dragged duration
+      else if (endHour && Math.abs(endHour - startHour) > 1) {
         const [start, end] = [Math.min(startHour, endHour), Math.max(startHour, endHour)];
         const newBlock: LabeledTimeBlock = {
           id: crypto.randomUUID(),
@@ -345,7 +360,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                       height: `${Math.abs(selection.endHour - selection.startHour) * 32}px`,
                     }}
                   >
-                    {Math.abs(selection.endHour - selection.startHour) > 1 && (
+                    {Math.abs(selection.endHour - selection.startHour) >= 1 && (
                       <span className="text-[11px] text-textDefault font-medium">
                         {`${Math.min(selection.startHour, selection.endHour)}:00 - ${Math.max(selection.startHour, selection.endHour)}:00`}
                       </span>
@@ -381,16 +396,18 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                       }}
                     >
                       {block.label ? (
-                        <>
-                          <span className="text-sm font-medium truncate">{block.label}</span>
-                          <span className="text-[11px] text-textDefault truncate">
+                        <div className="flex flex-col items-center justify-center w-full h-full p-1">
+                          <span className="text-xs font-medium truncate w-full text-center">{block.label}</span>
+                          <span className="text-[11px] text-textDefault w-full text-center">
                             {block.from} - {block.to}
                           </span>
-                        </>
+                        </div>
                       ) : (
-                        <span className="text-[11px] text-textDefault truncate">
-                          {block.from} - {block.to}
-                        </span>
+                        <div className="flex items-center justify-center w-full h-full">
+                          <span className="text-[11px] text-textDefault w-full text-center">
+                            {block.from} - {block.to}
+                          </span>
+                        </div>
                       )}
                       <PencilIcon className="absolute right-2 h-4 w-4 opacity-0 group-hover/block:opacity-100" />
                     </button>

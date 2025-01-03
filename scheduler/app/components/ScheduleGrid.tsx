@@ -1,5 +1,5 @@
 import React from "react";
-import { ScheduleSlot, TimeBlock } from "../types/scheduler";
+import { ScheduleSlot } from "../types/scheduler";
 import { Scheduler } from "../services/scheduler";
 
 interface ScheduleGridProps {
@@ -71,53 +71,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
 
     return acc;
   }, {} as Record<string, Map<string, GroupedSlot>>);
-
-  const groupConsecutiveBlockedTimes = (blocks: TimeBlock[]): TimeBlock[] => {
-    // Sort blocks by day and time
-    const sortedBlocks = [...blocks].sort((a, b) => {
-      if (a.day !== b.day) return a.day.localeCompare(b.day);
-      return timeToMinutes(a.from) - timeToMinutes(b.from);
-    });
-
-    const groupedBlocks: TimeBlock[] = [];
-    let currentGroup: TimeBlock | null = null;
-
-    sortedBlocks.forEach((block) => {
-      if (!currentGroup) {
-        currentGroup = { ...block };
-        return;
-      }
-
-      // Check if blocks are on the same day and consecutive
-      if (
-        currentGroup.day === block.day &&
-        timeToMinutes(currentGroup.to) === timeToMinutes(block.from)
-      ) {
-        // Extend current group
-        currentGroup.to = block.to;
-      } else {
-        // Push current group and start new one
-        groupedBlocks.push(currentGroup);
-        currentGroup = { ...block };
-      }
-    });
-
-    // Don't forget to push the last group
-    if (currentGroup) {
-      groupedBlocks.push(currentGroup);
-    }
-
-    return groupedBlocks;
-  };
-
-  const blockedSlots = groupConsecutiveBlockedTimes(blockedTimes).map(
-    (block) => ({
-      from: block.from,
-      to: block.to,
-      day: block.day,
-      isBlocked: true,
-    })
-  );
 
   const getSlotsForDay = (day: string): GroupedSlot[] => {
     return Array.from(slotsByDay[day]?.values() || []);

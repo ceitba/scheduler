@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { TimeBlock } from '../types/scheduler';
-import { CheckCircleIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
 import BaseModal from './BaseModal';
 
 interface LabeledTimeBlock extends TimeBlock {
@@ -157,7 +157,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (selection) {
       const { day, startHour, endHour } = selection;
       if (endHour && Math.abs(endHour - startHour) > 1) {
@@ -177,7 +177,12 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     }
     setIsSelecting(false);
     setSelection(null);
-  };
+  }, [selection, selectedBlocks, onChange, hasOverlap]);
+
+  useEffect(() => {
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => window.removeEventListener('mouseup', handleMouseUp);
+  }, [handleMouseUp]);
 
   const handleSaveBlock = (updatedBlock: LabeledTimeBlock) => {
     const newBlocks = selectedBlocks.map(block =>
@@ -196,15 +201,6 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
       setEditingBlock(null);
     }
   };
-
-  useEffect(() => {
-    const handleGlobalMouseUp = () => {
-      handleMouseUp();
-    };
-
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
-  }, [selection]);
 
   // Add ref for the calendar container
   const calendarRef = useRef<HTMLDivElement>(null);

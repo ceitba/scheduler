@@ -3,7 +3,6 @@ import WeeklyCalendar from "./WeeklyCalendar";
 import { Scheduler } from "../services/scheduler";
 import { TimeBlock } from "../types/scheduler";
 
-
 export const SettingsView: React.FC = () => {
   const scheduler = Scheduler.getInstance();
 
@@ -16,7 +15,10 @@ export const SettingsView: React.FC = () => {
     <div className="bg-background rounded-lg h-fit">
       <WeeklyCalendar 
         onChange={handleBlockedTimesChange}
-        initialBlocks={scheduler.getBlockedTimes()}
+        initialBlocks={scheduler.getBlockedTimes().map(block => ({
+          ...block,
+          id: crypto.randomUUID()
+        }))}
       />
     </div>
   );

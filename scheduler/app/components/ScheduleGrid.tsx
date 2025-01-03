@@ -132,8 +132,21 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
     return rooms.map((r) => r.classroom).join(" | ");
   };
 
+  const usedIndices = new Set<number>();
+
   const getSubjectColor = (subjectId: string) => {
-    const index = (Math.round(parseFloat(subjectId) * 100) % 10) + 1;
+    let index = (Math.round(parseFloat(subjectId) * 100) % 10) + 1;
+
+    while (usedIndices.has(index)) {
+      index = (index % 10) + 1;
+    }
+
+    usedIndices.add(index);
+
+    if (usedIndices.size === 10) {
+      usedIndices.clear();
+    }
+
     console.log(index);
     return {
       bg: `bg-subject_color_${index}`,
@@ -230,7 +243,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     return (
                       <div
                         key={`blocked-${block.day}-${block.timeFrom}-${index}`}
-                        className={`absolute w-full border-2 border-dashed border-secondary rounded-md bg-surface
+                        className={`absolute w-full border-2 border-dashed border-secondary bg-surface
                           ${!hasOverlap ? "bg-surface p-1" : ""}`}
                         style={{
                           top: `${top}px`,
@@ -268,9 +281,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                         return (
                           <div
                             key={`${slot.subject_id}-${slot.commission}-${slot.timeFrom}`}
-                            className={`absolute p-1 rounded-md ${
+                            className={`absolute p-1 ${
                               hasOverlap
-                                ? "opacity-70 bg-red-500/20 border-red-500/40"
+                                ? "opacity-90 bg-error_red_bg border-error_red_border border-2 border-dashed border-"
                                 : `${getSubjectColor(slot.subject_id).bg}`
                             }`}
                             style={{
@@ -287,9 +300,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                               </div>
                               <div className="space-y-0.5 text-gray-600 text-center text-[9px] lg:text-[11px]">
                                 {/* Commission */}
-                                <div className="">
-                                  Com. {slot.commission}
-                                </div>
+                                <div className="">Com. {slot.commission}</div>
 
                                 {/* Rooms */}
                                 <div className="">

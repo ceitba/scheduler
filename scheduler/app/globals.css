@@ -3,79 +3,105 @@
 @tailwind utilities;
 
 .uppercaseTitle {
-    @apply text-sm font-semibold uppercase;
+  @apply text-sm font-semibold uppercase;
 }
 
 .defaultText {
-    @apply text-textDefault;
+  @apply text-textDefault;
 }
 
 .title {
-    @apply text-2xl font-semibold;
+  @apply text-2xl font-semibold;
 }
 
 .link {
-    @apply defaultText cursor-pointer underline;
+  @apply defaultText cursor-pointer underline;
 }
 
 :root {
-    --background: #ffffff;
-    --text-default: #000000;
-    --foreground: #000000; 
-    --primary: #1269c5;
-    --secondary: #6c757d;
-    --gray: #6b7280;
-    --secondary-background: #eef0f2;
-    --surface: #e3e7eb;
+  --background: #ffffff;
+  --text-default: #000000;
+  --foreground: #000000;
+  --primary: #1269c5;
+  --secondary: #6c757d;
+  --gray: #6b7280;
+  --secondary-background: #eef0f2;
+  --surface: #e3e7eb;
 
-    --subject-color-1: rgba(227, 242, 253, 0.8);
-    --subject-color-2: rgba(243, 229, 245, 0.8);
-    --subject-color-3: rgba(232, 245, 233, 0.8);
-    --subject-color-4: rgba(255, 243, 224, 0.8);
-    --subject-color-5: rgba(252, 228, 236, 0.8);
-    --subject-color-6: rgba(224, 247, 250, 0.8);
-    --subject-color-7: rgba(237, 231, 246, 0.8);
-    --subject-color-8: rgba(241, 248, 233, 0.8);
-    --subject-color-9: rgba(224, 242, 241, 0.8);
-    --subject-color-10: rgba(255, 243, 224, 0.8);
+  --subject-color-1: rgba(179, 229, 252, 0.75);
+  /* Clearer blue */
+  --subject-color-2: rgba(225, 190, 231, 0.75);
+  /* Dusty rose */
+  --subject-color-3: rgba(200, 230, 201, 0.75);
+  /* Sage green */
+  --subject-color-4: rgba(255, 224, 178, 0.75);
+  /* Warm peach */
+  --subject-color-5: rgba(248, 187, 208, 0.75);
+  /* Soft pink */
+  --subject-color-6: rgba(178, 235, 242, 0.75);
+  /* Fresh cyan */
+  --subject-color-7: rgba(209, 196, 233, 0.75);
+  /* Muted violet */
+  --subject-color-8: rgba(220, 237, 200, 0.75);
+  /* Light lime */
+  --subject-color-9: rgba(178, 223, 219, 0.75);
+  /* Aqua mint */
+  --subject-color-10: rgba(255, 204, 188, 0.75);
+  /* Coral */
+
+  --error-red-bg: rgba(239, 68, 68, 0.2);     /* Vibrant red with 20% opacity */
+--error-red-border: rgba(239, 68, 68, 0.4);  /* Same red with 40% opacity */
+--error-red-text: rgb(185, 28, 28);         /* Darker red for text contrast */
 }
 
 .dark {
-    --background: #1a1a1a;
-    --text-default: #ffffff;
-    --foreground: #ffffff; 
-    --primary: #1269c5;
-    --secondary: #adb5bd;
-    --gray: #9ca3af;
-    --secondary-background: #2d2d2d;
-    --surface: #242424;
-
-    --subject-color-1: rgba(135, 206, 250, 0.5); /* Light pastel blue */
-    --subject-color-2: rgba(221, 160, 221, 0.5); /* Light pastel purple */
-    --subject-color-3: rgba(144, 238, 144, 0.5); /* Light pastel green */
-    --subject-color-4: rgba(255, 218, 185, 0.5); /* Light pastel peach */
-    --subject-color-5: rgba(255, 182, 193, 0.5); /* Light pastel pink */
-    --subject-color-6: rgba(175, 238, 238, 0.5); /* Light pastel cyan */
-    --subject-color-7: rgba(216, 191, 216, 0.5); /* Light pastel lavender */
-    --subject-color-8: rgba(193, 255, 193, 0.5); /* Light pastel lime */
-    --subject-color-9: rgba(152, 251, 152, 0.5); /* Light pastel mint */
-    --subject-color-10: rgba(255, 222, 173, 0.5); /* Light pastel beige */
+  --background: #1a1a1a;
+  --text-default: #ffffff;
+  --foreground: #ffffff;
+  --primary: #1269c5;
+  --secondary: #adb5bd;
+  --gray: #9ca3af;
+  --secondary-background: #2d2d2d;
+  --surface: #242424;
+  --error-red-bg: rgba(248, 113, 113, 0.2);    /* Brighter red with 20% opacity */
+--error-red-border: rgba(248, 113, 113, 0.4); /* Same red with 40% opacity */
+--error-red-text: rgb(252, 165, 165);        /* Lighter red for text contrast */
+  --subject-color-1: rgba(130, 177, 255, 0.4);
+  /* Electric blue */
+  --subject-color-2: rgba(186, 104, 200, 0.4);
+  /* Rich purple */
+  --subject-color-3: rgba(129, 199, 132, 0.4);
+  /* Forest green */
+  --subject-color-4: rgba(255, 183, 77, 0.4);
+  /* Golden orange */
+  --subject-color-5: rgba(240, 98, 146, 0.4);
+  /* Deep pink */
+  --subject-color-6: rgba(77, 208, 225, 0.4);
+  /* Bright cyan */
+  --subject-color-7: rgba(149, 117, 205, 0.4);
+  /* Deep violet */
+  --subject-color-8: rgba(174, 213, 129, 0.4);
+  /* Olive green */
+  --subject-color-9: rgba(77, 182, 172, 0.4);
+  /* Teal */
+  --subject-color-10: rgba(255, 138, 101, 0.4);
+  /* Burnt orange */
 }
 
 body {
-    color: var(--foreground);
-    background: var(--background);
-    font-family: Arial, Helvetica, sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 div {
-    color: var(--textDefault);
+  color: var(--textDefault);
 }
 
 @layer utilities {
-    .text-balance {
-        text-wrap: balance;
-    }
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 html, body {
@@ -151,6 +177,7 @@ main {
   0%, 100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-0.5rem);
   }

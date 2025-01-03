@@ -31,6 +31,9 @@ const config: Config = {
         subject_color_8: "var(--subject-color-8)",
         subject_color_9: "var(--subject-color-9)",
         subject_color_10: "var(--subject-color-10)",
+        error_red_bg: "var(--error-red-bg)",
+        error_red_text: "var(--error-red-text)",
+        error_red_border: "var(--error-red-border)",
 
       },
     },

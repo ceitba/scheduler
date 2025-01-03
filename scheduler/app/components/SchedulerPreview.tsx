@@ -24,6 +24,7 @@ interface SchedulerPreviewProps {
   schedules: PossibleSchedule[];
   setSchedules: (schedules: PossibleSchedule[]) => void;
   hasSubjects: boolean;
+  onExportToCalendar: () => void;
 }
 
 interface ScheduleSettings {
@@ -45,10 +46,10 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   schedules = [],
   setSchedules = () => {},
   hasSubjects,
+  onExportToCalendar,
 }) => {
   const scheduler = Scheduler.getInstance();
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
-  // const [hasAttemptedGeneration, setHasAttemptedGeneration] = useState(false);
   const [lastOptionsString, setLastOptionsString] = useState(
     JSON.stringify(scheduler.getOptions())
   );
@@ -78,9 +79,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }
   }, [scheduler, lastOptionsString, lastSubjectsString]);
 
-  // Reset current index when schedules array changes
+  // Update currentSchedule when schedules change
   useEffect(() => {
-    setCurrentScheduleIndex(0);
+    if (schedules.length > 0) {
+      setCurrentScheduleIndex(0);
+    }
   }, [schedules]);
 
   // Filter schedules based on overlap option
@@ -123,9 +126,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   const hasSchedules =
     Array.isArray(filteredSchedules) && filteredSchedules.length > 0;
-  const currentSchedule = hasSchedules
-    ? filteredSchedules[currentScheduleIndex]
-    : null;
 
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
@@ -177,38 +177,31 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const handleSaveAsPDF = async () => {
     if (!scheduleRef.current) return;
 
-    const element = scheduleRef.current as HTMLElement;
-
-    // First, create a wrapper that will maintain the layout
-    const wrapper = document.createElement("div");
-    wrapper.style.padding = "40px";
-    wrapper.style.backgroundColor = "var(--background)";
-    wrapper.style.width = "100%";
-    wrapper.style.position = "absolute";
-    wrapper.style.left = "0";
-    wrapper.style.top = "0";
-
-    // Clone and prepare the content
+    const element = scheduleRef.current;
+    
+    // Create a wrapper with controlled styles
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '-9999px';
+    wrapper.style.left = '-9999px';
+    wrapper.style.width = '1400px';
+    wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
+    wrapper.style.padding = '40px';
+    
+    // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
-
-    // Force the clone to take up proper width
-    clone.style.width = "1200px"; // Set a reasonable fixed width
-    clone.style.minWidth = "1200px";
-    clone.style.position = "relative";
-    clone.style.margin = "0 auto";
-    clone.style.display = "flex";
-    clone.style.flexDirection = "column";
-
-    // Ensure all child elements expand properly
-    const childElements = clone.getElementsByTagName("*");
-    Array.from(childElements).forEach((el: Element) => {
-      if (el instanceof HTMLElement) {
-        if (getComputedStyle(el).display === "flex") {
-          el.style.width = "100%";
-        }
-      }
-    });
-
+    clone.style.width = '100%';
+    clone.style.height = 'auto';
+    clone.style.position = 'static';
+    clone.style.transform = 'none';
+    clone.style.margin = '0';
+    
+    // Copy computed styles
+    const computedStyles = window.getComputedStyle(element);
+    for (const style of computedStyles) {
+      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
+    }
+    
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
 
@@ -216,31 +209,34 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
       const canvas = await html2canvas(wrapper, {
         scale: 2,
         useCORS: true,
-        logging: true,
-        removeContainer: true,
         allowTaint: true,
-        backgroundColor: getComputedStyle(document.body)
-          .getPropertyValue("--background")
-          .trim(),
-        windowWidth: 1300, // Match the clone width
-        width: 1300,
+        logging: false,
+        backgroundColor: null,
+        onclone: (clonedDoc) => {
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            * { 
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       });
 
-      const imgData = canvas.toDataURL("image/png");
-
-      // Calculate dimensions for PDF (maintaining aspect ratio)
-      const pdfWidth = 1400;
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({
-        orientation: "l",
-        unit: "px",
-        format: [pdfWidth, pdfHeight],
-        hotfixes: ["px_scaling"],
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+        hotfixes: ['px_scaling']
       });
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("horario.pdf");
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('horario.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
     } finally {
       document.body.removeChild(wrapper);
     }
@@ -249,33 +245,31 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const handleSaveAsImage = async () => {
     if (!scheduleRef.current) return;
 
-    const element = scheduleRef.current as HTMLElement;
-
-    const wrapper = document.createElement("div");
-    wrapper.style.padding = "40px";
-    wrapper.style.backgroundColor = "var(--background)";
-    wrapper.style.width = "100%";
-    wrapper.style.position = "absolute";
-    wrapper.style.left = "0";
-    wrapper.style.top = "0";
-
+    const element = scheduleRef.current;
+    
+    // Create a wrapper with controlled styles
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '-9999px';
+    wrapper.style.left = '-9999px';
+    wrapper.style.width = '1400px';
+    wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
+    wrapper.style.padding = '40px';
+    
+    // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
-    clone.style.width = "1200px";
-    clone.style.minWidth = "1200px";
-    clone.style.position = "relative";
-    clone.style.margin = "0 auto";
-    clone.style.display = "flex";
-    clone.style.flexDirection = "column";
-
-    const childElements = clone.getElementsByTagName("*");
-    Array.from(childElements).forEach((el: Element) => {
-      if (el instanceof HTMLElement) {
-        if (getComputedStyle(el).display === "flex") {
-          el.style.width = "100%";
-        }
-      }
-    });
-
+    clone.style.width = '100%';
+    clone.style.height = 'auto';
+    clone.style.position = 'static';
+    clone.style.transform = 'none';
+    clone.style.margin = '0';
+    
+    // Copy computed styles
+    const computedStyles = window.getComputedStyle(element);
+    for (const style of computedStyles) {
+      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
+    }
+    
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
 
@@ -283,20 +277,29 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
       const canvas = await html2canvas(wrapper, {
         scale: 2,
         useCORS: true,
-        logging: true,
-        removeContainer: true,
         allowTaint: true,
-        backgroundColor: getComputedStyle(document.body)
-          .getPropertyValue("--background")
-          .trim(),
-        windowWidth: 1400,
-        width: 1400,
+        logging: false,
+        backgroundColor: null,
+        onclone: (clonedDoc) => {
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            * { 
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       });
 
-      const link = document.createElement("a");
-      link.download = "horario.png";
-      link.href = canvas.toDataURL("image/png");
+      // Create a download link for the image
+      const link = document.createElement('a');
+      link.download = 'horario.png';
+      link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
+    } catch (error) {
+      console.error('Error generating image:', error);
     } finally {
       document.body.removeChild(wrapper);
     }
@@ -370,83 +373,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     return icsContent.join("\r\n");
   };
 
-  const createGoogleCalendarUrl = (event: {
-    title: string;
-    day: string;
-    startTime: string;
-    endTime: string;
-    location?: string;
-  }): string => {
-    const eventDate = getNextDayDate(event.day);
-    const startDate = timeStringToDate(event.startTime, eventDate);
-    const endDate = timeStringToDate(event.endTime, eventDate);
-
-    // Format dates for Google Calendar
-    const formatDate = (date: Date): string => {
-      return date
-        .toISOString()
-        .replace(/[-:]/g, "")
-        .replace(/\.\d{3}/, "");
-    };
-
-    const params = new URLSearchParams({
-      action: "TEMPLATE",
-      text: event.title,
-      dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
-      recur: "RRULE:FREQ=WEEKLY",
-      location: event.location || "",
-    });
-
-    return `https://calendar.google.com/calendar/render?${params.toString()}`;
-  };
-
-  const handleExportToCalendar = () => {
-    if (!currentSchedule) return;
-    setIsCalendarPanelOpen(true);
-
-    // First group the events by course, day and time
-    const groupedEvents = currentSchedule.slots.reduce((acc, slot) => {
-      const key = `${slot.subject_id}-${slot.day}-${slot.timeFrom}-${slot.timeTo}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          title: `${slot.subject_id} - ${slot.subject}`,
-          day: slot.day.toLowerCase(),
-          startTime: slot.timeFrom,
-          endTime: slot.timeTo,
-          locations: [slot.classroom || ""],
-        };
-      } else {
-        if (!acc[key].locations.includes(slot.classroom)) {
-          acc[key].locations.push(slot.classroom || "");
-        }
-      }
-
-      return acc;
-    }, {} as Record<string, any>);
-
-    // Transform the grouped events into the final format
-    const events = Object.values(groupedEvents).map((event) => ({
-      title: event.title,
-      day: event.day,
-      startTime: event.startTime,
-      endTime: event.endTime,
-      location: event.locations.join(", "),
-    }));
-
-    setScheduleEvents(events);
-    console.log("Events:");
-    console.log(events);
-
-    // Helper function to create Google Calendar URL
-
-    // Create calendar URLs and open first one
-    const calendarUrls = scheduleEvents.map((event) => ({
-      url: createGoogleCalendarUrl(event),
-      title: event.title,
-    }));
-    setRemainingCalendarUrls(calendarUrls);
-  };
+  const scheduleEvents: any[] = [];
 
   const handleShareLink = () => {
     // TODO: Implement share link functionality
@@ -456,7 +383,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto h-fit space-y-6">
+    <div className="flex flex-col">
       <div className="bg-background rounded-lg">
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end px-4">
           <Checkbox
@@ -534,23 +461,28 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
               <div className="text-center text-gray mb-4">
                 <CalendarDaysIcon className="h-8 w-8 mx-auto mb-2" />
-                <div className="mb-2 text-sm">
-                  {!hasSubjects
-                    ? "No hay materias seleccionadas"
-                    : "No hay combinaciones posibles. Intenta una nueva combinación"}
-                </div>
+                <div className="mb-2 text-sm">No hay materias seleccionadas</div>
               </div>
             </div>
-          ) : currentSchedule ? (
+          ) : filteredSchedules.length === 0 ? (
+            <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
+              <div className="text-center text-gray mb-4">
+                <XMarkIcon className="h-8 w-8 mx-auto mb-2" />
+                <div className="mb-2 text-sm">No hay combinaciones posibles para esta configuración</div>
+              </div>
+            </div>
+          ) : (
             <>
               <div ref={scheduleRef}>
-                <ScheduleGrid slots={currentSchedule.slots} />
+                <ScheduleGrid slots={filteredSchedules[currentScheduleIndex].slots} />
               </div>
 
               {/* Schedule Info */}
-              <div className="mt-4">{renderScheduleInfo(currentSchedule)}</div>
+              <div className="mt-4">
+                {renderScheduleInfo(filteredSchedules[currentScheduleIndex])}
+              </div>
             </>
-          ) : null}
+          )}
         </div>
       </div>
 
@@ -559,93 +491,99 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         onClose={() => setIsSaveModalOpen(false)}
         onSaveAsPDF={handleSaveAsPDF}
         onSaveAsImage={handleSaveAsImage}
-        onExportToCalendar={handleExportToCalendar}
+        onExportToCalendar={onExportToCalendar}
         onShareLink={handleShareLink}
       />
-      {isCalendarPanelOpen && (
-        <div className="fixed inset-y-0 right-0 w-full sm:w-[28rem] bg-background transform transition-transform border-l border-gray/20 overflow-y-auto z-50 shadow-xl">
-          <div className="p-3 sm:p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-base sm:text-lg font-medium">
-                Agregar al calendario
-              </h3>
-              <button
-                onClick={() => setIsCalendarPanelOpen(false)}
-                className="p-2 hover:bg-secondaryBackground rounded-lg"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
 
-            {/* Batch Add Option */}
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray/20 rounded-lg">
-              <h4 className="text-sm sm:text-base font-medium mb-2">
-                Opción 1: Agregar todos los eventos
-              </h4>
-              <p className="text-xs sm:text-sm text-gray mb-3 sm:mb-4">
-                Descarga el archivo y súbelo a Google Calendar para agregar
-                todos los eventos a la vez.
-              </p>
-              <ol className="text-xs sm:text-sm space-y-1.5 sm:space-y-2 mb-4">
-                <li>1. Descarga el archivo de calendario</li>
-                <li>
-                  2. Ve a{" "}
-                  <a
-                    href="https://calendar.google.com"
+      {isCalendarPanelOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/25 backdrop-blur-sm z-40"
+            onClick={() => setIsCalendarPanelOpen(false)}
+          />
+          
+          {/* Panel */}
+          <div className="fixed inset-y-0 right-0 w-full sm:w-[28rem] bg-background transform transition-transform border-l border-gray/20 overflow-y-auto z-50 shadow-xl">
+            <div className="p-3 sm:p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base sm:text-lg font-medium">Agregar al calendario</h3>
+                <button
+                  onClick={() => setIsCalendarPanelOpen(false)}
+                  className="p-2 hover:bg-secondaryBackground rounded-lg"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Batch Add Option */}
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray/20 rounded-lg">
+                <h4 className="text-sm sm:text-base font-medium mb-2">
+                  Opción 1: Agregar todos los eventos
+                </h4>
+                <p className="text-xs sm:text-sm text-gray mb-3 sm:mb-4">
+                  Descarga el archivo y súbelo a Google Calendar para agregar
+                  todos los eventos a la vez.
+                </p>
+                <ol className="text-xs sm:text-sm space-y-1.5 sm:space-y-2 mb-4">
+                  <li>1. Descarga el archivo de calendario</li>
+                  <li>
+                    2. Ve a{" "}
+                    
+                      <a href="https://calendar.google.com"
                     target="_blank"
                     className="text-primary"
                   >
                     Google Calendar
                   </a>
                 </li>
-                <li>3. Haz clic en el ícono de configuración ⚙️</li>
-                <li>4. Selecciona &quot;Importar y exportar&quot;</li>
-                <li>5. Sube el archivo descargado</li>
-              </ol>
-              <button
-                onClick={() => {
-                  const blob = new Blob([generateIcsContent(scheduleEvents)], {
-                    type: "text/calendar",
-                  });
-                  const link = document.createElement("a");
-                  link.href = window.URL.createObjectURL(blob);
-                  link.download = "horario.ics";
-                  link.click();
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm sm:text-base"
-              >
-                <ArrowDownTrayIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>Descargar archivo de calendario</span>
-              </button>
-            </div>
+                  <li>3. Haz clic en el ícono de configuración ⚙️</li>
+                  <li>4. Selecciona &quot;Importar y exportar&quot;</li>
+                  <li>5. Sube el archivo descargado</li>
+                </ol>
+                <button
+                  onClick={() => {
+                    const blob = new Blob([generateIcsContent(scheduleEvents)], {
+                      type: "text/calendar",
+                    });
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "horario.ics";
+                    link.click();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm sm:text-base"
+                >
+                  <ArrowDownTrayIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>Descargar archivo de calendario</span>
+                </button>
+              </div>
 
-            {/* Individual Add Option */}
-            <div className="p-3 sm:p-4 border border-gray/20 rounded-lg">
-              <h4 className="text-sm sm:text-base font-medium mb-2">
-                Opción 2: Agregar eventos uno por uno
-              </h4>
-              <div className="space-y-1.5 sm:space-y-2">
-                {remainingCalendarUrls.map((event, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      window.open(event.url, "_blank");
-                      setRemainingCalendarUrls((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      );
-                    }}
-                    className="w-full flex items-center gap-2 p-2 hover:bg-secondaryBackground rounded-lg text-left border border-gray/20"
-                  >
-                    <CalendarDaysIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                    <span className="text-xs sm:text-sm line-clamp-2">
-                      {event.title}
-                    </span>
-                  </button>
-                ))}
+              {/* Individual Add Option */}
+              <div className="p-3 sm:p-4 border border-gray/20 rounded-lg">
+                <h4 className="text-sm sm:text-base font-medium mb-2">
+                  Opción 2: Agregar eventos uno por uno
+                </h4>
+                <div className="space-y-1.5 sm:space-y-2">
+                  {remainingCalendarUrls.map((event, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        window.open(event.url, "_blank");
+                        setRemainingCalendarUrls((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }}
+                      className="w-full flex items-center gap-2 p-2 hover:bg-secondaryBackground rounded-lg text-left border border-gray/20"
+                    >
+                      <CalendarDaysIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                      <span className="text-xs sm:text-sm line-clamp-2">{event.title}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

@@ -49,9 +49,9 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
           </Link>
 
           {/* Right side with Plan and Theme */}
-          <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+          <div className="flex items-center">
           {hasMultiplePlans && (
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="">
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -86,7 +86,7 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
             )}
 
             {/* Theme Switcher */}
-            <div className="flex items-center">
+            <div className="">
               <ThemeSwitcher />
             </div>
           </div>

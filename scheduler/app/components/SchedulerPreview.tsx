@@ -225,7 +225,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             )}
           </div>
         </div>
-        <div className="p-4">
+        <div className="py-4">
           {!hasSubjects ? (
             <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
               <div className="text-center text-gray mb-4">

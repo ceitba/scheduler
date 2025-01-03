@@ -95,9 +95,9 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
   }, []);
 
   return (
-    <div className="bg-background rounded-lg p-4">
-      <h3 className="font-medium text-textDefault mb-4">Horarios bloqueados</h3>
-      <p className="text-sm text-gray mb-4">Estos horarios se mostrarán como sugerencia en el calendario generado</p>
+    <div className="bg-background rounded-lg px-4">
+      <h3 className="font-medium text-textDefault mb-2">Horarios bloqueados</h3>
+      <p className="text-sm text-gray mb-4">Estos horarios se mostrarán en el calendario generado</p>
       
       <div className="w-full">
         <div className="w-full">

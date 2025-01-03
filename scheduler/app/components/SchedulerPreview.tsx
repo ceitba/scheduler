@@ -45,11 +45,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const scheduleRef = useRef<HTMLDivElement>(null);
 
-  const timeSlots = Array.from({ length: 14 }, (_, i) => {
-    const hour = i + 8;
-    return `${hour.toString().padStart(2, '0')}:00`;
-  });
-
   useEffect(() => {
     const currentOptionsString = JSON.stringify(scheduler.getOptions());
     const currentSubjectsString = JSON.stringify(scheduler.getSubjects());
@@ -109,6 +104,42 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
       <div className="flex flex-col gap-2 lg:flex-row lg:justify-between">
+        <div className="flex flex-wrap gap-2 text-sm text-gray items-center">
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.maxOverlap ? "bg-red-500" : "bg-green-500"
+              }`}
+            />
+            <span>
+              {schedule.maxOverlap
+                ? "Tiene superposición"
+                : "Sin superposición"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasBuildingConflict ? "bg-red-500" : "bg-green-500"
+              }`}
+            />
+            <span>
+              {schedule.hasBuildingConflict
+                ? "Conflicto de edificios"
+                : "Sin conflicto de edificios"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                schedule.hasFreeDay ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+            <span>
+              {schedule.hasFreeDay ? "Tiene día libre" : "Sin día libre"}
+            </span>
+          </div>
+        </div>
         <div className="flex items-center gap-2 text-xs text-gray">
           <div className="w-5 h-5 border-2 border-dashed border-gray rounded-md bg-surface"></div>
           <span>Horario bloqueado</span>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TimeBlock } from '../types/scheduler';
-import { CheckCircleIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 
 interface WeeklyCalendarProps {
   onChange?: (blocks: TimeBlock[]) => void;

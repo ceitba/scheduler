@@ -205,12 +205,12 @@ export class Scheduler {
     // const workDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
     // const usedDays = new Set(schedule.map(slot => slot.day));
     // return workDays.some(day => !usedDays.has(day));
-    var workDays : string[] = [];
+    const workDays : string[] = [];
     schedule.forEach(slot => {
       if (!workDays.includes(slot.day))
         workDays.push(slot.day);
     })
-    return workDays.length < 5;
+    return !(workDays.includes('MONDAY') && workDays.includes('TUESDAY') && workDays.includes('WEDNESDAY') && workDays.includes('THURSDAY') && workDays.includes('FRIDAY'));
   }
 
   private createSchedule(slots: ScheduleSlot[]): PossibleSchedule {

@@ -123,16 +123,24 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     });
   };
 
-  const getHourFromPosition = (relativeY: number): number => {
-    const hour = Math.floor(relativeY / 32) + 8;
-    return Math.max(8, Math.min(21, hour));
+  const getHourFromPosition = (y: number): number => {
+    const cellHeight = 32; // height of each time slot in pixels
+    const gridHeight = cellHeight * 14; // total height of the grid (14 time slots)
+    
+    // If we're at or beyond the last cell, return 22 (last hour)
+    if (y >= gridHeight - cellHeight / 2) {
+      return 22;
+    }
+    
+    const hour = Math.floor(y / cellHeight) + 8;
+    return Math.min(Math.max(hour, 8), 21);
   };
 
   const handleMouseDown = (day: string, e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const relativeY = e.clientY - rect.top;
     const hour = getHourFromPosition(relativeY);
-
+    
     setIsSelecting(true);
     setSelection({
       day,
@@ -309,7 +317,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
           </div>
       </div>
       
-      <div className="w-full" ref={calendarRef}>
+      <div className="w-full select-none" ref={calendarRef}>
         <div className="w-full">
           {/* Header with days */}
           <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5 mb-0.5">
@@ -355,14 +363,14 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                 {/* Selection overlay */}
                 {selection && selection.day === day && selection.endHour && (
                   <div
-                    className="absolute inset-x-0 bg-background flex flex-col items-center justify-center transition-all duration-75 ease-out"
+                    className="absolute select-none inset-x-0 bg-background flex flex-col items-center justify-center transition-all duration-75 ease-out"
                     style={{
                       top: `${(Math.min(selection.startHour, selection.endHour) - 8) * 32}px`,
                       height: `${Math.abs(selection.endHour - selection.startHour) * 32}px`,
                     }}
                   >
                     {Math.abs(selection.endHour - selection.startHour) >= 1 && (
-                      <span className="text-[11px] text-textDefault font-medium">
+                      <span className="text-[11px] text-textDefault font-medium select-none">
                         {`${Math.min(selection.startHour, selection.endHour)}:00 - ${Math.max(selection.startHour, selection.endHour)}:00`}
                       </span>
                     )}
@@ -389,7 +397,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                     <button
                       key={block.id}
                       onClick={() => setEditingBlock(block)}
-                      className={`absolute inset-x-0 flex flex-col items-center justify-center hover:brightness-90 text-textDefault cursor-pointer group/block transition-all px-2 z-10 ${colorClass}`}
+                      className={`absolute inset-x-0 flex flex-col items-center justify-center hover:brightness-90 text-textDefault cursor-pointer group/block transition-all px-2 z-10 select-none ${colorClass}`}
                       style={{
                         top: `${top}px`,
                         height: `${height}px`,

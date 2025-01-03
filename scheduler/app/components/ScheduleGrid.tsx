@@ -166,7 +166,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
             {timeSlots.map((time) => (
               <div
                 key={time}
-                className="h-12 flex items-start justify-center text-xs text-gray pt-2"
+                className="h-12 flex items-start justify-center text-xs text-gray"
               >
                 {time}
               </div>

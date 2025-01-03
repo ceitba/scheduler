@@ -555,88 +555,87 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         onExportToCalendar={handleExportToCalendar}
         onShareLink={handleShareLink}
       />
+{isCalendarPanelOpen && (
+  <div className="fixed inset-y-0 right-0 w-full sm:w-[28rem] bg-background transform transition-transform border-l border-gray/20 overflow-y-auto z-50 shadow-xl">
+    <div className="p-3 sm:p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-base sm:text-lg font-medium">Agregar al calendario</h3>
+        <button
+          onClick={() => setIsCalendarPanelOpen(false)}
+          className="p-2 hover:bg-secondaryBackground rounded-lg"
+        >
+          <XMarkIcon className="h-5 w-5" />
+        </button>
+      </div>
 
-      {isCalendarPanelOpen && (
-        <div className="fixed inset-y-0 right-0 w-96 bg-background shadow-lg transform transition-transform border-l border-gray/20 overflow-y-auto z-10">
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Agregar al calendario</h3>
-              <button
-                onClick={() => setIsCalendarPanelOpen(false)}
-                className="p-2 hover:bg-secondaryBackground rounded-lg"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
+      {/* Batch Add Option */}
+      <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray/20 rounded-lg">
+        <h4 className="text-sm sm:text-base font-medium mb-2">
+          Opción 1: Agregar todos los eventos
+        </h4>
+        <p className="text-xs sm:text-sm text-gray mb-3 sm:mb-4">
+          Descarga el archivo y súbelo a Google Calendar para agregar
+          todos los eventos a la vez.
+        </p>
+        <ol className="text-xs sm:text-sm space-y-1.5 sm:space-y-2 mb-4">
+          <li>1. Descarga el archivo de calendario</li>
+          <li>
+            2. Ve a{" "}
+            
+              <a href="https://calendar.google.com"
+              target="_blank"
+              className="text-primary"
+            >
+              Google Calendar
+            </a>
+          </li>
+          <li>3. Haz clic en el ícono de configuración ⚙️</li>
+          <li>4. Selecciona &quot;Importar y exportar&quot;</li>
+          <li>5. Sube el archivo descargado</li>
+        </ol>
+        <button
+          onClick={() => {
+            const blob = new Blob([generateIcsContent(scheduleEvents)], {
+              type: "text/calendar",
+            });
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = "horario.ics";
+            link.click();
+          }}
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm sm:text-base"
+        >
+          <ArrowDownTrayIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span>Descargar archivo de calendario</span>
+        </button>
+      </div>
 
-            {/* Batch Add Option */}
-            <div className="mb-6 p-4 border border-gray/20 rounded-lg">
-              <h4 className="font-medium mb-2">
-                Opción 1: Agregar todos los eventos
-              </h4>
-              <p className="text-sm text-gray mb-4">
-                Descarga el archivo y súbelo a Google Calendar para agregar
-                todos los eventos a la vez.
-              </p>
-              <ol className="text-sm space-y-2 mb-4">
-                <li>1. Descarga el archivo de calendario</li>
-                <li>
-                  2. Ve a{" "}
-                  <a
-                    href="https://calendar.google.com"
-                    target="_blank"
-                    className="text-primary"
-                  >
-                    Google Calendar
-                  </a>
-                </li>
-                <li>3. Haz clic en el ícono de configuración ⚙️</li>
-                <li>4. Selecciona &quot;Importar y exportar&quot;</li>
-                <li>5. Sube el archivo descargado</li>
-              </ol>
-              <button
-                onClick={() => {
-                  const blob = new Blob([generateIcsContent(scheduleEvents)], {
-                    type: "text/calendar",
-                  });
-                  const link = document.createElement("a");
-                  link.href = window.URL.createObjectURL(blob);
-                  link.download = "horario.ics";
-                  link.click();
-                }}
-                className="w-full flex items-center justify-center gap-2 p-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-              >
-                <ArrowDownTrayIcon className="h-5 w-5" />
-                <span>Descargar archivo de calendario</span>
-              </button>
-            </div>
-
-            {/* Individual Add Option */}
-            <div className="p-4 border border-gray/20 rounded-lg">
-              <h4 className="font-medium mb-2">
-                Opción 2: Agregar eventos uno por uno
-              </h4>
-              <div className="space-y-2">
-                {remainingCalendarUrls.map((event, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      window.open(event.url, "_blank");
-                      setRemainingCalendarUrls((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      );
-                    }}
-                    className="w-full flex items-center gap-2 p-2 hover:bg-secondaryBackground rounded-lg text-left border border-gray/20"
-                  >
-                    <CalendarDaysIcon className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="text-sm">{event.title}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+      {/* Individual Add Option */}
+      <div className="p-3 sm:p-4 border border-gray/20 rounded-lg">
+        <h4 className="text-sm sm:text-base font-medium mb-2">
+          Opción 2: Agregar eventos uno por uno
+        </h4>
+        <div className="space-y-1.5 sm:space-y-2">
+          {remainingCalendarUrls.map((event, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                window.open(event.url, "_blank");
+                setRemainingCalendarUrls((prev) =>
+                  prev.filter((_, i) => i !== index)
+                );
+              }}
+              className="w-full flex items-center gap-2 p-2 hover:bg-secondaryBackground rounded-lg text-left border border-gray/20"
+            >
+              <CalendarDaysIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <span className="text-xs sm:text-sm line-clamp-2">{event.title}</span>
+            </button>
+          ))}
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

@@ -35,7 +35,7 @@ interface GroupedEvent {
   day: string;
   startTime: string;
   endTime: string;
-  locations: string[];
+  location?: string;
 }
 
 const VALID_CAREERS = Object.keys(AVAILABLE_PLANS);
@@ -144,7 +144,7 @@ export default function CareerPage({ }: PageProps) {
     setSchedules(generatedSchedules);
   };
 
-  const generateIcsContent = (scheduleEvents: any[]) => {
+  const generateIcsContent = (scheduleEvents: GroupedEvent[]) => {
     let icsContent = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
@@ -211,7 +211,7 @@ export default function CareerPage({ }: PageProps) {
     return date;
   };
 
-  let scheduleEvents: any[] = [];
+  let scheduleEvents: GroupedEvent[] = [];
 
   const handleExportToCalendar = () => {
     if (!currentSchedule) return;
@@ -227,12 +227,10 @@ export default function CareerPage({ }: PageProps) {
           day: slot.day.toLowerCase(),
           startTime: slot.timeFrom,
           endTime: slot.timeTo,
-          locations: [slot.classroom || ""],
+          location: slot.classroom || ""
         };
-      } else {
-        if (!acc[key].locations.includes(slot.classroom || "")) {
-          acc[key].locations.push(slot.classroom || "");
-        }
+      } else if (slot.classroom && !acc[key].location?.includes(slot.classroom)) {
+        acc[key].location = `${acc[key].location}, ${slot.classroom}`;
       }
 
       return acc;
@@ -244,7 +242,7 @@ export default function CareerPage({ }: PageProps) {
       day: event.day,
       startTime: event.startTime,
       endTime: event.endTime,
-      location: event.locations.join(", "),
+      location: event.location || "",
     }));
 
     // Create calendar URLs and open first one
@@ -417,7 +415,7 @@ export default function CareerPage({ }: PageProps) {
                     </a>
                   </li>
                   <li>3. Haz clic en el ícono de configuración ⚙️</li>
-                  <li>4. Selecciona "Importar y exportar"</li>
+                  <li>4. Selecciona &quot;Importar y exportar&quot;</li>
                   <li>5. Sube el archivo descargado</li>
                 </ol>
                 <button

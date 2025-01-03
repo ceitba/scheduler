@@ -42,7 +42,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 }) => {
   const scheduler = Scheduler.getInstance();
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
-  // const [hasAttemptedGeneration, setHasAttemptedGeneration] = useState(false);
   const [lastOptionsString, setLastOptionsString] = useState(
     JSON.stringify(scheduler.getOptions())
   );
@@ -71,9 +70,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }
   }, [scheduler, lastOptionsString, lastSubjectsString]);
 
-  // Reset current index when schedules array changes
+  // Update currentSchedule when schedules change
   useEffect(() => {
-    setCurrentScheduleIndex(0);
+    if (schedules.length > 0) {
+      setCurrentScheduleIndex(0);
+    }
   }, [schedules]);
 
   // Filter schedules based on overlap option
@@ -116,9 +117,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   const hasSchedules =
     Array.isArray(filteredSchedules) && filteredSchedules.length > 0;
-  const currentSchedule = hasSchedules
-    ? filteredSchedules[currentScheduleIndex]
-    : null;
 
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
@@ -171,16 +169,15 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     if (!scheduleRef.current) return;
 
     const element = scheduleRef.current;
-    const originalStyles = window.getComputedStyle(element);
     
     // Create a wrapper with controlled styles
     const wrapper = document.createElement('div');
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1200px';
+    wrapper.style.width = '1400px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
-    wrapper.style.padding = '20px';
+    wrapper.style.padding = '40px';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
@@ -246,9 +243,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1200px';
+    wrapper.style.width = '1400px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
-    wrapper.style.padding = '20px';
+    wrapper.style.padding = '40px';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
@@ -368,82 +365,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     return icsContent.join("\r\n");
   };
 
-  let scheduleEvents: any[] = [];
-
-  const handleExportToCalendar = () => {
-    if (!currentSchedule) return;
-    setIsCalendarPanelOpen(true);
-
-    // First group the events by course, day and time
-    const groupedEvents = currentSchedule.slots.reduce((acc, slot) => {
-      const key = `${slot.subject_id}-${slot.day}-${slot.timeFrom}-${slot.timeTo}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          title: `${slot.subject_id} - ${slot.subject}`,
-          day: slot.day.toLowerCase(),
-          startTime: slot.timeFrom,
-          endTime: slot.timeTo,
-          locations: [slot.classroom || ""],
-        };
-      } else {
-        if (!acc[key].locations.includes(slot.classroom)) {
-          acc[key].locations.push(slot.classroom || "");
-        }
-      }
-
-      return acc;
-    }, {} as Record<string, any>);
-
-    // Transform the grouped events into the final format
-    scheduleEvents = Object.values(groupedEvents).map((event) => ({
-      title: event.title,
-      day: event.day,
-      startTime: event.startTime,
-      endTime: event.endTime,
-      location: event.locations.join(", "),
-    }));
-
-    // Helper function to get the next occurrence of a weekday
-    
-    // Helper function to create Google Calendar URL
-    const createGoogleCalendarUrl = (event: {
-      title: string;
-      day: string;
-      startTime: string;
-      endTime: string;
-      location?: string;
-    }): string => {
-      const eventDate = getNextDayDate(event.day);
-      const startDate = timeStringToDate(event.startTime, eventDate);
-      const endDate = timeStringToDate(event.endTime, eventDate);
-
-      // Format dates for Google Calendar
-      const formatDate = (date: Date): string => {
-        return date
-          .toISOString()
-          .replace(/[-:]/g, "")
-          .replace(/\.\d{3}/, "");
-      };
-
-      const params = new URLSearchParams({
-        action: "TEMPLATE",
-        text: event.title,
-        dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
-        recur: "RRULE:FREQ=WEEKLY",
-        location: event.location || "",
-      });
-
-      return `https://calendar.google.com/calendar/render?${params.toString()}`;
-    };
-
-    // Create calendar URLs and open first one
-    const calendarUrls = scheduleEvents.map((event) => ({
-      url: createGoogleCalendarUrl(event),
-      title: event.title,
-    }));
-    setRemainingCalendarUrls(calendarUrls);
-  };
+  const scheduleEvents: any[] = [];
 
   const handleShareLink = () => {
     // TODO: Implement share link functionality
@@ -453,7 +375,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto h-fit space-y-6">
+    <div className="flex flex-col">
       <div className="bg-background rounded-lg">
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end px-4">
           <Checkbox

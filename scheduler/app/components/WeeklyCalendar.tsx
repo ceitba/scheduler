@@ -279,7 +279,8 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
 
   return (
     <div className="bg-background rounded-lg px-4">
-      <h3 className="font-medium text-textDefault mb-2">Horarios bloqueados</h3>
+      <h2 className="text-lg font-semibold text-textDefault pb-2">
+        Horarios bloqueados</h2>
       <div className="text-sm text-textDefault mb-4">
       Los horarios bloqueados son períodos específicos en los que no deseas tener clases programadas. Estos espacios se pueden reservan para:
       <div className="space-y-3 mt-4">

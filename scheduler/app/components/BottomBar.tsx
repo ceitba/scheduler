@@ -20,7 +20,7 @@ const BottomBar = () => {
             <Link 
               href="https://github.com/CEITBA-git/scheduler" 
               target="_blank"
-              className="text-gray/80 hover:text-primary transition-all duration-200 flex items-center gap-1.5"
+              className="underline hover:text-primary transition-all duration-200 flex items-center gap-1.5"
             >
               <FiGithub className="h-4 w-4" />
               <span>GitHub</span>
@@ -28,20 +28,20 @@ const BottomBar = () => {
             <Link 
               href="https://ceitba.org.ar" 
               target="_blank"
-              className="text-gray/80 hover:text-primary transition-all duration-200"
+              className="underline hover:text-primary transition-all duration-200"
             >
               CEITBA
             </Link>
             <Link 
               href="https://www.itba.edu.ar" 
               target="_blank"
-              className="text-gray/80 hover:text-primary transition-all duration-200"
+              className="underline hover:text-primary transition-all duration-200"
             >
               ITBA
             </Link>
             <Link 
               href="mailto:ceitba@itba.edu.ar"
-              className="text-gray/80 hover:text-primary transition-all duration-200 flex items-center gap-1.5"
+              className="underline hover:text-primary transition-all duration-200 flex items-center gap-1.5"
             >
               <FiMail className="h-4 w-4" />
               <span>Contacto</span>

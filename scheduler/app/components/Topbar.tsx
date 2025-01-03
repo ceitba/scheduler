@@ -47,7 +47,7 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
             href="/"
             className="flex-shrink-0 group hover:opacity-80 transition-opacity flex flex-col justify-center"
           >
-            <h2 className="text-base sm:text-lg md:text-xl lg:text-xl font-semibold text-textDefault whitespace-normal">
+            <h2 className="text-lg md:text-xl lg:text-xl font-semibold text-textDefault whitespace-normal">
               CEITBA
               <span className="hidden sm:inline">
                 {" "}
@@ -77,7 +77,7 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 rounded-md hover:bg-secondaryBackground"
                   >
-                    <span className="text-xs sm:text-sm lg:text-base font-medium">
+                    <span className="text-sm lg:text-base font-medium">
                       {currentPlan}
                     </span>
                     <ChevronDownIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray" />

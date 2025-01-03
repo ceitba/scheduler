@@ -156,36 +156,129 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     );
   };
 
+  
   const handleSaveAsPDF = async () => {
     if (!scheduleRef.current) return;
     
-    const canvas = await html2canvas(scheduleRef.current, {
-      backgroundColor: null,
-      scale: 2, // Higher quality
-    });
-    const imgData = canvas.toDataURL('image/png');
+    const element = scheduleRef.current as HTMLElement;
     
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: [canvas.width / 2, canvas.height / 2] // Adjust for scale
+    // First, create a wrapper that will maintain the layout
+    const wrapper = document.createElement('div');
+    wrapper.style.padding = '40px';
+    wrapper.style.backgroundColor = 'var(--background)';
+    wrapper.style.width = '100%';
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = '0';
+    wrapper.style.top = '0';
+    
+    // Clone and prepare the content
+    const clone = element.cloneNode(true) as HTMLElement;
+    
+    // Force the clone to take up proper width
+    clone.style.width = '1200px';  // Set a reasonable fixed width
+    clone.style.minWidth = '1200px';
+    clone.style.position = 'relative';
+    clone.style.margin = '0 auto';
+    clone.style.display = 'flex';
+    clone.style.flexDirection = 'column';
+    
+    // Ensure all child elements expand properly
+    const childElements = clone.getElementsByTagName('*');
+    Array.from(childElements).forEach((el: Element) => {
+      if (el instanceof HTMLElement) {
+        if (getComputedStyle(el).display === 'flex') {
+          el.style.width = '100%';
+        }
+      }
     });
     
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
-    pdf.save('horario.pdf');
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+    
+    try {
+      const canvas = await html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        logging: true,
+        removeContainer: true,
+        allowTaint: true,
+        backgroundColor: getComputedStyle(document.body).getPropertyValue('--background').trim(),
+        windowWidth: 1300, // Match the clone width
+        width: 1300,
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calculate dimensions for PDF (maintaining aspect ratio)
+      const pdfWidth = 1400;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      const pdf = new jsPDF({
+        orientation: 'l',
+        unit: 'px',
+        format: [pdfWidth, pdfHeight],
+        hotfixes: ['px_scaling']
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('horario.pdf');
+    } finally {
+      document.body.removeChild(wrapper);
+    }
   };
-
+  
   const handleSaveAsImage = async () => {
     if (!scheduleRef.current) return;
     
-    const canvas = await html2canvas(scheduleRef.current, {
-      backgroundColor: null,
-      scale: 2, // Higher quality
+    const element = scheduleRef.current as HTMLElement;
+    
+    const wrapper = document.createElement('div');
+    wrapper.style.padding = '40px';
+    wrapper.style.backgroundColor = 'var(--background)';
+    wrapper.style.width = '100%';
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = '0';
+    wrapper.style.top = '0';
+    
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.width = '1200px';
+    clone.style.minWidth = '1200px';
+    clone.style.position = 'relative';
+    clone.style.margin = '0 auto';
+    clone.style.display = 'flex';
+    clone.style.flexDirection = 'column';
+    
+    const childElements = clone.getElementsByTagName('*');
+    Array.from(childElements).forEach((el: Element) => {
+      if (el instanceof HTMLElement) {
+        if (getComputedStyle(el).display === 'flex') {
+          el.style.width = '100%';
+        }
+      }
     });
-    const link = document.createElement('a');
-    link.download = 'horario.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+    
+    try {
+      const canvas = await html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        logging: true,
+        removeContainer: true,
+        allowTaint: true,
+        backgroundColor: getComputedStyle(document.body).getPropertyValue('--background').trim(),
+        windowWidth: 1400,
+        width: 1400,
+      });
+  
+      const link = document.createElement('a');
+      link.download = 'horario.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } finally {
+      document.body.removeChild(wrapper);
+    }
   };
 
   const handleExportToCalendar = () => {

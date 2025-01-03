@@ -31,8 +31,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isSelected, onClick }) 
       <div>
         {isSelected ? (
           <div className="flex items-center">
-            <CheckIcon className="h-5 w-5 text-green-500 block group-hover:hidden" />
-            <TrashIcon className="h-5 w-5 text-red-500 hidden group-hover:block" />
+            <TrashIcon className="h-5 w-5 group-hover:text-red-500 text-gray block" />
+            {/* <TrashIcon className="h-5 w-5 text-red-500 hidden group-hover:block" /> */}
           </div>
         ) : (
           <PlusIcon className="h-5 w-5 text-gray group-hover:text-primary" />

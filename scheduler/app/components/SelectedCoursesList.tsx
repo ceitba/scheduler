@@ -73,8 +73,8 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
   {
     Object.values(groupedSchedule).map((schedule, i) => (
       <div key={i} className="text-xs text-gray">
-        {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} -{" "}
-        {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(", ")}
+        {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ''} -{" "}
+        {schedule.timeTo?.slice(0, 5) || ''} | {schedule.classrooms.join(", ")}
       </div>
     ));
   }
@@ -100,8 +100,8 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
             </span>
             {Object.values(groupedSchedule).map((schedule, i) => (
               <div key={i} className="text-xs text-gray">
-                {dayNames[schedule.day]} {schedule.timeFrom.slice(0, 5)} -{" "}
-                {schedule.timeTo.slice(0, 5)} | {schedule.classrooms.join(", ")}
+                {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ''} -{" "}
+                {schedule.timeTo?.slice(0, 5) || ''} | {schedule.classrooms.join(", ")}
               </div>
             ))}
           </div>

@@ -71,7 +71,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   // Filter schedules based on overlap option
   const filteredSchedules = schedules.filter((schedule) => {
     const options = scheduler.getOptions();
-    return options.allowOverlap || !schedule.hasOverlap;
+    return (options.allowOverlap || !schedule.hasOverlap) && (!options.allowFreeDay || schedule.hasFreeDay);
   });
 
   const handleGenerateClick = () => {
@@ -140,7 +140,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
-                schedule.hasFreeDay ? "bg-green-500" : "bg-gray-500"
+                schedule.hasFreeDay ? "bg-green-500" : "bg-red-500"
               }`}
             />
             <span>

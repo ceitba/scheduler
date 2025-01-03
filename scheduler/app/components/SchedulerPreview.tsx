@@ -65,10 +65,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     ) {
       setLastOptionsString(currentOptionsString);
       setLastSubjectsString(currentSubjectsString);
-      // setHasAttemptedGeneration(false);
-      setCurrentScheduleIndex(0); // Reset index when options or subjects change
+      setCurrentScheduleIndex(0);
     }
-  }, [scheduler.getOptions(), scheduler.getSubjects()]);
+  }, [scheduler, lastOptionsString, lastSubjectsString]);
 
   // Reset current index when schedules array changes
   useEffect(() => {

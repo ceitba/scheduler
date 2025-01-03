@@ -1,5 +1,5 @@
-import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, ReactNode, useEffect } from 'react'
+import { Dialog, Transition } from "@headlessui/react"
+import { Fragment, ReactNode, useEffect } from "react"
 
 interface BaseModalProps {
   isOpen: boolean;
@@ -14,17 +14,16 @@ const BaseModal: React.FC<BaseModalProps> = ({
   title,
   children,
 }) => {
-  // Prevent zooming when modal is open on mobile
   useEffect(() => {
     if (isOpen) {
-      const viewport = document.querySelector('meta[name=viewport]');
+      const viewport = document.querySelector("meta[name=viewport]");
       if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+        viewport.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1");
       }
     } else {
-      const viewport = document.querySelector('meta[name=viewport]');
+      const viewport = document.querySelector("meta[name=viewport]");
       if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1');
+        viewport.setAttribute("content", "width=device-width, initial-scale=1");
       }
     }
   }, [isOpen]);
@@ -32,7 +31,8 @@ const BaseModal: React.FC<BaseModalProps> = ({
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
+        <Transition
+          show={isOpen}
           as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -42,11 +42,12 @@ const BaseModal: React.FC<BaseModalProps> = ({
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-black/25 backdrop-blur-sm" />
-        </Transition.Child>
+        </Transition>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <Transition.Child
+            <Transition
+              show={isOpen}
               as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
@@ -55,14 +56,16 @@ const BaseModal: React.FC<BaseModalProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-[90vw] sm:w-full max-w-md transform overflow-hidden rounded-xl bg-background p-6 shadow-xl transition-all">
-                <Dialog.Title as="h3" className="text-lg font-medium mb-4">
+              <div
+                role="dialog"
+                className="w-[90vw] sm:w-full max-w-md transform overflow-hidden rounded-xl bg-background p-6 shadow-xl transition-all"
+              >
+                <h3 className="text-lg font-medium mb-4">
                   {title}
-                </Dialog.Title>
-
+                </h3>
                 {children}
-              </Dialog.Panel>
-            </Transition.Child>
+              </div>
+            </Transition>
           </div>
         </div>
       </Dialog>

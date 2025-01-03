@@ -1,4 +1,5 @@
-import { CheckIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+// import { CheckIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { type Subject } from "../hooks/useSubjects";
 
 interface CourseCardProps {

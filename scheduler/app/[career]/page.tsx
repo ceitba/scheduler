@@ -41,11 +41,11 @@ export default function CareerPage({ }: PageProps) {
   // Initialize scheduler with state
   useEffect(() => {
     scheduler.setSubjects(selectedCourses);
-  }, [selectedCourses]);
+  }, [selectedCourses, scheduler]);
 
   useEffect(() => {
     setSchedules(scheduler.getSchedules());
-  }, []);
+  }, [scheduler, setSchedules]);
 
   // Redirect to home if career code is invalid
   if (!VALID_CAREERS.includes(career as string)) {

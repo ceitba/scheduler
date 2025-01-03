@@ -318,9 +318,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             label="Tener un día libre"
           />
         </div>
-        <div className="flex items-center justify-between px-4 pt-2 border-b border-gray/20">
+        <div className="flex items-center justify-between pt-6 border-b border-gray/20">
           <div className="flex items-center gap-4">
-          <h2 className="text-wrap font-semibold text-textDefault">
+          <h2 className="text-lg font-semibold text-textDefault pb-2">
           Vista previa de horarios</h2>
             {hasSubjects && hasSchedules && (
               <span className="text-xs text-gray text-end whitespace-nowrap flex-shrink-0">

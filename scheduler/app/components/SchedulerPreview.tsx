@@ -1,14 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
 import { PossibleSchedule } from "../types/scheduler";
 import ScheduleGrid from "./ScheduleGrid";
 import { Scheduler } from "../services/scheduler";
 import {
   ArrowDownTrayIcon,
-  Cog6ToothIcon,
   CalendarDaysIcon,
   ArrowRightCircleIcon,
   ArrowLeftCircleIcon,
-  ArrowPathIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Checkbox from "./Checkbox";
@@ -295,6 +294,40 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }
   };
 
+  const getNextDayDate = (dayName: string): Date => {
+    const days = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    const today = new Date();
+    const dayIndex = days.indexOf(dayName.toLowerCase());
+
+    const targetDate = new Date();
+    const currentDay = today.getDay();
+
+    let daysUntilTarget = dayIndex - currentDay;
+    if (daysUntilTarget <= 0) {
+      daysUntilTarget += 7;
+    }
+
+    targetDate.setDate(today.getDate() + daysUntilTarget);
+    return targetDate;
+  };
+
+  // Helper function to convert time string to Date
+  const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const date = new Date(baseDate);
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+  };
+
+
   const generateIcsContent = (scheduleEvents: any[]) => {
     let icsContent = [
       "BEGIN:VCALENDAR",
@@ -367,39 +400,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }));
 
     // Helper function to get the next occurrence of a weekday
-    const getNextDayDate = (dayName: string): Date => {
-      const days = [
-        "sunday",
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-      ];
-      const today = new Date();
-      const dayIndex = days.indexOf(dayName.toLowerCase());
-
-      const targetDate = new Date();
-      const currentDay = today.getDay();
-
-      let daysUntilTarget = dayIndex - currentDay;
-      if (daysUntilTarget <= 0) {
-        daysUntilTarget += 7;
-      }
-
-      targetDate.setDate(today.getDate() + daysUntilTarget);
-      return targetDate;
-    };
-
-    // Helper function to convert time string to Date
-    const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
-      const [hours, minutes] = timeStr.split(":").map(Number);
-      const date = new Date(baseDate);
-      date.setHours(hours, minutes, 0, 0);
-      return date;
-    };
-
+    
     // Helper function to create Google Calendar URL
     const createGoogleCalendarUrl = (event: {
       title: string;
@@ -590,7 +591,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                   </a>
                 </li>
                 <li>3. Haz clic en el ícono de configuración ⚙️</li>
-                <li>4. Selecciona "Importar y exportar"</li>
+                <li>4. Selecciona &quot;Importar y exportar&quot;</li>
                 <li>5. Sube el archivo descargado</li>
               </ol>
               <button

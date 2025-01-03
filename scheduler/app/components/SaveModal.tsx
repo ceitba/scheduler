@@ -1,4 +1,4 @@
-import { FiDownload, FiImage, FiCalendar, FiShare2 } from 'react-icons/fi'
+import { FiDownload, FiImage, FiCalendar } from 'react-icons/fi'
 import BaseModal from './BaseModal'
 
 interface SaveModalProps {
@@ -16,7 +16,6 @@ const SaveModal: React.FC<SaveModalProps> = ({
   onSaveAsPDF,
   onSaveAsImage,
   onExportToCalendar,
-  onShareLink,
 }) => {
   const options = [
     {

@@ -129,7 +129,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
     if (rooms.length === 1) {
       return `${rooms[0].classroom}`;
     }
-    return rooms.map((r) => r.classroom).join(", ");
+    return rooms.map((r) => r.classroom).join(" | ");
   };
 
   const getSubjectColor = (subjectId: string) => {
@@ -139,7 +139,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
       bg: `bg-subject_color_${index}`,
       border: `border-subject_border_${index}`,
     };
-};
+  };
 
   return (
     <div className="w-full">
@@ -281,16 +281,23 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                               zIndex: 2,
                             }}
                           >
-                            <div className="h-full flex flex-col justify-between text-[10px] leading-tight">
-                              <div className="font-medium truncate">
+                            <div className="w-full h-full justify-center flex flex-col gap-0.5 text-[10px] lg:text-xs">
+                              <div className="font-bold text-gray-900 text-center truncate sm:overflow-visible sm:whitespace-normal mb-1">
                                 {slot.subject}
                               </div>
-                              <div className="truncate">
-                                <div>Com. {slot.commission}</div>
-                                <div className="truncate">
+                              <div className="space-y-0.5 text-gray-600 text-center text-[9px] lg:text-[11px]">
+                                {/* Commission */}
+                                <div className="">
+                                  Com. {slot.commission}
+                                </div>
+
+                                {/* Rooms */}
+                                <div className="">
                                   {formatRooms(slot.rooms)}
                                 </div>
-                                <div className="truncate">
+
+                                {/* Time */}
+                                <div className="">
                                   {slot.timeFrom.slice(0, 5)} -{" "}
                                   {slot.timeTo.slice(0, 5)}
                                 </div>
@@ -307,7 +314,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
           })}
         </div>
       </div>
-      
     </div>
   );
 };

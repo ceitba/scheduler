@@ -44,13 +44,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   );
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const scheduleRef = useRef<HTMLDivElement>(null);
-  // const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<
-  //   CalendarEvent[]
-  // >([]);
-  // const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false);
-  // const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
 
-  // Reset generation state when options or subjects change
   useEffect(() => {
     const currentOptionsString = JSON.stringify(scheduler.getOptions());
     const currentSubjectsString = JSON.stringify(scheduler.getSubjects());
@@ -80,12 +74,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
       (!options.allowFreeDay || schedule.hasFreeDay)
     );
   });
-
-  // const handleGenerateClick = () => {
-  //   setHasAttemptedGeneration(true);
-  //   setCurrentScheduleIndex(0); // Reset index when generating new schedules
-  //   onGenerateSchedules();
-  // };
 
   const handlePrevSchedule = () => {
     if (filteredSchedules.length > 0) {
@@ -291,74 +279,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }
   };
 
-  // const getNextDayDate = (dayName: string): Date => {
-  //   const days = [
-  //     "sunday",
-  //     "monday",
-  //     "tuesday",
-  //     "wednesday",
-  //     "thursday",
-  //     "friday",
-  //     "saturday",
-  //   ];
-  //   const today = new Date();
-  //   const dayIndex = days.indexOf(dayName.toLowerCase());
-
-  //   const targetDate = new Date();
-  //   const currentDay = today.getDay();
-
-  //   let daysUntilTarget = dayIndex - currentDay;
-  //   if (daysUntilTarget <= 0) {
-  //     daysUntilTarget += 7;
-  //   }
-
-  //   targetDate.setDate(today.getDate() + daysUntilTarget);
-  //   return targetDate;
-  // };
-
-  // // Helper function to convert time string to Date
-  // const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
-  //   const [hours, minutes] = timeStr.split(":").map(Number);
-  //   const date = new Date(baseDate);
-  //   date.setHours(hours, minutes, 0, 0);
-  //   return date;
-  // };
-
-  // const generateIcsContent = (scheduleEvents: ScheduleEvent[]) => {
-  //   let icsContent = [
-  //     "BEGIN:VCALENDAR",
-  //     "VERSION:2.0",
-  //     "PRODID:-//Schedule Generator//EN",
-  //     "CALSCALE:GREGORIAN",
-  //   ];
-
-  //   scheduleEvents.forEach((event) => {
-  //     const eventDate = getNextDayDate(event.day);
-  //     const startDate = timeStringToDate(event.startTime, eventDate);
-  //     const endDate = timeStringToDate(event.endTime, eventDate);
-
-  //     const formatDate = (date: Date) => {
-  //       return date
-  //         .toISOString()
-  //         .replace(/[-:]/g, "")
-  //         .replace(/\.\d{3}/, "");
-  //     };
-
-  //     icsContent = icsContent.concat([
-  //       "BEGIN:VEVENT",
-  //       `SUMMARY:${event.title}`,
-  //       `DTSTART:${formatDate(startDate)}`,
-  //       `DTEND:${formatDate(endDate)}`,
-  //       "RRULE:FREQ=WEEKLY",
-  //       `LOCATION:${event.location}`,
-  //       "END:VEVENT",
-  //     ]);
-  //   });
-
-  //   icsContent.push("END:VCALENDAR");
-  //   return icsContent.join("\r\n");
-  // };
-
   const handleShareLink = () => {
     // TODO: Implement share link functionality
     const url = window.location.href;
@@ -442,7 +362,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         </div>
         <div className="py-4">
           {!hasSubjects ? (
-            <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
+            <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray">
               <div className="text-center text-gray mb-4">
                 <CalendarDaysIcon className="h-8 w-8 mx-auto mb-2" />
                 <div className="mb-2 text-sm">No hay materias seleccionadas</div>

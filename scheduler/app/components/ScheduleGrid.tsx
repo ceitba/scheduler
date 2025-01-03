@@ -110,8 +110,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
     <div className="w-full">
       <div className="w-full">
         {/* Header with days */}
-        <div className="grid grid-cols-6 gap-0.5 mb-0.5">
-          <div className="h-8 flex items-center justify-center text-xs font-medium text-gray">
+        <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5 mb-0.5">
+          <div className="h-8 flex items-center justify-center text-xs min-w-[50px] font-medium text-gray">
             Hora
           </div>
           {dayNames.map((day) => (
@@ -125,9 +125,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
         </div>
 
         {/* Time grid */}
-        <div className="grid grid-cols-6 gap-0.5">
+        <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5">
           {/* Time labels */}
-          <div className="relative">
+          <div className="relative min-w-[50px]">
             {timeSlots.map((time) => (
               <div
                 key={time}

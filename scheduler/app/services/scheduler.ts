@@ -202,9 +202,15 @@ export class Scheduler {
   }
 
   private hasFreeDayOption(schedule: ScheduleSlot[]): boolean {
-    const workDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
-    const usedDays = new Set(schedule.map(slot => slot.day));
-    return workDays.some(day => !usedDays.has(day));
+    // const workDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+    // const usedDays = new Set(schedule.map(slot => slot.day));
+    // return workDays.some(day => !usedDays.has(day));
+    var workDays : string[] = [];
+    schedule.forEach(slot => {
+      if (!workDays.includes(slot.day))
+        workDays.push(slot.day);
+    })
+    return workDays.length < 5;
   }
 
   private createSchedule(slots: ScheduleSlot[]): PossibleSchedule {

@@ -109,42 +109,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
       <div className="flex flex-col gap-2 lg:flex-row lg:justify-between">
-        <div className="flex flex-wrap gap-2 text-sm text-gray items-center">
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                schedule.maxOverlap ? "bg-red-500" : "bg-green-500"
-              }`}
-            />
-            <span>
-              {schedule.maxOverlap
-                ? "Tiene superposición"
-                : "Sin superposición"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                schedule.hasBuildingConflict ? "bg-red-500" : "bg-green-500"
-              }`}
-            />
-            <span>
-              {schedule.hasBuildingConflict
-                ? "Conflicto de edificios"
-                : "Sin conflicto de edificios"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                schedule.hasFreeDay ? "bg-green-500" : "bg-red-500"
-              }`}
-            />
-            <span>
-              {schedule.hasFreeDay ? "Tiene día libre" : "Sin día libre"}
-            </span>
-          </div>
-        </div>
         <div className="flex items-center gap-2 text-xs text-gray">
           <div className="w-5 h-5 border-2 border-dashed border-gray rounded-md bg-surface"></div>
           <span>Horario bloqueado</span>
@@ -197,8 +161,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
       if (index === 0) {
         // This is the "Hora" header
         (header as HTMLElement).style.fontSize = '14px';
-        (header as HTMLElement).style.fontWeight = '500';
-        (header as HTMLElement).style.color = '#666';
+        // (header as HTMLElement).style.fontWeight = '400';
+        // (header as HTMLElement).style.color = '#666';
         (header as HTMLElement).style.background = 'none';
       } else {
         // These are the day headers
@@ -208,13 +172,13 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             header.textContent = full;
           }
         });
-        (header as HTMLElement).style.fontSize = '24px';
-        (header as HTMLElement).style.fontWeight = '600';
-        (header as HTMLElement).style.padding = '16px';
+        (header as HTMLElement).style.fontSize = '20px';
+        (header as HTMLElement).style.fontWeight = '400';
+        // (header as HTMLElement).style.padding = '16px';
         (header as HTMLElement).style.textAlign = 'center';
-        (header as HTMLElement).style.backgroundColor = '#2A2A2A';
-        (header as HTMLElement).style.borderRadius = '8px';
-        (header as HTMLElement).style.height = '48px';
+        // (header as HTMLElement).style.backgroundColor = '#2A2A2A';
+        (header as HTMLElement).style.borderRadius = '0px';
+        // (header as HTMLElement).style.height = '48px';
         (header as HTMLElement).style.display = 'flex';
         (header as HTMLElement).style.alignItems = 'center';
         (header as HTMLElement).style.justifyContent = 'center';
@@ -227,8 +191,13 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
       const timeSlots = timeColumn.querySelectorAll('div');
       timeSlots.forEach((slot: Element) => {
         (slot as HTMLElement).style.fontSize = '12px';
-        (slot as HTMLElement).style.color = '#666';
+        // (slot as HTMLElement).style.color = '#666';
         (slot as HTMLElement).style.background = 'none';
+        (slot as HTMLElement).style.height = '48px';
+        (slot as HTMLElement).style.display = 'flex';
+        (slot as HTMLElement).style.alignItems = 'flex-start';
+        (slot as HTMLElement).style.justifyContent = 'center';
+        (slot as HTMLElement).style.paddingTop = '0px';
       });
     }
     
@@ -263,29 +232,23 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             }
             /* Day headers */
             [id^="day-header-"] {
-              font-size: 24px !important;
-              font-weight: 600 !important;
-              padding: 16px !important;
               text-align: center !important;
               background-color: #2A2A2A !important;
               border-radius: 8px !important;
-              height: 48px !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
-              margin-bottom: 8px !important;
+              margin-bottom: 4px !important;
             }
             /* Hora text */
             #hora-header {
               font-size: 14px !important;
-              font-weight: 500 !important;
-              color: #666 !important;
               background: none !important;
               padding-left: 8px !important;
               height: 48px !important;
               display: flex !important;
               align-items: center !important;
-              margin-bottom: 8px !important;
+              margin-bottom: 6px !important;
             }
             /* Time column */
             #time-column {
@@ -293,12 +256,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             }
             #time-column > div {
               font-size: 12px !important;
-              color: #666 !important;
               background: none !important;
               height: 48px !important;
               display: flex !important;
-              align-items: center !important;
-              padding-left: 8px !important;
+              align-items: flex-start !important;
+              justify-content: center !important;
             }
           `;
           clonedDoc.head.appendChild(style);
@@ -396,8 +358,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             header.textContent = full;
           }
         });
-        (header as HTMLElement).style.fontSize = '24px';
-        (header as HTMLElement).style.fontWeight = '600';
+        (header as HTMLElement).style.fontSize = '20px';
+        (header as HTMLElement).style.fontWeight = '400';
         (header as HTMLElement).style.padding = '16px';
         (header as HTMLElement).style.textAlign = 'center';
         (header as HTMLElement).style.backgroundColor = '#2A2A2A';
@@ -417,6 +379,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         (slot as HTMLElement).style.fontSize = '12px';
         (slot as HTMLElement).style.color = '#666';
         (slot as HTMLElement).style.background = 'none';
+        (slot as HTMLElement).style.height = '48px';
+        (slot as HTMLElement).style.display = 'flex';
+        (slot as HTMLElement).style.alignItems = 'flex-start';
+        (slot as HTMLElement).style.justifyContent = 'center';
+        (slot as HTMLElement).style.paddingTop = '4px';
       });
     }
     
@@ -451,8 +418,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             }
             /* Day headers */
             [id^="day-header-"] {
-              font-size: 24px !important;
-              font-weight: 600 !important;
+              font-size: 20px !important;
               padding: 16px !important;
               text-align: center !important;
               background-color: #2A2A2A !important;
@@ -461,13 +427,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
-              margin-bottom: 8px !important;
+              // margin-bottom: 8px !important;
             }
             /* Hora text */
             #hora-header {
               font-size: 14px !important;
               font-weight: 500 !important;
-              color: #666 !important;
               background: none !important;
               padding-left: 8px !important;
               height: 48px !important;
@@ -481,11 +446,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             }
             #time-column > div {
               font-size: 12px !important;
-              color: #666 !important;
               background: none !important;
               height: 48px !important;
               display: flex !important;
-              align-items: center !important;
+              align-items: top !important;
+              justify-content: center !important;
               padding-left: 8px !important;
             }
           `;

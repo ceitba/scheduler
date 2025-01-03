@@ -124,11 +124,15 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
           ))}
         </div>
         <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5">
-          <div id="time-column" className="flex flex-col min-w-[50px]">
+          <div id="time-column" className="relative min-w-[50px] h-[672px]">
             {timeSlots.map((time) => (
               <div
                 key={time}
-                className="h-12 flex items-center justify-start pl-2 text-xs text-gray/70"
+                className="absolute w-full flex items-start justify-center pt-1 text-xs text-gray/70"
+                style={{
+                  top: ((timeToMinutes(time) - 8 * 60) / 60) * 48,
+                  height: '48px'
+                }}
               >
                 {time}
               </div>
@@ -274,9 +278,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             key={`${slot.subject_id}-${slot.commission}-${slot.timeFrom}`}
                             className={`absolute p-1 ${
                               hasOverlap
-                                ? "opacity-90 bg-error_red_bg border-error_red_border border-2 border-dashed border-"
+                                ? "opacity-90 bg-error_red_bg border-error_red_border border-2 border-dashed"
                                 : getSubjectColor(slot.subject_id)
-                                }`}
+                            }`}
                             style={{
                               top: `${top}px`,
                               height: `${height}px`,
@@ -290,16 +294,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                                 {slot.subject}
                               </div>
                               <div className="space-y-0.5 text-textDefault text-center text-[9px] lg:text-[11px]">
-                                {/* Commission */}
-                                <div className="">Com. {slot.commission}</div>
-
-                                {/* Rooms */}
-                                <div className="">
-                                  {formatRooms(slot.rooms)}
-                                </div>
-
-                                {/* Time */}
-                                <div className="">
+                                <div>Com. {slot.commission}</div>
+                                <div>{formatRooms(slot.rooms)}</div>
+                                <div>
                                   {slot.timeFrom.slice(0, 5)} -{" "}
                                   {slot.timeTo.slice(0, 5)}
                                 </div>

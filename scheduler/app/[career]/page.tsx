@@ -33,6 +33,8 @@ interface CalendarEvent {
 interface GroupedEvent {
   title: string;
   day: string;
+  startDate: Date;
+  endDate: Date;
   startTime: string;
   endTime: string;
   location?: string;
@@ -157,12 +159,16 @@ export default function CareerPage({ }: PageProps) {
 
     scheduleEvents.forEach((event) => {
       const eventDate = getNextDayDate(event.day);
-      const startDate = timeStringToDate(event.startTime, eventDate);
-      const endDate = timeStringToDate(event.endTime, eventDate);
+      const startTime = timeStringToDate(event.startTime, eventDate);
+      const endTime = timeStringToDate(event.endTime, eventDate);
+      const startDate = event.startDate;
+      const endDate = event.endDate;
+      const repetitions = Math.floor((endDate.getDay() - startDate.getDay()) / (1000 * 60 * 60 * 24 * 7));
+      
 
       const formatDate = (date: Date) => {
         return date
-          .toISOString()
+          .toLocaleString("sv-SE", { timeZone: "America/Argentina/Buenos_Aires", hour12: false })
           .replace(/[-:]/g, "")
           .replace(/\.\d{3}/, "");
       };
@@ -170,9 +176,10 @@ export default function CareerPage({ }: PageProps) {
       icsContent = icsContent.concat([
         "BEGIN:VEVENT",
         `SUMMARY:${event.title}`,
-        `DTSTART:${formatDate(startDate)}`,
-        `DTEND:${formatDate(endDate)}`,
-        "RRULE:FREQ=WEEKLY",
+        `DTSTART:${formatDate(startTime)}`,
+        `DTEND:${formatDate(endTime)}`,
+        `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
+
         `LOCATION:${event.location}`,
         "END:VEVENT",
       ]);
@@ -228,6 +235,8 @@ export default function CareerPage({ }: PageProps) {
         acc[key] = {
           title: `${slot.subject_id} - ${slot.subject}`,
           day: slot.day.toLowerCase(),
+          startDate:slot.dateFrom,
+          endDate:slot.dateTo,
           startTime: slot.timeFrom,
           endTime: slot.timeTo,
           location: slot.classroom || ""
@@ -243,6 +252,8 @@ export default function CareerPage({ }: PageProps) {
     const scheduleEvents = Object.values(groupedEvents).map((event: GroupedEvent) => ({
       title: event.title,
       day: event.day,
+      startDate: event.startDate,
+      endDate: event.endDate,
       startTime: event.startTime,
       endTime: event.endTime,
       location: event.location || "",
@@ -266,11 +277,18 @@ export default function CareerPage({ }: PageProps) {
     day: string;
     startTime: string;
     endTime: string;
+    startDate: Date;
+    endDate: Date;
     location?: string;
   }): string => {
     const eventDate = getNextDayDate(event.day);
-    const startDate = timeStringToDate(event.startTime, eventDate);
-    const endDate = timeStringToDate(event.endTime, eventDate);
+    const startTime = timeStringToDate(event.startTime, eventDate);
+    const endTime = timeStringToDate(event.endTime, eventDate);
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+    const repetitions = Math.floor((endTime.getDay() - startTime.getDay()) / (1000 * 60 * 60 * 24 * 7));
+    console.log(event);
+    console.log(repetitions,startDate.getDate()+startDate.getMonth(),"aas",endDate.getDate()+endDate.getMonth());
 
     const formatDate = (date: Date): string => {
       return date
@@ -282,8 +300,9 @@ export default function CareerPage({ }: PageProps) {
     const params = new URLSearchParams({
       action: "TEMPLATE",
       text: event.title,
-      dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
-      recur: "RRULE:FREQ=WEEKLY",
+      dates: `${formatDate(startTime)}/${formatDate(endTime)}`,
+      recur: `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
+      
       location: event.location || "",
     });
 

@@ -25,7 +25,7 @@ export interface ScheduleSlot {
 
 export interface PossibleSchedule {
   slots: ScheduleSlot[];
-  hasOverlap: boolean;
+  maxOverlap: number;
   hasBuildingConflict: boolean;
   hasFreeDay: boolean;
 }

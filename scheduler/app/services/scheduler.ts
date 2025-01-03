@@ -216,13 +216,15 @@ export class Scheduler {
   private createSchedule(slots: ScheduleSlot[]): PossibleSchedule {
     return {
       slots,
-      hasOverlap: this.hasTimeOverlap(slots),
+      maxOverlap: this.getMaxTimeOverlap(slots),
       hasBuildingConflict: !this.checkBuildingChanges(slots),
       hasFreeDay: this.hasFreeDayOption(slots)
     };
   }
 
-  private hasTimeOverlap(slots: ScheduleSlot[]): boolean {
+  // If getMaxTimeOverlap returns 0, then there are no overlaps
+  private getMaxTimeOverlap(slots: ScheduleSlot[]): number {
+    let maxOverlap = 0;
     // Group slots by day
     const slotsByDay = slots.reduce((acc, slot) => {
       if (!acc[slot.day]) {
@@ -242,14 +244,23 @@ export class Scheduler {
         const currentSlot = daySlots[i];
         const nextSlot = daySlots[i + 1];
 
-        // If the current slot ends after the next slot starts, there's an overlap
-        // But only if they're from different subjects
         if (currentSlot.timeTo > nextSlot.timeFrom && currentSlot.subject_id !== nextSlot.subject_id) {
-          return true;
+          // If the current slot ends after the next slot starts, there's an overlap
+          // But only if they're from different subjects
+          const overlap = this.calculateOverlap(currentSlot, nextSlot);
+          if (overlap > maxOverlap) {
+            console.log("Overlap between", currentSlot.timeTo, "and", nextSlot.timeFrom, "is", overlap);
+            maxOverlap = overlap;
+          }
         }
       }
     }
-
-    return false;
+    return maxOverlap;
   }
-} 
+
+  private calculateOverlap(slot1: ScheduleSlot, slot2: ScheduleSlot): number {
+    const end = new Date(`1970-01-01T${slot1.timeTo}Z`).getTime();
+    const start = new Date(`1970-01-01T${slot2.timeFrom}Z`).getTime();
+    return (end - start) / 60000; // Convert milliseconds to minutes
+  }
+}

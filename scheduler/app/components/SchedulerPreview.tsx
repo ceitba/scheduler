@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
 import { PossibleSchedule } from "../types/scheduler";
 import ScheduleGrid from "./ScheduleGrid";
@@ -77,7 +76,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const filteredSchedules = schedules.filter((schedule) => {
     const options = scheduler.getOptions();
     return (
-      (options.allowOverlap || !schedule.hasOverlap) &&
+      ((options.allowOverlap && Math.abs(schedule.maxOverlap) <= 30) || schedule.maxOverlap == 0) &&
       (!options.allowFreeDay || schedule.hasFreeDay)
     );
   });
@@ -121,11 +120,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
-                schedule.hasOverlap ? "bg-red-500" : "bg-green-500"
+                schedule.maxOverlap ? "bg-red-500" : "bg-green-500"
               }`}
             />
             <span>
-              {schedule.hasOverlap
+              {schedule.maxOverlap
                 ? "Tiene superposición"
                 : "Sin superposición"}
             </span>

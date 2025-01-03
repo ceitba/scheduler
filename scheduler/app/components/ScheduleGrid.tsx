@@ -147,7 +147,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
       usedIndices.clear();
     }
 
-    console.log(index);
     return {
       bg: `bg-subject_color_${index}`,
       border: `border-subject_border_${index}`,

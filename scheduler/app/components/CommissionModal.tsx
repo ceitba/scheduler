@@ -67,14 +67,13 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
             }}
             className="w-full p-3 text-left rounded-lg bg-secondaryBackground hover:bg-primary/10 hover:text-primary transition-all duration-200 group"
           >
-            <div className="flex items-center gap-4">
-              <FiCheck className="w-5 h-5 text-gray group-hover:text-primary transition-colors" />
+            <div className="flex items-center">
               <span className="text-textDefault group-hover:text-primary transition-colors">
                 Comisión {comm.name.toUpperCase()}
               </span>
             </div>
             {comm.schedule && comm.schedule.length > 0 && (
-              <div className="pl-9 mt-1">
+              <div className="mt-1">
                 {comm.schedule.map((slot, idx) => (
                   <div key={idx} className="text-xs text-gray group-hover:text-primary/70 transition-colors">
                     {DAY_TRANSLATIONS[slot.day.toLowerCase()]}{" "}

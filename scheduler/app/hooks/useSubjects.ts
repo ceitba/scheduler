@@ -23,6 +23,7 @@ export interface Subject {
   dependencies: string[];
   credits_required: number | null;
   commissions: Commission[];
+  section: string;
   year?: number;
   semester?: number;
 }

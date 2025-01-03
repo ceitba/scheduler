@@ -6,11 +6,7 @@ import { useState } from "react";
 interface AvailableCoursesListProps {
   courses: Record<number, { 
     year: string; 
-    subjects: {
-      '1': Subject[];
-      '2': Subject[];
-      'extra': Subject[];
-    }
+    subjects: Record<string, Subject[]>;
   }>;
   selectedCourses: Subject[];
   onCourseClick: (course: Subject) => void;
@@ -106,14 +102,17 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
                   selectedCourses={selectedCourses}
                   onCourseClick={onCourseClick}
                 />
-                {yearData.subjects.extra?.length > 0 && (
-                  <QuarterSection
-                    title="EXTRA"
-                    subjects={yearData.subjects.extra}
-                    selectedCourses={selectedCourses}
-                    onCourseClick={onCourseClick}
-                  />
-                )}
+                {Object.entries(yearData.subjects).map(([category, subjects]) => (
+                  category !== '1' && category !== '2' && subjects.length > 0 && (
+                    <QuarterSection
+                      key={category}
+                      title={category.toUpperCase()}
+                      subjects={subjects}
+                      selectedCourses={selectedCourses}
+                      onCourseClick={onCourseClick}
+                    />
+                  )
+                ))}
               </div>
             </DropdownSection>
           ))}
@@ -123,4 +122,4 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
   );
 };
 
-export default AvailableCoursesList; 
+export default AvailableCoursesList;

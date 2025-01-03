@@ -38,7 +38,6 @@ const CourseView: React.FC<CourseViewProps> = ({
           subjects: {
             '1': subjects,
             '2': [],
-            'extra': []
           }
         }
       }
@@ -50,18 +49,22 @@ const CourseView: React.FC<CourseViewProps> = ({
             subjects: {
               '1': [],
               '2': [],
-              'extra': []
             }
           };
         }
 
-        // Add subject to appropriate quarter
+        // Add subject to appropriate quarter or category
         const quarter = subject.semester?.toString() || '1';
         if (quarter === '1' || quarter === '2') {
           acc[year].subjects[quarter]?.push(subject);
         } else {
-          acc[year].subjects.extra.push(subject);
+           
+          if (!acc[year].subjects[subject.section]) {
+            acc[year].subjects[subject.section] = [];
+          }
+          acc[year].subjects[subject.section].push(subject);
         }
+        console.log(acc);
         
         return acc;
       }, {} as Record<number, { 
@@ -69,7 +72,7 @@ const CourseView: React.FC<CourseViewProps> = ({
         subjects: {
           '1': Subject[];
           '2': Subject[];
-          'extra': Subject[];
+          [category: string]: Subject[];
         }
       }>);
 

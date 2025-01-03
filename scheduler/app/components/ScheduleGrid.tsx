@@ -85,25 +85,25 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
     return rooms.map((r) => r.classroom).join(" | ");
   };
 
-  const usedIndices = new Set<number>();
+  const usedColors = new Map<string, string>();
+  let nextColorIndex = 1;
 
   const getSubjectColor = (subjectId: string) => {
-    let index = (Math.round(parseFloat(subjectId) * 100) % 10) + 1;
-
-    while (usedIndices.has(index)) {
-      index = (index % 10) + 1;
+    // Check if we already assigned a color to this subject
+    if (usedColors.has(subjectId)) {
+      return usedColors.get(subjectId)!;
     }
-
-    usedIndices.add(index);
-
-    if (usedIndices.size === 10) {
-      usedIndices.clear();
-    }
-
-    return {
-      bg: `bg-subject_color_${index}`,
-      border: `border-subject_border_${index}`,
-    };
+  
+    // Assign next available color
+    const colorClass = `bg-subject_color_${nextColorIndex}`;
+  
+    // Store the color assignment
+    usedColors.set(subjectId, colorClass);
+  
+    // Increment color index, wrap around to 1 if we reach 10
+    nextColorIndex = nextColorIndex === 10 ? 1 : nextColorIndex + 1;
+  
+    return colorClass;
   };
 
   return (
@@ -280,8 +280,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             className={`absolute p-1 ${
                               hasOverlap
                                 ? "opacity-90 bg-error_red_bg border-error_red_border border-2 border-dashed border-"
-                                : `${getSubjectColor(slot.subject_id).bg}`
-                            }`}
+                                : getSubjectColor(slot.subject_id)
+                                }`}
                             style={{
                               top: `${top}px`,
                               height: `${height}px`,

@@ -36,7 +36,7 @@ export const AVAILABLE_PLANS: Record<string, Plan[]> = {
   'I': [{ id: "I22" }, { id: "I-13" }, { id: "I-13T" }],
   'K': [{ id: "K22" }, { id: "K07-Rev.18" }, { id: "K07A-Rev.18" }],
   'L': [{ id: "L09" }, { id: "L09-REV13" }, { id: "L09T" }],
-  'LAES': [{ id: "A17" }, { id: "A22" }],
+  'LAES': [{ id: "A22" },{ id: "A17" } ],
   'LN': [{ id: "L20" }],
   'M': [{ id: "M22" }, { id: "M09 - Rev18 (Marzo)" }, { id: "M09 - Rev18 (Agosto)" }],
   'N': [{ id: "N22" }, { id: "N18 Marzo" }, { id: "N18 Agosto" }],

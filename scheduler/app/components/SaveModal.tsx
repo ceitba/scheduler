@@ -37,12 +37,12 @@ const SaveModal: React.FC<SaveModalProps> = ({
       icon: FiCalendar,
       onClick: onExportToCalendar,
     },
-    {
-      title: 'Compartir enlace',
-      description: 'Comparte tu horario mediante un enlace',
-      icon: FiShare2,
-      onClick: onShareLink,
-    },
+    // {
+    //   title: 'Compartir enlace',
+    //   description: 'Comparte tu horario mediante un enlace',
+    //   icon: FiShare2,
+    //   onClick: onShareLink,
+    // },
   ]
 
   return (

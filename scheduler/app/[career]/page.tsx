@@ -171,7 +171,7 @@ export default function CareerPage({ params }: PageProps) {
       content: (
         <SchedulerPreview
           schedules={schedules}
-          onGenerateSchedules={handleGenerateSchedules}
+          setSchedules={setSchedules}
           hasSubjects={selectedCourses.length > 0}
         />
       ),

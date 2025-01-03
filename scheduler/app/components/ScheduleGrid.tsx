@@ -109,35 +109,36 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   return (
     <div className="w-full">
       <div className="w-full">
+        {/* Header with days */}
         <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5 mb-0.5">
-          <div id="hora-header" className="h-12 flex items-center justify-start pl-2 text-xs min-w-[50px] font-medium text-gray">
+          <div className="h-8 flex items-center justify-center text-xs min-w-[50px] font-medium text-gray">
             Hora
           </div>
-          {dayNames.map((day, index) => (
+          {dayNames.map((day) => (
             <div
               key={day}
-              id={`day-header-${index + 1}`}
-              className="h-12 flex items-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"
+              className="h-8 flex items-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"
             >
               {day}
             </div>
           ))}
         </div>
+
+        {/* Time grid */}
         <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5">
-          <div id="time-column" className="relative min-w-[50px] h-[672px]">
+          {/* Time labels */}
+          <div className="relative min-w-[50px]">
             {timeSlots.map((time) => (
               <div
                 key={time}
-                className="absolute w-full flex items-start justify-center pt-1 text-xs text-gray/70"
-                style={{
-                  top: ((timeToMinutes(time) - 8 * 60) / 60) * 48,
-                  height: '48px'
-                }}
+                className="h-12 flex items-start justify-center text-xs text-gray"
               >
                 {time}
               </div>
             ))}
           </div>
+
+          {/* Day columns */}
           {days.map((day) => {
             const daySlots = getSlotsForDay(day);
             const overlappingGroups = new Map<string, GroupedSlot[]>();
@@ -228,7 +229,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     return (
                       <div
                         key={`blocked-${block.day}-${block.from}-${index}`}
-                        className="absolute w-full border-2 border-dashed border-secondary bg-surface"
+                        className="absolute w-full border-2 border-dashed border-secondary bg-surface items-center justify-center"
                         style={{
                           top: `${top}px`,
                           height: `${height}px`,
@@ -244,11 +245,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             }}
                           >
                             {block.label && (
-                              <div className="text-[12px] font-medium text-gray truncate">
+                              <div className="font-bold text-textDefault text-center break-words text-[10px] lg:text-xs pt-2">
                                 {block.label}
                               </div>
                             )}
-                            <div className="text-[10px] text-gray truncate">
+                            <div className="text-[9px] lg:text-[11px] text-gray text-center">
                               {block.from} - {block.to}
                             </div>
                           </div>
@@ -278,9 +279,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             key={`${slot.subject_id}-${slot.commission}-${slot.timeFrom}`}
                             className={`absolute p-1 ${
                               hasOverlap
-                                ? "opacity-90 bg-error_red_bg border-error_red_border border-2 border-dashed"
+                                ? "opacity-90 bg-error_red_bg border-error_red_border border-2 border-dashed border-"
                                 : getSubjectColor(slot.subject_id)
-                            }`}
+                                }`}
                             style={{
                               top: `${top}px`,
                               height: `${height}px`,
@@ -294,9 +295,16 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                                 {slot.subject}
                               </div>
                               <div className="space-y-0.5 text-textDefault text-center text-[9px] lg:text-[11px]">
-                                <div>Com. {slot.commission}</div>
-                                <div>{formatRooms(slot.rooms)}</div>
-                                <div>
+                                {/* Commission */}
+                                <div className="">Com. {slot.commission}</div>
+
+                                {/* Rooms */}
+                                <div className="">
+                                  {formatRooms(slot.rooms)}
+                                </div>
+
+                                {/* Time */}
+                                <div className="">
                                   {slot.timeFrom.slice(0, 5)} -{" "}
                                   {slot.timeTo.slice(0, 5)}
                                 </div>

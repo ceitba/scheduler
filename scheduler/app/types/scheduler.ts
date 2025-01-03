@@ -36,8 +36,8 @@ export interface SchedulerSubject extends Subject {
 
 export interface CommissionSchedule {
   day: string;
-  timeFrom: string;
-  timeTo: string;
+  time_from: string;
+  time_to: string;
   building: string;
   classroom: string;
 }

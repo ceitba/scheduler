@@ -104,8 +104,8 @@ export class Scheduler {
   private createSlotsFromCommission(subject: SchedulerSubject, commission: Commission): ScheduleSlot[] {
     return commission.schedule.map((slot: CommissionSchedule) => ({
       day: slot.day,
-      timeFrom: slot.timeFrom,
-      timeTo: slot.timeTo,
+      timeFrom: slot.time_from,
+      timeTo: slot.time_to,
       subject: subject.name,
       subject_id: subject.subject_id,
       commission: commission.name,

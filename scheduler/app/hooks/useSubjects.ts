@@ -7,8 +7,8 @@ interface Schedule {
   day: string;
   classroom: string;
   building: string;
-  timeFrom: string;
-  timeTo: string;
+  time_from: string;
+  time_to: string;
 }
 
 interface Commission {

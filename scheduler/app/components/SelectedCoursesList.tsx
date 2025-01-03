@@ -56,12 +56,12 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
       .find((c) => c.name === course.selectedCommission)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ?.schedule.reduce((acc: { [key: string]: any }, schedule) => {
-        const key = `${schedule.day}-${schedule.timeFrom}-${schedule.timeTo}`;
+        const key = `${schedule.day}-${schedule.time_from}-${schedule.time_to}`;
         if (!acc[key]) {
           acc[key] = {
             day: schedule.day,
-            timeFrom: schedule.timeFrom,
-            timeTo: schedule.timeTo,
+            timeFrom: schedule.time_from,
+            timeTo: schedule.time_to,
             classrooms: [schedule.classroom],
           };
         } else {

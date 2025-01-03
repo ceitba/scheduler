@@ -77,7 +77,7 @@ const CommissionModal: React.FC<CommissionModalProps> = ({
                 {comm.schedule.map((slot, idx) => (
                   <div key={idx} className="text-xs text-gray group-hover:text-primary/70 transition-colors">
                     {DAY_TRANSLATIONS[slot.day.toLowerCase()]}{" "}
-                    {slot.timeFrom.slice(0, 5)} - {slot.timeTo.slice(0, 5)} |{" "}
+                    {slot.time_from.slice(0, 5)} - {slot.time_to.slice(0, 5)} |{" "}
                     {slot.classroom}
                   </div>
                 ))}

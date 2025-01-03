@@ -29,47 +29,47 @@ const Topbar = ({ currentPlan }: TopbarProps) => {
   };
 
   return (
-    <div className="w-full bg-background border-gray/20 relative z-50 pt-2">
+    <div className="w-full bg-background border-gray/20 relative z-50 pt-4 px-1">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-auto items-center justify-between">
           {/* Logo or Brand */}
           <Link 
             href="/" 
             className="flex-shrink-0 group hover:opacity-80 transition-opacity flex flex-col justify-center"
           >
-            <h2 className="text-xl font-semibold text-textDefault">
+            <h2 className="text-base sm:text-lg md:text-xl lg:text-xl font-semibold text-textDefault whitespace-normal">
               CEITBA | Combinador de Horarios
             </h2>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl">{careerIcon}</span>
-              <h2 className="font-medium text-gray">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+            <span className="text-xs sm:text-sm lg:text-xl">{careerIcon}</span>
+            <h2 className="text-xs sm:text-sm lg:text-base text-gray truncate">
                 {careerName}
               </h2>
             </div>
           </Link>
 
           {/* Right side with Plan and Theme */}
-          <div className="flex items-center space-x-6">
-            {hasMultiplePlans && (
-              <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+          {hasMultiplePlans && (
+            <div className="flex items-center space-x-2 sm:space-x-4">
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center space-x-2 px-3 py-1 rounded-md hover:bg-secondaryBackground"
-                  >
-                    <span className="font-medium">{currentPlan}</span>
-                    <ChevronDownIcon className="h-4 w-4 text-gray" />
+                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 rounded-md hover:bg-secondaryBackground"
+                    >
+                  <span className="text-xs sm:text-sm lg:text-base font-medium">{currentPlan}</span>
+                  <ChevronDownIcon className="h-3 w-3 sm:h-4 sm:w-4 text-gray" />
                   </button>
 
                   {/* Dropdown Menu */}
                   {isDropdownOpen && (
-                    <div className="absolute right-0 z-50 mt-1 w-48 rounded-md bg-background shadow-lg ring-1 ring-black ring-opacity-5">
+                  <div className="absolute right-0 z-50 mt-1 w-36 sm:w-48 rounded-md bg-background shadow-lg ring-1 ring-black ring-opacity-5">
                       <div className="py-1">
                         {plans.map((plan) => (
                           <button
                             key={plan.id}
                             onClick={() => handlePlanChange(plan.id)}
-                            className={`block w-full px-4 py-2 text-sm ${
+                            className={`block w-full px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm ${
                               currentPlan === plan.id
                                 ? "bg-primary/10 text-primary"
                                 : "text-textDefault hover:bg-secondaryBackground"

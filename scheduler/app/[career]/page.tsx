@@ -5,7 +5,6 @@ import CourseView from "../components/CourseView";
 import { SettingsView } from "../components/SettingsView";
 import { SchedulerPreview } from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
-import BottomBar from "../components/BottomBar";
 import CommissionModal from "../components/CommissionModal";
 import { Subject } from "../hooks/useSubjects";
 import { useState, useEffect } from "react";
@@ -27,7 +26,7 @@ interface PageProps {
 
 const VALID_CAREERS = Object.keys(AVAILABLE_PLANS);
 
-export default function CareerPage({ params }: PageProps) {
+export default function CareerPage({ }: PageProps) {
   const { career } = useParams();
   const searchParams = useSearchParams();
   const normalizedPlan = searchParams.get("plan");

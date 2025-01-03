@@ -4,9 +4,7 @@ import ScheduleGrid from "./ScheduleGrid";
 import { Scheduler } from "../services/scheduler";
 import {
   ArrowDownTrayIcon,
-  ShareIcon,
   Cog6ToothIcon,
-  PhotoIcon,
   CalendarDaysIcon,
   ArrowRightCircleIcon,
   ArrowLeftCircleIcon,

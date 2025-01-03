@@ -3,7 +3,7 @@ import { SubjectList, Subject } from "./SubjectsSemester";
 import DropdownSection from "./DropdownSection";
 
 interface CarreerYearProps {
-  year: any;
+  year: string;
   subjects: Subject[];
 }
 
@@ -17,7 +17,7 @@ const CarreerYear: React.FC<CarreerYearProps> = ({ year, subjects }) => {
 
   return (
     <div className="mb-2">
-      <DropdownSection title={year}>
+      <DropdownSection title={year} isOpen={true} onToggle={() => {}}>
         <div className="">
           <div className="flex flex-col lg:flex-row justify-between">
             <div className="lg:w-1/2 lg:pr-4">

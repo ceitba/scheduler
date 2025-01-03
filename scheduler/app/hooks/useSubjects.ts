@@ -68,7 +68,7 @@ export function useSubjects() {
         
         // Flatten the nested structure into a single array of subjects
         const flattenedSubjects: Subject[] = [];
-        Object.entries(data).forEach(([category, yearData]) => {
+        Object.entries(data).forEach(([, yearData]) => {
           Object.entries(yearData).forEach(([year, semesterData]) => {
             Object.entries(semesterData).forEach(([semester, subjects]) => {
               subjects.forEach(subject => {

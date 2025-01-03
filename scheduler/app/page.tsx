@@ -24,7 +24,7 @@ const item = {
 };
 
 export default function Home() {
-  const { theme } = useTheme();
+  useTheme();
 
   // Create the careers array from our types
   const careersList = Object.entries(CAREERS).map(([id, name]) => ({

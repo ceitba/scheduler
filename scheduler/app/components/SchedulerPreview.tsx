@@ -13,6 +13,9 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import Checkbox from "./Checkbox";
+import SaveModal from './SaveModal';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface SchedulerPreviewProps {
   schedules: PossibleSchedule[];
@@ -41,6 +44,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const [lastSubjectsString, setLastSubjectsString] = useState(
     JSON.stringify(scheduler.getSubjects())
   );
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const scheduleRef = useRef<HTMLDivElement>(null);
 
   // Reset generation state when options or subjects change
   useEffect(() => {
@@ -151,6 +156,50 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     );
   };
 
+  const handleSaveAsPDF = async () => {
+    if (!scheduleRef.current) return;
+    
+    const canvas = await html2canvas(scheduleRef.current, {
+      backgroundColor: null,
+      scale: 2, // Higher quality
+    });
+    const imgData = canvas.toDataURL('image/png');
+    
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [canvas.width / 2, canvas.height / 2] // Adjust for scale
+    });
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+    pdf.save('horario.pdf');
+  };
+
+  const handleSaveAsImage = async () => {
+    if (!scheduleRef.current) return;
+    
+    const canvas = await html2canvas(scheduleRef.current, {
+      backgroundColor: null,
+      scale: 2, // Higher quality
+    });
+    const link = document.createElement('a');
+    link.download = 'horario.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  const handleExportToCalendar = () => {
+    // TODO: Implement Google Calendar export
+    console.log('Export to Google Calendar');
+  };
+
+  const handleShareLink = () => {
+    // TODO: Implement share link functionality
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    alert('¡Enlace copiado al portapapeles!');
+  };
+
   return (
     <div className="max-w-7xl mx-auto h-fit space-y-6">
       <div className="bg-background rounded-lg">
@@ -190,7 +239,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-gray/20">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-medium">Vista previa de horarios</h2>
-            {hasSchedules && (
+            {hasSubjects && hasSchedules && (
               <span className="text-sm text-gray">
                 Opción {currentScheduleIndex + 1} de {filteredSchedules.length}
               </span>
@@ -198,29 +247,33 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           </div>
 
           <div className="flex gap-2">
-            {hasSchedules && (
+            {hasSubjects && hasSchedules && (
               <>
+                {filteredSchedules.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevSchedule}
+                      className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
+                      title="Anterior horario"
+                    >
+                      <ArrowLeftCircleIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={handleNextSchedule}
+                      className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
+                      title="Siguiente horario"
+                    >
+                      <ArrowRightCircleIcon className="h-5 w-5" />
+                    </button>
+                  </>
+                )}
                 <button
-                  onClick={handlePrevSchedule}
+                  onClick={() => setIsSaveModalOpen(true)}
                   className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
-                  title="Anterior horario"
+                  title="Guardar horario"
                 >
-                  <ArrowLeftCircleIcon className="h-5 w-5" />
+                  <ArrowDownTrayIcon className="h-5 w-5" />
                 </button>
-                <button
-                  onClick={handleNextSchedule}
-                  className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
-                  title="Siguiente horario"
-                >
-                  <ArrowRightCircleIcon className="h-5 w-5" />
-                </button>
-                {/* <button
-                  onClick={onGenerateSchedules}
-                  className="p-2 text-gray hover:bg-secondaryBackground rounded-lg"
-                  title="Actualizar horarios"
-                >
-                  <ArrowPathIcon className="h-5 w-5" />
-                </button> */}
               </>
             )}
           </div>
@@ -251,7 +304,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             </div>
           ) : currentSchedule ? (
             <>
-              <ScheduleGrid slots={currentSchedule.slots} />
+              <div ref={scheduleRef}>
+                <ScheduleGrid slots={currentSchedule.slots} />
+              </div>
 
               {/* Schedule Info */}
               <div className="mt-4">{renderScheduleInfo(currentSchedule)}</div>
@@ -259,6 +314,15 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           ) : null}
         </div>
       </div>
+
+      <SaveModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        onSaveAsPDF={handleSaveAsPDF}
+        onSaveAsImage={handleSaveAsImage}
+        onExportToCalendar={handleExportToCalendar}
+        onShareLink={handleShareLink}
+      />
     </div>
   );
 };

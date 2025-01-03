@@ -15,11 +15,6 @@ import SaveModal from "./SaveModal";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-interface CalendarEvent {
-  url: string;
-  title: string;
-}
-
 interface SchedulerPreviewProps {
   schedules: PossibleSchedule[];
   setSchedules: (schedules: PossibleSchedule[]) => void;
@@ -32,14 +27,6 @@ interface ScheduleSettings {
   avoidLocationChanges: boolean;
   haveFreeDay: boolean;
   timeFormat: "12h" | "24h";
-}
-
-interface ScheduleEvent {
-  title: string;
-  day: string;
-  startTime: string;
-  endTime: string;
-  location: string;
 }
 
 export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
@@ -58,11 +45,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   );
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const scheduleRef = useRef<HTMLDivElement>(null);
-  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<
-    CalendarEvent[]
-  >([]);
-  const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false);
-  const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
+  // const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<
+  //   CalendarEvent[]
+  // >([]);
+  // const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false);
+  // const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
 
   // Reset generation state when options or subjects change
   useEffect(() => {
@@ -305,75 +292,73 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }
   };
 
-  const getNextDayDate = (dayName: string): Date => {
-    const days = [
-      "sunday",
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-    ];
-    const today = new Date();
-    const dayIndex = days.indexOf(dayName.toLowerCase());
+  // const getNextDayDate = (dayName: string): Date => {
+  //   const days = [
+  //     "sunday",
+  //     "monday",
+  //     "tuesday",
+  //     "wednesday",
+  //     "thursday",
+  //     "friday",
+  //     "saturday",
+  //   ];
+  //   const today = new Date();
+  //   const dayIndex = days.indexOf(dayName.toLowerCase());
 
-    const targetDate = new Date();
-    const currentDay = today.getDay();
+  //   const targetDate = new Date();
+  //   const currentDay = today.getDay();
 
-    let daysUntilTarget = dayIndex - currentDay;
-    if (daysUntilTarget <= 0) {
-      daysUntilTarget += 7;
-    }
+  //   let daysUntilTarget = dayIndex - currentDay;
+  //   if (daysUntilTarget <= 0) {
+  //     daysUntilTarget += 7;
+  //   }
 
-    targetDate.setDate(today.getDate() + daysUntilTarget);
-    return targetDate;
-  };
+  //   targetDate.setDate(today.getDate() + daysUntilTarget);
+  //   return targetDate;
+  // };
 
-  // Helper function to convert time string to Date
-  const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
-    const [hours, minutes] = timeStr.split(":").map(Number);
-    const date = new Date(baseDate);
-    date.setHours(hours, minutes, 0, 0);
-    return date;
-  };
+  // // Helper function to convert time string to Date
+  // const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
+  //   const [hours, minutes] = timeStr.split(":").map(Number);
+  //   const date = new Date(baseDate);
+  //   date.setHours(hours, minutes, 0, 0);
+  //   return date;
+  // };
 
-  const generateIcsContent = (scheduleEvents: ScheduleEvent[]) => {
-    let icsContent = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//Schedule Generator//EN",
-      "CALSCALE:GREGORIAN",
-    ];
+  // const generateIcsContent = (scheduleEvents: ScheduleEvent[]) => {
+  //   let icsContent = [
+  //     "BEGIN:VCALENDAR",
+  //     "VERSION:2.0",
+  //     "PRODID:-//Schedule Generator//EN",
+  //     "CALSCALE:GREGORIAN",
+  //   ];
 
-    scheduleEvents.forEach((event) => {
-      const eventDate = getNextDayDate(event.day);
-      const startDate = timeStringToDate(event.startTime, eventDate);
-      const endDate = timeStringToDate(event.endTime, eventDate);
+  //   scheduleEvents.forEach((event) => {
+  //     const eventDate = getNextDayDate(event.day);
+  //     const startDate = timeStringToDate(event.startTime, eventDate);
+  //     const endDate = timeStringToDate(event.endTime, eventDate);
 
-      const formatDate = (date: Date) => {
-        return date
-          .toISOString()
-          .replace(/[-:]/g, "")
-          .replace(/\.\d{3}/, "");
-      };
+  //     const formatDate = (date: Date) => {
+  //       return date
+  //         .toISOString()
+  //         .replace(/[-:]/g, "")
+  //         .replace(/\.\d{3}/, "");
+  //     };
 
-      icsContent = icsContent.concat([
-        "BEGIN:VEVENT",
-        `SUMMARY:${event.title}`,
-        `DTSTART:${formatDate(startDate)}`,
-        `DTEND:${formatDate(endDate)}`,
-        "RRULE:FREQ=WEEKLY",
-        `LOCATION:${event.location}`,
-        "END:VEVENT",
-      ]);
-    });
+  //     icsContent = icsContent.concat([
+  //       "BEGIN:VEVENT",
+  //       `SUMMARY:${event.title}`,
+  //       `DTSTART:${formatDate(startDate)}`,
+  //       `DTEND:${formatDate(endDate)}`,
+  //       "RRULE:FREQ=WEEKLY",
+  //       `LOCATION:${event.location}`,
+  //       "END:VEVENT",
+  //     ]);
+  //   });
 
-    icsContent.push("END:VCALENDAR");
-    return icsContent.join("\r\n");
-  };
-
-  const scheduleEvents: any[] = [];
+  //   icsContent.push("END:VCALENDAR");
+  //   return icsContent.join("\r\n");
+  // };
 
   const handleShareLink = () => {
     // TODO: Implement share link functionality
@@ -494,97 +479,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         onExportToCalendar={onExportToCalendar}
         onShareLink={handleShareLink}
       />
-
-      {isCalendarPanelOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/25 backdrop-blur-sm z-40"
-            onClick={() => setIsCalendarPanelOpen(false)}
-          />
-          
-          {/* Panel */}
-          <div className="fixed inset-y-0 right-0 w-full sm:w-[28rem] bg-background transform transition-transform border-l border-gray/20 overflow-y-auto z-50 shadow-xl">
-            <div className="p-3 sm:p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base sm:text-lg font-medium">Agregar al calendario</h3>
-                <button
-                  onClick={() => setIsCalendarPanelOpen(false)}
-                  className="p-2 hover:bg-secondaryBackground rounded-lg"
-                >
-                  <XMarkIcon className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Batch Add Option */}
-              <div className="mb-4 sm:mb-6 p-3 sm:p-4 border border-gray/20 rounded-lg">
-                <h4 className="text-sm sm:text-base font-medium mb-2">
-                  Opción 1: Agregar todos los eventos
-                </h4>
-                <p className="text-xs sm:text-sm text-gray mb-3 sm:mb-4">
-                  Descarga el archivo y súbelo a Google Calendar para agregar
-                  todos los eventos a la vez.
-                </p>
-                <ol className="text-xs sm:text-sm space-y-1.5 sm:space-y-2 mb-4">
-                  <li>1. Descarga el archivo de calendario</li>
-                  <li>
-                    2. Ve a{" "}
-                    
-                      <a href="https://calendar.google.com"
-                    target="_blank"
-                    className="text-primary"
-                  >
-                    Google Calendar
-                  </a>
-                </li>
-                  <li>3. Haz clic en el ícono de configuración ⚙️</li>
-                  <li>4. Selecciona &quot;Importar y exportar&quot;</li>
-                  <li>5. Sube el archivo descargado</li>
-                </ol>
-                <button
-                  onClick={() => {
-                    const blob = new Blob([generateIcsContent(scheduleEvents)], {
-                      type: "text/calendar",
-                    });
-                    const link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = "horario.ics";
-                    link.click();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm sm:text-base"
-                >
-                  <ArrowDownTrayIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span>Descargar archivo de calendario</span>
-                </button>
-              </div>
-
-              {/* Individual Add Option */}
-              <div className="p-3 sm:p-4 border border-gray/20 rounded-lg">
-                <h4 className="text-sm sm:text-base font-medium mb-2">
-                  Opción 2: Agregar eventos uno por uno
-                </h4>
-                <div className="space-y-1.5 sm:space-y-2">
-                  {remainingCalendarUrls.map((event, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        window.open(event.url, "_blank");
-                        setRemainingCalendarUrls((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        );
-                      }}
-                      className="w-full flex items-center gap-2 p-2 hover:bg-secondaryBackground rounded-lg text-left border border-gray/20"
-                    >
-                      <CalendarDaysIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                      <span className="text-xs sm:text-sm line-clamp-2">{event.title}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 };

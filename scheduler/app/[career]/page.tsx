@@ -51,10 +51,13 @@ export default function CareerPage({ }: PageProps) {
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
   const [schedules, setSchedules] = useState<PossibleSchedule[]>([]);
   const scheduler = Scheduler.getInstance();
+
+  /* Calendar */
   const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false);
   const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarEvent[]>([]);
   const [currentSchedule, setCurrentSchedule] = useState<PossibleSchedule | null>(null);
   const calendarPanelRef = useRef<HTMLDivElement>(null);
+  const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([]);
 
   // Initialize scheduler with state
   useEffect(() => {
@@ -148,7 +151,7 @@ export default function CareerPage({ }: PageProps) {
     let icsContent = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//Schedule Generator//EN",
+      "PRODID:-//Combinador de Horarios//EN",
       "CALSCALE:GREGORIAN",
     ];
 
@@ -211,7 +214,7 @@ export default function CareerPage({ }: PageProps) {
     return date;
   };
 
-  let scheduleEvents: GroupedEvent[] = [];
+  // let scheduleEvents: GroupedEvent[] = [];
 
   const handleExportToCalendar = () => {
     if (!currentSchedule) return;
@@ -237,13 +240,18 @@ export default function CareerPage({ }: PageProps) {
     }, {});
 
     // Transform the grouped events into the final format
-    scheduleEvents = Object.values(groupedEvents).map((event: GroupedEvent) => ({
+    const scheduleEvents = Object.values(groupedEvents).map((event: GroupedEvent) => ({
       title: event.title,
       day: event.day,
       startTime: event.startTime,
       endTime: event.endTime,
       location: event.location || "",
     }));
+
+    setScheduleEvents(scheduleEvents);
+
+    console.log("Schedule!!! ");
+    console.log(scheduleEvents); 
 
     // Create calendar URLs and open first one
     const calendarUrls = scheduleEvents.map((event) => ({

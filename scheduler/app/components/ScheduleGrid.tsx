@@ -229,7 +229,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     return (
                       <div
                         key={`blocked-${block.day}-${block.from}-${index}`}
-                        className="absolute w-full border-2 border-dashed border-secondary bg-surface"
+                        className="absolute w-full border-2 border-dashed border-secondary bg-surface items-center justify-center"
                         style={{
                           top: `${top}px`,
                           height: `${height}px`,
@@ -245,11 +245,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             }}
                           >
                             {block.label && (
-                              <div className="text-[12px] font-medium text-gray truncate">
+                              <div className="font-bold text-textDefault text-center break-words text-[10px] lg:text-xs pt-2">
                                 {block.label}
                               </div>
                             )}
-                            <div className="text-[10px] text-gray truncate">
+                            <div className="text-[9px] lg:text-[11px] text-gray text-center">
                               {block.from} - {block.to}
                             </div>
                           </div>

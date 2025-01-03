@@ -313,13 +313,13 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
         <div className="w-full">
           {/* Header with days */}
           <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5 mb-0.5">
-            <div className="h-8 flex items-center justify-start text-xs min-w-[40px] font-medium text-gray">
+            <div className="h-8 flex items-center justify-start text-xs min-w-[40px] font-medium text-textDefault">
               Hora
             </div>
             {dayNames.short.map((day) => (
               <div
                 key={day}
-                className="h-8 flex items-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"
+                className="h-8 flex items-center text-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"
               >
                 {day}
               </div>
@@ -329,9 +329,9 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
           {/* Calendar grid */}
           <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5">
             {/* Time labels */}
-            <div className="space-y-0.5">
+            <div className="space-y-0.8">
               {timeSlots.map((time) => (
-                <div key={time} className="h-8 flex items-center justify-start text-[11px] text-gray/70 min-w-[40px]">
+                <div key={time} className="h-8 flex items-center justify-left text-center text-[11px] text-textDefault min-w-[40px]">
                   {time}
                 </div>
               ))}

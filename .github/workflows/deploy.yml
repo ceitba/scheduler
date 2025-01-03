@@ -18,6 +18,7 @@ jobs:
           script: |
             cd scheduler/
             git pull https://CEITBA-git:${{ secrets.GITHUB_TOKEN}}@github.com/CEITBA-git/scheduler.git
+            cd scheduler/
             npm install
             npm run build
           

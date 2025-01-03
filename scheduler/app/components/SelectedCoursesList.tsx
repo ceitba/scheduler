@@ -1,6 +1,5 @@
 import {
   Bars3Icon,
-  BookOpenIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import TooltipHeader from "./Tooltip";
@@ -12,6 +11,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -144,10 +144,10 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
 
   const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
+    if (over && active.id !== over.id) {
       const oldIndex = courses.findIndex(
         (course) => course.subject_id === active.id
       );

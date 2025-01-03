@@ -3,7 +3,6 @@ import config from '@/app/config';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { career: string } }
 ) {
   const { searchParams } = new URL(request.url);
   const plan = searchParams.get('plan');

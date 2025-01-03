@@ -149,7 +149,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
           <div className="h-8 flex items-center justify-center text-xs font-medium text-gray">
             Hora
           </div>
-          {dayNames.map((day, index) => (
+          {dayNames.map((day) => (
             <div
               key={day}
               className="h-8 flex items-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"

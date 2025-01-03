@@ -4,13 +4,10 @@ import ScheduleGrid from "./ScheduleGrid";
 import { Scheduler } from "../services/scheduler";
 import {
   ArrowDownTrayIcon,
-  ShareIcon,
   Cog6ToothIcon,
-  PhotoIcon,
   CalendarDaysIcon,
   ArrowRightCircleIcon,
   ArrowLeftCircleIcon,
-  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import Checkbox from "./Checkbox";
 import SaveModal from './SaveModal';

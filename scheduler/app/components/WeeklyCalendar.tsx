@@ -106,7 +106,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
             <div className="h-8 flex items-center justify-center text-xs font-medium text-gray">
               Hora
             </div>
-            {dayNames.short.map((day, index) => (
+            {dayNames.short.map((day) => (
               <div
                 key={day}
                 className="h-8 flex items-center justify-center text-xs font-medium bg-secondaryBackground rounded-md"

@@ -157,9 +157,9 @@ const CourseView: React.FC<CourseViewProps> = ({
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden">
-        <div className="mt-4 pb-14">
-          <AvailableCoursesList
+      <div className="md:hidden h-full"> {/* Added h-full */}
+      <div className="mt-4 pb-20 min-h-screen"> {/* Added min-h-screen to ensure enough scrollable content */}
+      <AvailableCoursesList
             courses={sortedSubjectsByYear}
             selectedCourses={selectedCourses}
             onCourseClick={handleSubjectSelect}
@@ -167,9 +167,11 @@ const CourseView: React.FC<CourseViewProps> = ({
           />
         </div>
 
+        <div className="sticky bottom-0 left-0 right-0 z-40">
+        <div className="max-w-7xl mx-auto">
         {/* Sticky Preview */}
         {selectedCourses.length > 0 && (
-          <div className="sticky bottom-0 left-0 right-0 bg-background">
+          <div className="bg-background">
             <div
               className={`
         transition-all duration-300 ease-in-out
@@ -213,7 +215,7 @@ const CourseView: React.FC<CourseViewProps> = ({
 
               {/* Preview Content */}
               {isPreviewOpen && (
-                <div className="max-h-[calc(70vh-3.5rem)] overflow-y-auto">
+              <div className="overflow-y-auto">
                   <SelectedCoursesList
                     courses={selectedCourses}
                     onRemove={onRemoveCourse}
@@ -224,6 +226,8 @@ const CourseView: React.FC<CourseViewProps> = ({
             </div>
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );

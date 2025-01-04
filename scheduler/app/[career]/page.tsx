@@ -158,7 +158,7 @@ export default function CareerPage({ }: PageProps) {
     ];
 
     scheduleEvents.forEach((event) => {
-      const eventDate = getNextDayDate(event.day);
+      const eventDate = getNextDayDate(event.day,event.startDate);
       const startTime = timeStringToDate(event.startTime, eventDate);
       const endTime = timeStringToDate(event.endTime, eventDate);
       const startDate = event.startDate;
@@ -178,7 +178,7 @@ export default function CareerPage({ }: PageProps) {
         `SUMMARY:${event.title}`,
         `DTSTART:${formatDate(startTime)}`,
         `DTEND:${formatDate(endTime)}`,
-        `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
+        `RRULE:FREQ=WEEKLY;COUNT=${repetitions}`,
 
         `LOCATION:${event.location}`,
         "END:VEVENT",
@@ -189,7 +189,7 @@ export default function CareerPage({ }: PageProps) {
     return icsContent.join("\r\n");
   };
 
-  const getNextDayDate = (dayName: string): Date => {
+  const getNextDayDate = (dayName: string,startDate:Date|null = null): Date => {
     const days = [
       "sunday",
       "monday",
@@ -199,18 +199,22 @@ export default function CareerPage({ }: PageProps) {
       "friday",
       "saturday",
     ];
-    const today = new Date();
+    const firstDay = new Date(startDate?? new Date()); ;
     const dayIndex = days.indexOf(dayName.toLowerCase());
 
-    const targetDate = new Date();
-    const currentDay = today.getDay();
+    const targetDate = firstDay;
+    const currentDay = firstDay.getDay();
 
     let daysUntilTarget = dayIndex - currentDay;
+    console.log("Days until target: ", daysUntilTarget);
+    console.log("Current day: ", currentDay);
+    console.log("First day: ", firstDay);
     if (daysUntilTarget <= 0) {
       daysUntilTarget += 7;
     }
 
-    targetDate.setDate(today.getDate() + daysUntilTarget);
+    targetDate.setDate(firstDay.getDate() + daysUntilTarget);
+    console.log("Target date: ", targetDate);
     return targetDate;
   };
 
@@ -281,14 +285,18 @@ export default function CareerPage({ }: PageProps) {
     endDate: Date;
     location?: string;
   }): string => {
-    const eventDate = getNextDayDate(event.day);
+
+    const eventDate = getNextDayDate(event.day,event.startDate);
     const startTime = timeStringToDate(event.startTime, eventDate);
     const endTime = timeStringToDate(event.endTime, eventDate);
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
-    const repetitions = Math.floor((endTime.getDay() - startTime.getDay()) / (1000 * 60 * 60 * 24 * 7));
-    console.log(event);
-    console.log(repetitions,startDate.getDate()+startDate.getMonth(),"aas",endDate.getDate()+endDate.getMonth());
+   
+    const differenceInMilliseconds = endDate.getTime() - startDate.getTime();
+    const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+    const differenceInWeeks = differenceInDays / 7;
+    const repetitions = Math.floor(differenceInWeeks);
+    
 
     const formatDate = (date: Date): string => {
       return date

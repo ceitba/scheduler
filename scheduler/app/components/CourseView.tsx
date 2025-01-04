@@ -157,78 +157,67 @@ const CourseView: React.FC<CourseViewProps> = ({
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden h-full"> {/* Added h-full */}
-      <div className="mt-4 pb-20 min-h-screen"> {/* Added min-h-screen to ensure enough scrollable content */}
-      <AvailableCoursesList
-            courses={sortedSubjectsByYear}
-            selectedCourses={selectedCourses}
-            onCourseClick={handleSubjectSelect}
-            isExchange={isExchange}
-          />
-        </div>
+<div className="md:hidden">
+  <div className="mt-4 pb-20">
+    <AvailableCoursesList
+      courses={sortedSubjectsByYear}
+      selectedCourses={selectedCourses}
+      onCourseClick={handleSubjectSelect}
+      isExchange={isExchange}
+    />
+  </div>
 
-        <div className="sticky bottom-0 left-0 right-0 z-40">
-        <div className="max-w-7xl mx-auto">
-        {/* Sticky Preview */}
-        {selectedCourses.length > 0 && (
-          <div className="bg-background">
-            <div
+  {selectedCourses.length > 0 && (
+    <div className="sticky bottom-0 left-0 right-0 z-40">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-background shadow-lg">
+          <div className={`
+            transition-all duration-300 ease-in-out
+            ${isPreviewOpen ? "max-h-[70vh]" : "h-20"}
+            overflow-hidden
+          `}>
+            <button
+              onClick={() => setIsPreviewOpen(!isPreviewOpen)}
               className={`
-        transition-all duration-300 ease-in-out
-        ${isPreviewOpen ? "max-h-[70vh]" : "h-20"}
-        overflow-hidden
-      `}
+                w-full flex items-center justify-between bg-background px-4 border-t border-surface
+                ${isPreviewOpen ? "h-8" : "h-20"}
+              `}
             >
-              {/* Single Preview Header that changes appearance */}
-              <button
-                onClick={() => setIsPreviewOpen(!isPreviewOpen)}
-                className={`
-            w-full flex items-center justify-between bg-background px-4 border-t border-surface
-            ${isPreviewOpen ? "h-8" : "h-20"}
-          `}
-              >
-                {!isPreviewOpen && (
-                  <div className="flex flex-col items-start justify-between w-full">
-                    <div className="font-semibold text-lg">
-                      Cursos seleccionados
-                    </div>
-                    <div className="text-sm text-gray font-medium">
-                      {selectedCourses.length} curso
-                      {selectedCourses.length !== 1 ? "s" : ""} · {totalCredits}{" "}
-                      créditos
-                    </div>
+              {!isPreviewOpen && (
+                <div className="flex flex-col items-start justify-between w-full">
+                  <div className="font-semibold text-lg">
+                    Cursos seleccionados
                   </div>
-                )}
-                <div
-                  className={`
-            flex items-center 
-            ${isPreviewOpen ? "w-full justify-center" : ""}
-          `}
-                >
-                  {isPreviewOpen ? (
-                    <ChevronDownIcon className="w-5 h-5 text-gray" />
-                  ) : (
-                    <ChevronUpIcon className="w-5 h-5 text-gray" />
-                  )}
-                </div>
-              </button>
-
-              {/* Preview Content */}
-              {isPreviewOpen && (
-              <div className="overflow-y-auto">
-                  <SelectedCoursesList
-                    courses={selectedCourses}
-                    onRemove={onRemoveCourse}
-                    onReorder={onReorderCourses}
-                  />
+                  <div className="text-sm text-gray font-medium">
+                    {selectedCourses.length} curso
+                    {selectedCourses.length !== 1 ? "s" : ""} · {totalCredits} créditos
+                  </div>
                 </div>
               )}
-            </div>
-          </div>
-        )}
+              <div className={`flex items-center ${isPreviewOpen ? "w-full justify-center" : ""}`}>
+                {isPreviewOpen ? (
+                  <ChevronDownIcon className="w-5 h-5 text-gray" />
+                ) : (
+                  <ChevronUpIcon className="w-5 h-5 text-gray" />
+                )}
+              </div>
+            </button>
+
+            {isPreviewOpen && (
+              <div className="overflow-y-auto">
+                <SelectedCoursesList 
+                  courses={selectedCourses}
+                  onRemove={onRemoveCourse}
+                  onReorder={onReorderCourses}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
+    </div>
+  )}
+</div>
     </div>
   );
 };

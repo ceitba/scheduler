@@ -338,6 +338,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               setSchedules(scheduler.generateSchedules());
             }}
             label="Permitir superposición de horarios"
+            isTooltip = {true} 
+            tooltip = "Superposición máxima: 30 minutos" 
           />
 
           <Checkbox

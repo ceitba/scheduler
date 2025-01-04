@@ -161,14 +161,17 @@ export default function CareerPage({ }: PageProps) {
       const eventDate = getNextDayDate(event.day,event.startDate);
       const startTime = timeStringToDate(event.startTime, eventDate);
       const endTime = timeStringToDate(event.endTime, eventDate);
-      const startDate = event.startDate;
-      const endDate = event.endDate;
-      const repetitions = Math.floor((endDate.getDay() - startDate.getDay()) / (1000 * 60 * 60 * 24 * 7));
-      
+      const startDate = new Date(event.startDate);
+      const endDate = new Date(event.endDate);
+      const differenceInMilliseconds = endDate.getTime() - startDate.getTime();
+      const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+      const differenceInWeeks = differenceInDays / 7;
+      const repetitions = Math.floor(differenceInWeeks);
 
-      const formatDate = (date: Date) => {
+
+      const formatDate = (date: Date): string => {
         return date
-          .toLocaleString("sv-SE", { timeZone: "America/Argentina/Buenos_Aires", hour12: false })
+          .toISOString()
           .replace(/[-:]/g, "")
           .replace(/\.\d{3}/, "");
       };
@@ -178,8 +181,7 @@ export default function CareerPage({ }: PageProps) {
         `SUMMARY:${event.title}`,
         `DTSTART:${formatDate(startTime)}`,
         `DTEND:${formatDate(endTime)}`,
-        `RRULE:FREQ=WEEKLY;COUNT=${repetitions}`,
-
+        `RRULE:FREQ=WEEKLY;COUNT=${repetitions+1}`,
         `LOCATION:${event.location}`,
         "END:VEVENT",
       ]);

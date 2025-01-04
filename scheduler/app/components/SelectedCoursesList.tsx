@@ -1,8 +1,4 @@
-import {
-  Bars3Icon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
-import TooltipHeader from "./Tooltip";
+import { Bars3Icon, TrashIcon } from "@heroicons/react/24/outline";
 import { type Subject } from "../hooks/useSubjects";
 import {
   DndContext,
@@ -73,8 +69,8 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
   {
     Object.values(groupedSchedule).map((schedule, i) => (
       <div key={i} className="text-xs text-gray">
-        {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ''} -{" "}
-        {schedule.timeTo?.slice(0, 5) || ''} | {schedule.classrooms.join(", ")}
+        {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ""} -{" "}
+        {schedule.timeTo?.slice(0, 5) || ""} | {schedule.classrooms.join(", ")}
       </div>
     ));
   }
@@ -100,8 +96,9 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
             </span>
             {Object.values(groupedSchedule).map((schedule, i) => (
               <div key={i} className="text-xs text-gray">
-                {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ''} -{" "}
-                {schedule.timeTo?.slice(0, 5) || ''} | {schedule.classrooms.join(", ")}
+                {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ""}{" "}
+                - {schedule.timeTo?.slice(0, 5) || ""} |{" "}
+                {schedule.classrooms.join(", ")}
               </div>
             ))}
           </div>
@@ -161,10 +158,13 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
   return (
     <div className="bg-secondaryBackground/30 rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
-        <TooltipHeader
+        {/* <TooltipHeader
           title="Cursos seleccionados"
           tooltip="Arrastra las materias para ordenarlas según prioridad"
-        />
+        /> */}
+        <h2 className="text-lg font-semibold text-textDefault">
+          Cursos seleccionados
+        </h2>
         {totalCredits > 0 && (
           <div className="text-sm text-gray">
             <span className="font-medium">{totalCredits}</span> créditos
@@ -172,9 +172,9 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
         )}
       </div>
       {courses.length === 0 && (
-          <div className="text-sm text-gray text-center">
-            No hay cursos seleccionados
-          </div>
+        <div className="text-sm text-gray text-center">
+          No hay cursos seleccionados
+        </div>
       )}
       <DndContext
         sensors={sensors}

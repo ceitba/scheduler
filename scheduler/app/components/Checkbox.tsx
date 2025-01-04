@@ -17,6 +17,8 @@ const Checkbox: React.FC<CheckboxProps> = ({
   isTooltip = false,
   tooltip,
 }) => {
+  const [firstLine, secondLine] = tooltip?.split(' | ') || ['', ''];
+
   return (
     <div className="flex items-center gap-2">
       <div className="relative flex items-center justify-center w-5 h-5">
@@ -45,12 +47,15 @@ const Checkbox: React.FC<CheckboxProps> = ({
         {isTooltip && tooltip && (
           <div className="group relative inline-block">
             <InformationCircleIcon className="h-5 w-5 text-gray hover:text-primary cursor-help" />
-            <span className="pointer-events-none absolute whitespace-normal opacity-0 transition-opacity group-hover:opacity-100 bg-background text-textDefault text-sm py-1 px-2 rounded shadow-lg border border-gray/20
-              sm:min-w-[200px]
-              max-sm:-top-2 max-sm:left-6 min-w-[100px]
-              md:top-6 md:-left-80 md:translate-x-1/2">
-              {tooltip}
-            </span>
+            <span
+              className="pointer-events-none absolute top-6 right-0
+        whitespace-pre-line min-w-[120px] 
+        opacity-0 transition-opacity group-hover:opacity-100 
+        bg-background text-textDefault text-xs py-1 px-2 
+        rounded shadow-lg border border-gray"
+            >
+        {firstLine}<br/>{secondLine}
+        </span>
           </div>
         )}
       </div>

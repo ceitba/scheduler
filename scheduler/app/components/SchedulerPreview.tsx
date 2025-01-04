@@ -141,7 +141,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs text-gray">
-          <div className="w-5 h-5 border-2 border-dashed border-gray rounded-md bg-surface"></div>
+          <div className="w-5 h-5 border-2 border-dashed border-gray bg-surface"></div>
           <span>Horario bloqueado</span>
         </div>
       </div>
@@ -339,8 +339,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             }}
             label="Permitir superposición de horarios"
             isTooltip = {true} 
-            tooltip = "Superposición máxima: 30 minutos" 
-          />
+            tooltip="Máx. diferencia: | 30 mins"
+            />
 
           <Checkbox
             id="freeDay"

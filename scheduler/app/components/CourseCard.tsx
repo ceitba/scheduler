@@ -13,7 +13,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isSelected, onClick }) 
     <div
       onClick={onClick}
       className="flex items-center justify-between p-3 bg-secondaryBackground 
-        rounded-lg group cursor-pointer hover:bg-secondaryBackground/70"
+        rounded-lg group cursor-pointer hover:bg-surface"
     >
       <div className="flex flex-row space-x-2">
       <span className="text-textDefault">

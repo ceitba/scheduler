@@ -324,8 +324,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   return (
     <div className="flex flex-col">
-      <div className="bg-background rounded-lg">
-        <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end px-4">
+      <div className="bg-background rounded-lg px-4">
+        <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end">
           <Checkbox
             id="allowOverlap"
             checked={settings.allowTimeOverlap}

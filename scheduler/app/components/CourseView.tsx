@@ -157,70 +157,66 @@ const CourseView: React.FC<CourseViewProps> = ({
       </div>
 
       {/* Mobile Layout */}
-<div className="md:hidden min-h-screen">
-  <div className="mt-4 pb-20 flex-1">
-    <AvailableCoursesList
-      courses={sortedSubjectsByYear}
-      selectedCourses={selectedCourses}
-      onCourseClick={handleSubjectSelect}
-      isExchange={isExchange}
-    />
-  </div>
-
-  {selectedCourses.length > 0 && (
-    <div className="sticky bottom-0 left-0 right-0 z-40 h-auto" style={{ position: '-webkit-sticky' }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-background">
-          <div className={`
-            transition-all duration-300 ease-in-out
-            max-h-[70vh]
-            overflow-hidden
-          `}>
-            {/* Header - Always outside button */}
-            <div className={`
-              w-full bg-background border-t border-surface
-              ${isPreviewOpen ? "h-8" : "h-20"}
-            `}>
-              <button
-                onClick={() => setIsPreviewOpen(!isPreviewOpen)}
-                className="w-full h-full px-4 flex items-center justify-between"
-              >
-                {!isPreviewOpen ? (
-                  <>
-                    <div className="flex flex-col items-start justify-between">
-                      <div className="font-semibold text-lg">
-                        Cursos seleccionados
-                      </div>
-                      <div className="text-sm text-gray font-medium">
-                        {selectedCourses.length} curso
-                        {selectedCourses.length !== 1 ? "s" : ""} · {totalCredits} créditos
-                      </div>
-                    </div>
-                    <ChevronUpIcon className="w-5 h-5 text-gray" />
-                  </>
-                ) : (
-                  <ChevronDownIcon className="w-5 h-5 text-gray mx-auto" />
-                )}
-              </button>
-            </div>
-
-            {/* Content area - Always present but conditionally rendered */}
-            <div className={`
-              overflow-y-auto transition-opacity duration-300
-              ${isPreviewOpen ? "opacity-100" : "opacity-0 h-0"}
-            `}>
-              <SelectedCoursesList 
-                courses={selectedCourses}
-                onRemove={onRemoveCourse}
-                onReorder={onReorderCourses}
-              />
-            </div>
-          </div>
+      <div className="md:hidden">
+        <div className="mt-4 pb-20">
+          <AvailableCoursesList
+            courses={sortedSubjectsByYear}
+            selectedCourses={selectedCourses}
+            onCourseClick={handleSubjectSelect}
+            isExchange={isExchange}
+          />
         </div>
+
+        {selectedCourses.length > 0 && (
+          <div
+            className={`
+        sticky bottom-0 left-0 right-0 z-40 bg-background
+        ${isPreviewOpen ? "max-h-[70vh]" : "max-h-[20vh]"}
+      `}>
+            <button
+              onClick={() => setIsPreviewOpen(!isPreviewOpen)}
+              className={`
+          w-full flex items-center justify-between px-4 border-t border-surface
+          ${isPreviewOpen ? "h-8" : "h-20"}
+        `}
+            >
+              {!isPreviewOpen && (
+                <div className="flex flex-col items-start justify-between w-full">
+                  <div className="font-semibold text-lg">
+                    Cursos seleccionados
+                  </div>
+                  <div className="text-sm text-gray font-medium">
+                    {selectedCourses.length} curso
+                    {selectedCourses.length !== 1 ? "s" : ""} · {totalCredits}{" "}
+                    créditos
+                  </div>
+                </div>
+              )}
+              <div
+                className={`flex items-center ${
+                  isPreviewOpen ? "w-full justify-center" : ""
+                }`}
+              >
+                {isPreviewOpen ? (
+                  <ChevronDownIcon className="w-5 h-5 text-gray" />
+                ) : (
+                  <ChevronUpIcon className="w-5 h-5 text-gray" />
+                )}
+              </div>
+            </button>
+
+            {isPreviewOpen && (
+              <div className="overflow-y-auto px-4">
+                <SelectedCoursesList
+                  courses={selectedCourses}
+                  onRemove={onRemoveCourse}
+                  onReorder={onReorderCourses}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    </div>
-  )}
-</div>
     </div>
   );
 };

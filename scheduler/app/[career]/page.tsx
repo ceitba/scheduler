@@ -369,8 +369,8 @@ export default function CareerPage({ }: PageProps) {
   }, [isCalendarPanelOpen]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <TopBar currentPlan={plan || ""} />
+<div className="flex-1 flex flex-col">
+<TopBar currentPlan={plan || ""} />
       <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
         <TabView tabs={tabs} />
       </div>

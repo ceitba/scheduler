@@ -302,7 +302,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
             <div className="flex items-start gap-3">
               <CheckCircleIcon className="h-6 w-6 text-green-500 mt-1" />
               <div>
-                <h3>Tiempos de traslado</h3>
+                <h3 className="text-textDefault">Tiempos de traslado</h3>
                 <p className="text-gray">Viajes hacia y desde la universidad</p>
               </div>
             </div>
@@ -310,7 +310,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
             <div className="flex items-start gap-3">
               <CheckCircleIcon className="h-6 w-6 text-green-500 mt-1" />
               <div>
-                <h3>Compromisos fijos</h3>
+                <h3 className="text-textDefault">Compromisos fijos</h3>
                 <p className="text-gray">Otras actividades académicas, cursos o responsabilidades</p>
               </div>
             </div>

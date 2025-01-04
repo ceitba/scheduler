@@ -107,6 +107,8 @@ export class Scheduler {
       timeFrom: slot.time_from,
       timeTo: slot.time_to,
       subject: subject.name,
+      dateFrom: subject.course_start,
+      dateTo: subject.course_end,
       subject_id: subject.subject_id,
       commission: commission.name,
       building: slot.building,

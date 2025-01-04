@@ -15,6 +15,8 @@ export interface TimeBlock {
 
 export interface ScheduleSlot {
   day: string;
+  dateFrom:Date;
+  dateTo:Date;
   timeFrom: string;
   timeTo: string;
   subject: string;

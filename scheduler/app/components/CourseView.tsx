@@ -64,7 +64,6 @@ const CourseView: React.FC<CourseViewProps> = ({
           }
           acc[year].subjects[subject.section].push(subject);
         }
-        // console.log(acc);
         
         return acc;
       }, {} as Record<number, { 

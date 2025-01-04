@@ -157,14 +157,16 @@ const CourseView: React.FC<CourseViewProps> = ({
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden">
-        <div className="mt-4 pb-14">
-          <AvailableCoursesList
-            courses={sortedSubjectsByYear}
-            selectedCourses={selectedCourses}
-            onCourseClick={handleSubjectSelect}
-            isExchange={isExchange}
-          />
+      <div className="md:hidden relative min-h-screen flex flex-col">
+        <div className="flex-1 mb-20">
+          <div className="">
+            <AvailableCoursesList
+              courses={sortedSubjectsByYear}
+              selectedCourses={selectedCourses}
+              onCourseClick={handleSubjectSelect}
+              isExchange={isExchange}
+            />
+          </div>
         </div>
 
         {/* Sticky Preview */}
@@ -181,7 +183,7 @@ const CourseView: React.FC<CourseViewProps> = ({
               <button
                 onClick={() => setIsPreviewOpen(!isPreviewOpen)}
                 className={`
-            w-full flex items-center justify-between bg-background px-6 border-t border-surface
+            w-full flex items-center justify-between bg-background px-4 border-t border-surface
             ${isPreviewOpen ? "h-8" : "h-20"}
           `}
               >

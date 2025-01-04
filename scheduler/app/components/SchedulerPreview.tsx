@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
 import { PossibleSchedule } from "../types/scheduler";
 import ScheduleGrid from "./ScheduleGrid";
@@ -45,13 +44,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   );
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const scheduleRef = useRef<HTMLDivElement>(null);
-  // const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<
-  //   CalendarEvent[]
-  // >([]);
-  // const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false);
-  // const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
 
-  // Reset generation state when options or subjects change
   useEffect(() => {
     const currentOptionsString = JSON.stringify(scheduler.getOptions());
     const currentSubjectsString = JSON.stringify(scheduler.getSubjects());
@@ -77,16 +70,10 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const filteredSchedules = schedules.filter((schedule) => {
     const options = scheduler.getOptions();
     return (
-      (options.allowOverlap || !schedule.hasOverlap) &&
+      ((options.allowOverlap && Math.abs(schedule.maxOverlap) <= 30) || schedule.maxOverlap == 0) &&
       (!options.allowFreeDay || schedule.hasFreeDay)
     );
   });
-
-  // const handleGenerateClick = () => {
-  //   setHasAttemptedGeneration(true);
-  //   setCurrentScheduleIndex(0); // Reset index when generating new schedules
-  //   onGenerateSchedules();
-  // };
 
   const handlePrevSchedule = () => {
     if (filteredSchedules.length > 0) {
@@ -121,11 +108,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
-                schedule.hasOverlap ? "bg-red-500" : "bg-green-500"
+                schedule.maxOverlap ? "bg-red-500" : "bg-green-500"
               }`}
             />
             <span>
-              {schedule.hasOverlap
+              {schedule.maxOverlap
                 ? "Tiene superposición"
                 : "Sin superposición"}
             </span>
@@ -171,23 +158,18 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1400px';
+    wrapper.style.width = '1920px';
+    wrapper.style.height = '1080px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
     wrapper.style.padding = '40px';
+    wrapper.style.overflow = 'hidden';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
-    clone.style.height = 'auto';
-    clone.style.position = 'static';
-    clone.style.transform = 'none';
-    clone.style.margin = '0';
-    
-    // Copy computed styles
-    const computedStyles = window.getComputedStyle(element);
-    for (const style of computedStyles) {
-      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
-    }
+    clone.style.height = '100%';
+    clone.style.transform = 'scale(1)';
+    clone.style.transformOrigin = 'top left';
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -199,16 +181,39 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         allowTaint: true,
         logging: false,
         backgroundColor: null,
+        width: 1920,
+        height: 1080,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement('style');
           style.textContent = `
             * { 
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              font-family: Arial, Roboto, sans-serif !important;
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
             }
           `;
           clonedDoc.head.appendChild(style);
+
+          // Update day headers text
+          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div');
+          const fullDayNames: { [key: string]: string } = {
+            'Lun': 'Lunes',
+            'Mar': 'Martes',
+            'Mie': 'Miércoles',
+            'Jue': 'Jueves',
+            'Vie': 'Viernes'
+          };
+          
+          dayHeaders.forEach((header: Element, index) => {
+            if (index > 0) { // Skip "Hora" header
+              const text = header.textContent?.trim() || '';
+              Object.entries(fullDayNames).forEach(([short, full]) => {
+                if (text.includes(short)) {
+                  header.textContent = full;
+                }
+              });
+            }
+          });
         }
       });
 
@@ -239,23 +244,18 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     wrapper.style.position = 'fixed';
     wrapper.style.top = '-9999px';
     wrapper.style.left = '-9999px';
-    wrapper.style.width = '1400px';
+    wrapper.style.width = '1920px';
+    wrapper.style.height = '1080px';
     wrapper.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--background').trim();
     wrapper.style.padding = '40px';
+    wrapper.style.overflow = 'hidden';
     
     // Clone the schedule element
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.width = '100%';
-    clone.style.height = 'auto';
-    clone.style.position = 'static';
-    clone.style.transform = 'none';
-    clone.style.margin = '0';
-    
-    // Copy computed styles
-    const computedStyles = window.getComputedStyle(element);
-    for (const style of computedStyles) {
-      clone.style.setProperty(style, computedStyles.getPropertyValue(style));
-    }
+    clone.style.height = '100%';
+    clone.style.transform = 'scale(1)';
+    clone.style.transformOrigin = 'top left';
     
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
@@ -267,16 +267,39 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         allowTaint: true,
         logging: false,
         backgroundColor: null,
+        width: 1920,
+        height: 1080,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement('style');
           style.textContent = `
             * { 
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              font-family: Arial, Roboto, sans-serif !important;
               print-color-adjust: exact;
               -webkit-print-color-adjust: exact;
             }
           `;
           clonedDoc.head.appendChild(style);
+
+          // Update day headers text
+          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div');
+          const fullDayNames: { [key: string]: string } = {
+            'Lun': 'Lunes',
+            'Mar': 'Martes',
+            'Mie': 'Miércoles',
+            'Jue': 'Jueves',
+            'Vie': 'Viernes'
+          };
+          
+          dayHeaders.forEach((header: Element, index) => {
+            if (index > 0) { // Skip "Hora" header
+              const text = header.textContent?.trim() || '';
+              Object.entries(fullDayNames).forEach(([short, full]) => {
+                if (text.includes(short)) {
+                  header.textContent = full;
+                }
+              });
+            }
+          });
         }
       });
 
@@ -292,74 +315,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }
   };
 
-  // const getNextDayDate = (dayName: string): Date => {
-  //   const days = [
-  //     "sunday",
-  //     "monday",
-  //     "tuesday",
-  //     "wednesday",
-  //     "thursday",
-  //     "friday",
-  //     "saturday",
-  //   ];
-  //   const today = new Date();
-  //   const dayIndex = days.indexOf(dayName.toLowerCase());
-
-  //   const targetDate = new Date();
-  //   const currentDay = today.getDay();
-
-  //   let daysUntilTarget = dayIndex - currentDay;
-  //   if (daysUntilTarget <= 0) {
-  //     daysUntilTarget += 7;
-  //   }
-
-  //   targetDate.setDate(today.getDate() + daysUntilTarget);
-  //   return targetDate;
-  // };
-
-  // // Helper function to convert time string to Date
-  // const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
-  //   const [hours, minutes] = timeStr.split(":").map(Number);
-  //   const date = new Date(baseDate);
-  //   date.setHours(hours, minutes, 0, 0);
-  //   return date;
-  // };
-
-  // const generateIcsContent = (scheduleEvents: ScheduleEvent[]) => {
-  //   let icsContent = [
-  //     "BEGIN:VCALENDAR",
-  //     "VERSION:2.0",
-  //     "PRODID:-//Schedule Generator//EN",
-  //     "CALSCALE:GREGORIAN",
-  //   ];
-
-  //   scheduleEvents.forEach((event) => {
-  //     const eventDate = getNextDayDate(event.day);
-  //     const startDate = timeStringToDate(event.startTime, eventDate);
-  //     const endDate = timeStringToDate(event.endTime, eventDate);
-
-  //     const formatDate = (date: Date) => {
-  //       return date
-  //         .toISOString()
-  //         .replace(/[-:]/g, "")
-  //         .replace(/\.\d{3}/, "");
-  //     };
-
-  //     icsContent = icsContent.concat([
-  //       "BEGIN:VEVENT",
-  //       `SUMMARY:${event.title}`,
-  //       `DTSTART:${formatDate(startDate)}`,
-  //       `DTEND:${formatDate(endDate)}`,
-  //       "RRULE:FREQ=WEEKLY",
-  //       `LOCATION:${event.location}`,
-  //       "END:VEVENT",
-  //     ]);
-  //   });
-
-  //   icsContent.push("END:VCALENDAR");
-  //   return icsContent.join("\r\n");
-  // };
-
   const handleShareLink = () => {
     // TODO: Implement share link functionality
     const url = window.location.href;
@@ -369,8 +324,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   return (
     <div className="flex flex-col">
-      <div className="bg-background rounded-lg">
-        <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end px-4">
+      <div className="bg-background rounded-lg px-4">
+        <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end">
           <Checkbox
             id="allowOverlap"
             checked={settings.allowTimeOverlap}
@@ -399,11 +354,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             label="Tener un día libre"
           />
         </div>
-        <div className="flex items-center justify-between p-4 border-b border-gray/20">
+        <div className="flex items-center justify-between pt-6 border-b border-gray/20">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-medium">Vista previa de horarios</h2>
+          <h2 className="text-lg font-semibold text-textDefault pb-2">
+          Vista previa de horarios</h2>
             {hasSubjects && hasSchedules && (
-              <span className="text-sm text-gray">
+              <span className="text-xs text-gray text-end whitespace-nowrap flex-shrink-0">
                 Opción {currentScheduleIndex + 1} de {filteredSchedules.length}
               </span>
             )}
@@ -441,9 +397,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             )}
           </div>
         </div>
-        <div className="py-4">
+        <div className="py-4" ref={scheduleRef}>
           {!hasSubjects ? (
-            <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray rounded-lg">
+            <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray">
               <div className="text-center text-gray mb-4">
                 <CalendarDaysIcon className="h-8 w-8 mx-auto mb-2" />
                 <div className="mb-2 text-sm">No hay materias seleccionadas</div>
@@ -458,10 +414,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             </div>
           ) : (
             <>
-              <div ref={scheduleRef}>
+              <div>
                 <ScheduleGrid slots={filteredSchedules[currentScheduleIndex].slots} />
               </div>
-
               {/* Schedule Info */}
               <div className="mt-4">
                 {renderScheduleInfo(filteredSchedules[currentScheduleIndex])}

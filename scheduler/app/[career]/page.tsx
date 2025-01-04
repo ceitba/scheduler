@@ -33,6 +33,8 @@ interface CalendarEvent {
 interface GroupedEvent {
   title: string;
   day: string;
+  startDate: Date;
+  endDate: Date;
   startTime: string;
   endTime: string;
   location?: string;
@@ -156,11 +158,18 @@ export default function CareerPage({ }: PageProps) {
     ];
 
     scheduleEvents.forEach((event) => {
-      const eventDate = getNextDayDate(event.day);
-      const startDate = timeStringToDate(event.startTime, eventDate);
-      const endDate = timeStringToDate(event.endTime, eventDate);
+      const eventDate = getNextDayDate(event.day,event.startDate);
+      const startTime = timeStringToDate(event.startTime, eventDate);
+      const endTime = timeStringToDate(event.endTime, eventDate);
+      const startDate = new Date(event.startDate);
+      const endDate = new Date(event.endDate);
+      const differenceInMilliseconds = endDate.getTime() - startDate.getTime();
+      const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+      const differenceInWeeks = differenceInDays / 7;
+      const repetitions = Math.floor(differenceInWeeks);
 
-      const formatDate = (date: Date) => {
+
+      const formatDate = (date: Date): string => {
         return date
           .toISOString()
           .replace(/[-:]/g, "")
@@ -170,9 +179,9 @@ export default function CareerPage({ }: PageProps) {
       icsContent = icsContent.concat([
         "BEGIN:VEVENT",
         `SUMMARY:${event.title}`,
-        `DTSTART:${formatDate(startDate)}`,
-        `DTEND:${formatDate(endDate)}`,
-        "RRULE:FREQ=WEEKLY",
+        `DTSTART:${formatDate(startTime)}`,
+        `DTEND:${formatDate(endTime)}`,
+        `RRULE:FREQ=WEEKLY;COUNT=${repetitions+1}`,
         `LOCATION:${event.location}`,
         "END:VEVENT",
       ]);
@@ -182,7 +191,7 @@ export default function CareerPage({ }: PageProps) {
     return icsContent.join("\r\n");
   };
 
-  const getNextDayDate = (dayName: string): Date => {
+  const getNextDayDate = (dayName: string,startDate:Date|null = null): Date => {
     const days = [
       "sunday",
       "monday",
@@ -192,18 +201,22 @@ export default function CareerPage({ }: PageProps) {
       "friday",
       "saturday",
     ];
-    const today = new Date();
+    const firstDay = new Date(startDate?? new Date()); ;
     const dayIndex = days.indexOf(dayName.toLowerCase());
 
-    const targetDate = new Date();
-    const currentDay = today.getDay();
+    const targetDate = firstDay;
+    const currentDay = firstDay.getDay();
 
     let daysUntilTarget = dayIndex - currentDay;
+    console.log("Days until target: ", daysUntilTarget);
+    console.log("Current day: ", currentDay);
+    console.log("First day: ", firstDay);
     if (daysUntilTarget <= 0) {
       daysUntilTarget += 7;
     }
 
-    targetDate.setDate(today.getDate() + daysUntilTarget);
+    targetDate.setDate(firstDay.getDate() + daysUntilTarget);
+    console.log("Target date: ", targetDate);
     return targetDate;
   };
 
@@ -228,6 +241,8 @@ export default function CareerPage({ }: PageProps) {
         acc[key] = {
           title: `${slot.subject_id} - ${slot.subject}`,
           day: slot.day.toLowerCase(),
+          startDate:slot.dateFrom,
+          endDate:slot.dateTo,
           startTime: slot.timeFrom,
           endTime: slot.timeTo,
           location: slot.classroom || ""
@@ -243,6 +258,8 @@ export default function CareerPage({ }: PageProps) {
     const scheduleEvents = Object.values(groupedEvents).map((event: GroupedEvent) => ({
       title: event.title,
       day: event.day,
+      startDate: event.startDate,
+      endDate: event.endDate,
       startTime: event.startTime,
       endTime: event.endTime,
       location: event.location || "",
@@ -266,11 +283,22 @@ export default function CareerPage({ }: PageProps) {
     day: string;
     startTime: string;
     endTime: string;
+    startDate: Date;
+    endDate: Date;
     location?: string;
   }): string => {
-    const eventDate = getNextDayDate(event.day);
-    const startDate = timeStringToDate(event.startTime, eventDate);
-    const endDate = timeStringToDate(event.endTime, eventDate);
+
+    const eventDate = getNextDayDate(event.day,event.startDate);
+    const startTime = timeStringToDate(event.startTime, eventDate);
+    const endTime = timeStringToDate(event.endTime, eventDate);
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+   
+    const differenceInMilliseconds = endDate.getTime() - startDate.getTime();
+    const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+    const differenceInWeeks = differenceInDays / 7;
+    const repetitions = Math.floor(differenceInWeeks);
+    
 
     const formatDate = (date: Date): string => {
       return date
@@ -282,8 +310,9 @@ export default function CareerPage({ }: PageProps) {
     const params = new URLSearchParams({
       action: "TEMPLATE",
       text: event.title,
-      dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
-      recur: "RRULE:FREQ=WEEKLY",
+      dates: `${formatDate(startTime)}/${formatDate(endTime)}`,
+      recur: `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
+      
       location: event.location || "",
     });
 

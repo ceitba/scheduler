@@ -158,7 +158,7 @@ const CourseView: React.FC<CourseViewProps> = ({
 
       {/* Mobile Layout */}
       <div className="md:hidden">
-        <div className="mt-4 pb-20">
+        <div className="mt-4 pb-14">
           <AvailableCoursesList
             courses={sortedSubjectsByYear}
             selectedCourses={selectedCourses}
@@ -169,11 +169,11 @@ const CourseView: React.FC<CourseViewProps> = ({
 
         {/* Sticky Preview */}
         {selectedCourses.length > 0 && (
-          <div className="sticky bottom-0 left-0 right-0 bg-background shadow-lg">
+          <div className="sticky bottom-0 left-0 right-0 bg-background">
             <div
               className={`
         transition-all duration-300 ease-in-out
-        ${isPreviewOpen ? "max-h-[70vh]" : "max-h-15"}
+        ${isPreviewOpen ? "max-h-[70vh]" : "h-20"}
         overflow-hidden
       `}
             >
@@ -181,7 +181,7 @@ const CourseView: React.FC<CourseViewProps> = ({
               <button
                 onClick={() => setIsPreviewOpen(!isPreviewOpen)}
                 className={`
-            w-full flex items-center justify-between bg-background px-6 rounded-lg
+            w-full flex items-center justify-between bg-background px-6 border-t border-surface
             ${isPreviewOpen ? "h-8" : "h-20"}
           `}
               >

@@ -69,17 +69,31 @@ export function useSubjects() {
 
         const data: SubjectsResponse = await response.json();
         
+        // Helper function to check if a schedule is valid
+        const isValidSchedule = (schedule: Schedule) => {
+          return schedule.day && schedule.time_from && schedule.time_to;
+        };
+        
         // Flatten the nested structure into a single array of subjects
         const flattenedSubjects: Subject[] = [];
         Object.entries(data).forEach(([, yearData]) => {
           Object.entries(yearData).forEach(([year, semesterData]) => {
             Object.entries(semesterData).forEach(([semester, subjects]) => {
               subjects.forEach(subject => {
-                flattenedSubjects.push({
+                // Include subjects even if they have no commissions or schedules
+                const processedSubject = {
                   ...subject,
                   year: parseInt(year),
-                  semester: parseInt(semester)
-                });
+                  semester: parseInt(semester),
+                  commissions: subject.commissions?.map(commission => ({
+                    ...commission,
+                    // Filter out schedules with null attributes
+                    schedule: Array.isArray(commission.schedule) 
+                      ? commission.schedule.filter(isValidSchedule)
+                      : []
+                  })) || []
+                };
+                flattenedSubjects.push(processedSubject);
               });
             });
           });

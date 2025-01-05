@@ -6,6 +6,7 @@ import AvailableCoursesList from "./AvailableCoursesList";
 import LoadingDots from "./LoadingDots";
 import { useParams } from "next/navigation";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import BaseModal from "./BaseModal";
 
 interface SelectedCourse extends Subject {
   selectedCommission: string;
@@ -23,6 +24,36 @@ interface CourseViewProps {
   onReorderCourses: (courses: SelectedCourse[]) => void;
 }
 
+interface NoScheduleModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  subjectName: string;
+}
+
+const NoScheduleModal: React.FC<NoScheduleModalProps> = ({ isOpen, onClose, subjectName }) => {
+  return (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Materia sin horarios"
+    >
+      <div className="space-y-4">
+        <p className="text-sm text-gray">
+          La materia <span className="font-medium text-textDefault">{subjectName}</span> no tiene horarios o comisiones disponibles actualmente.
+        </p>
+        <div className="flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    </BaseModal>
+  );
+};
+
 const CourseView: React.FC<CourseViewProps> = ({
   selectedCourses,
   onCommissionSelect,
@@ -38,6 +69,8 @@ const CourseView: React.FC<CourseViewProps> = ({
     0
   );
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [showNoScheduleModal, setShowNoScheduleModal] = useState(false);
+  const [currentSubject, setCurrentSubject] = useState<string>("");
 
   // For exchanges, we'll show all subjects in a flat list
   const subjectsByYear = isExchange
@@ -108,15 +141,28 @@ const CourseView: React.FC<CourseViewProps> = ({
         }, {} as Record<number, (typeof subjectsByYear)[number]>);
 
   const handleSubjectSelect = (subject: Subject) => {
+    // Check if subject has no commissions or all commissions have empty schedules
+    const hasNoSchedules = !subject.commissions?.length || 
+      subject.commissions.every(comm => !comm.schedule?.length);
+
+    if (hasNoSchedules) {
+      setCurrentSubject(subject.name);
+      setShowNoScheduleModal(true);
+      return;
+    }
+
     if (selectedCourses.some((c) => c.subject_id === subject.subject_id)) {
       onRemoveCourse(subject.subject_id);
       return;
     }
 
-    if (subject.commissions.length === 1) {
+    // Only consider commissions with valid schedules
+    const validCommissions = subject.commissions.filter(comm => comm.schedule?.length > 0);
+    
+    if (validCommissions.length === 1) {
       onAddCourse(subject, {
-        id: subject.commissions[0].name,
-        name: subject.commissions[0].name,
+        id: validCommissions[0].name,
+        name: validCommissions[0].name,
       });
       return;
     }
@@ -217,6 +263,12 @@ const CourseView: React.FC<CourseViewProps> = ({
           </div>
         )}
       </div>
+
+      <NoScheduleModal
+        isOpen={showNoScheduleModal}
+        onClose={() => setShowNoScheduleModal(false)}
+        subjectName={currentSubject}
+      />
     </div>
   );
 };

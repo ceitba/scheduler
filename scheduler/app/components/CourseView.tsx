@@ -4,6 +4,7 @@ import { useSubjects, type Subject } from "../hooks/useSubjects";
 import SelectedCoursesList from "./SelectedCoursesList";
 import AvailableCoursesList from "./AvailableCoursesList";
 import LoadingDots from "./LoadingDots";
+import ErrorView from "./ErrorView";
 import { useParams } from "next/navigation";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import BaseModal from "./BaseModal";
@@ -179,7 +180,7 @@ const CourseView: React.FC<CourseViewProps> = ({
   }
 
   if (error) {
-    return <div className="text-red-500 text-center p-4">Error: {error}</div>;
+    return <ErrorView message={error} className="h-64" />;
   }
 
   return (

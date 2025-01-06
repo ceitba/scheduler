@@ -19,13 +19,20 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 interface SelectedCourse extends Subject {
-  selectedCommission: string;
+  selectedCommissions: string[];
   isPriority: boolean;
 }
 
 interface SortableItemProps {
   course: SelectedCourse;
   onRemove: (id: string) => void;
+}
+
+interface GroupedSchedule {
+  day: string;
+  timeFrom: string;
+  timeTo: string;
+  classrooms: string[];
 }
 
 const dayNames: Record<string, string> = {
@@ -47,33 +54,30 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
     transition,
   };
 
-  const groupedSchedule =
-    course.commissions
-      .find((c) => c.name === course.selectedCommission)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ?.schedule.reduce((acc: { [key: string]: any }, schedule) => {
-        const key = `${schedule.day}-${schedule.time_from}-${schedule.time_to}`;
-        if (!acc[key]) {
-          acc[key] = {
-            day: schedule.day,
-            timeFrom: schedule.time_from,
-            timeTo: schedule.time_to,
-            classrooms: [schedule.classroom],
-          };
-        } else {
-          acc[key].classrooms.push(schedule.classroom);
-        }
-        return acc;
-      }, {}) ?? {};
+  // Get schedules for all selected commissions
+  const groupedSchedule = course.selectedCommissions.includes('any') || course.selectedCommissions.length > 1
+    ? {}  // Don't show schedules for multiple commissions
+    : course.commissions
+        .filter(c => course.selectedCommissions.includes(c.name))
+        .reduce((acc, commission) => {
+          commission.schedule?.forEach(schedule => {
+            const key = `${schedule.day}-${schedule.time_from}-${schedule.time_to}`;
+            if (!acc[key]) {
+              acc[key] = {
+                day: schedule.day,
+                timeFrom: schedule.time_from,
+                timeTo: schedule.time_to,
+                classrooms: [schedule.classroom],
+              };
+            } else if (!acc[key].classrooms.includes(schedule.classroom)) {
+              acc[key].classrooms.push(schedule.classroom);
+            }
+          });
+          return acc;
+        }, {} as Record<string, GroupedSchedule>);
 
-  {
-    Object.values(groupedSchedule).map((schedule, i) => (
-      <div key={i} className="text-xs text-gray">
-        {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ""} -{" "}
-        {schedule.timeTo?.slice(0, 5) || ""} | {schedule.classrooms.join(", ")}
-      </div>
-    ));
-  }
+  // Check if all commissions are selected
+  const allCommissionsSelected = course.selectedCommissions.length === course.commissions.length;
 
   return (
     <div
@@ -105,9 +109,13 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
         </div>
         <div className="flex items-center space-x-4">
           <span className="text-xs text-gray text-end">
-            {course.selectedCommission === "any"
+            {course.selectedCommissions.includes("any") || allCommissionsSelected
               ? "Cualquier comisión"
-              : `Comisión ${course.selectedCommission.toUpperCase()}`}
+              : course.selectedCommissions.length === 1
+              ? `Comisión ${course.selectedCommissions[0].toUpperCase()}`
+              : course.selectedCommissions.length === 2
+              ? `Comisión ${course.selectedCommissions[0].toUpperCase()} o ${course.selectedCommissions[1].toUpperCase()}`
+              : `Comisión ${course.selectedCommissions.slice(0, -1).map(c => c.toUpperCase()).join(", ")}, o ${course.selectedCommissions[course.selectedCommissions.length - 1].toUpperCase()}`}
           </span>
           <button
             onClick={() => onRemove(course.subject_id)}

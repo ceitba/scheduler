@@ -10,17 +10,14 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import BaseModal from "./BaseModal";
 
 interface SelectedCourse extends Subject {
-  selectedCommission: string;
+  selectedCommissions: string[];
   isPriority: boolean;
 }
 
 interface CourseViewProps {
   selectedCourses: SelectedCourse[];
   onCommissionSelect: (course: Subject) => void;
-  onAddCourse: (
-    course: Subject,
-    commission: { id: string; name: string }
-  ) => void;
+  onAddCourse: (course: Subject, commissions: string[]) => void;
   onRemoveCourse: (courseId: string) => void;
   onReorderCourses: (courses: SelectedCourse[]) => void;
 }
@@ -161,10 +158,7 @@ const CourseView: React.FC<CourseViewProps> = ({
     const validCommissions = subject.commissions.filter(comm => comm.schedule?.length > 0);
     
     if (validCommissions.length === 1) {
-      onAddCourse(subject, {
-        id: validCommissions[0].name,
-        name: validCommissions[0].name,
-      });
+      onAddCourse(subject, [validCommissions[0].name]);
       return;
     }
 

@@ -34,7 +34,7 @@ export interface PossibleSchedule {
 }
 
 export interface SchedulerSubject extends Subject {
-  selectedCommission: string;  // 'any' or specific commission id
+  selectedCommissions: string[];  // Array of commission ids or ['any'] for any commission
 }
 
 export interface CommissionSchedule {

@@ -75,6 +75,15 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     );
   });
 
+  // Reset current schedule index if it's out of bounds
+  useEffect(() => {
+    if (currentScheduleIndex >= filteredSchedules.length) {
+      setCurrentScheduleIndex(0);
+    }
+  }, [filteredSchedules.length, currentScheduleIndex]);
+
+  const currentSchedule = filteredSchedules[currentScheduleIndex];
+
   const handlePrevSchedule = () => {
     if (filteredSchedules.length > 0) {
       setCurrentScheduleIndex((prev) =>
@@ -414,17 +423,17 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                 <div className="mb-2 text-sm">No hay combinaciones posibles para esta configuración</div>
               </div>
             </div>
-          ) : (
+          ) : currentSchedule ? (
             <>
               <div>
-                <ScheduleGrid slots={filteredSchedules[currentScheduleIndex].slots} />
+                <ScheduleGrid slots={currentSchedule.slots} />
               </div>
               {/* Schedule Info */}
               <div className="mt-4">
-                {renderScheduleInfo(filteredSchedules[currentScheduleIndex])}
+                {renderScheduleInfo(currentSchedule)}
               </div>
             </>
-          )}
+          ) : null}
         </div>
       </div>
 

@@ -83,20 +83,22 @@ export class Scheduler {
   }
 
   private getAvailableCommissions(subject: SchedulerSubject) {
-    // If no commission is selected or explicitly set to 'any', return all commissions
-    if (!subject.selectedCommission || subject.selectedCommission === 'any') {
+    // If no commissions are selected or explicitly set to ['any'], return all commissions
+    if (!subject.selectedCommissions || subject.selectedCommissions.includes('any')) {
       return subject.commissions;
     }
     
-    // Find the specific commission by name
-    const selectedCommission = subject.commissions.find(c => c.name === subject.selectedCommission);
+    // Filter commissions by selected names
+    const selectedCommissions = subject.commissions.filter(c => 
+      subject.selectedCommissions.includes(c.name)
+    );
     
-    // If found, return only that commission, otherwise return all commissions as fallback
-    if (selectedCommission) {
-      console.log(`Using specific commission ${selectedCommission.name} for subject ${subject.name}`);
-      return [selectedCommission];
+    // If found any selected commissions, return them, otherwise return all commissions as fallback
+    if (selectedCommissions.length > 0) {
+      console.log(`Using specific commissions [${selectedCommissions.map(c => c.name).join(', ')}] for subject ${subject.name}`);
+      return selectedCommissions;
     } else {
-      console.log(`Commission ${subject.selectedCommission} not found for subject ${subject.name}, using all commissions`);
+      console.log(`No selected commissions found for subject ${subject.name}, using all commissions`);
       return subject.commissions;
     }
   }

@@ -85,6 +85,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
   const [editingBlock, setEditingBlock] = useState<LabeledTimeBlock | null>(null);
   const [selection, setSelection] = useState<SelectionState | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const dayNames = {
     short: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'],
@@ -110,17 +111,6 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
   const getBlockTop = (from: string): number => {
     const fromHour = parseInt(from.split(':')[0]);
     return (fromHour - 8) * 32; // Offset from 8:00
-  };
-
-  const hasOverlap = (newBlock: LabeledTimeBlock): boolean => {
-    return selectedBlocks.some(block => {
-      if (block.day !== newBlock.day) return false;
-      const newStart = parseInt(newBlock.from);
-      const newEnd = parseInt(newBlock.to);
-      const blockStart = parseInt(block.from);
-      const blockEnd = parseInt(block.to);
-      return (newStart < blockEnd && newEnd > blockStart);
-    });
   };
 
   const getHourFromPosition = (y: number): number => {
@@ -149,25 +139,40 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     });
   };
 
-  const handleMouseMove = (day: string, e: React.MouseEvent) => {
-    if (isSelecting && selection && day === selection.day) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const relativeY = e.clientY - rect.top;
-      const hour = getHourFromPosition(relativeY);
+  const handleMouseMove = useCallback(
+    (day: string, e: React.MouseEvent) => {
+      if (isSelecting && selection && day === selection.day) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const relativeY = e.clientY - rect.top;
+        const hour = getHourFromPosition(relativeY);
 
-      setSelection(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          endHour: hour
-        };
-      });
-    }
-  };
+        setSelection(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            endHour: hour
+          };
+        });
+      }
+    },
+    [isSelecting, selection]
+  );
 
   const handleMouseUp = useCallback(() => {
     if (selection) {
       const { day, startHour, endHour } = selection;
+
+      const hasOverlap = (newBlock: LabeledTimeBlock): boolean => {
+        return selectedBlocks.some(block => {
+          if (block.day !== newBlock.day) return false;
+          const newStart = parseInt(newBlock.from);
+          const newEnd = parseInt(newBlock.to);
+          const blockStart = parseInt(block.from);
+          const blockEnd = parseInt(block.to);
+          return (newStart < blockEnd && newEnd > blockStart);
+        });
+      };
+
       // For single click or small drags, create a 1-hour block
       if (endHour && (Math.abs(endHour - startHour) <= 1)) {
         const newBlock: LabeledTimeBlock = {
@@ -200,7 +205,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     }
     setIsSelecting(false);
     setSelection(null);
-  }, [selection, selectedBlocks, onChange, hasOverlap]);
+  }, [selection, selectedBlocks, onChange]);
 
   useEffect(() => {
     window.addEventListener('mouseup', handleMouseUp);
@@ -224,9 +229,6 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
       setEditingBlock(null);
     }
   };
-
-  // Add ref for the calendar container
-  const calendarRef = useRef<HTMLDivElement>(null);
 
   // Prevent vertical scrolling on touch devices
   useEffect(() => {

@@ -5,7 +5,7 @@ import CourseView from "../components/CourseView";
 import { SettingsView } from "../components/SettingsView";
 import { SchedulerPreview } from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
-import CommissionModal from "../components/CommissionModal";
+import CommissionSelectionModal from "../components/CommissionSelectionModal";
 import { Subject } from "../hooks/useSubjects";
 import { useState, useEffect, useRef } from "react";
 import { normalizePlanId, denormalizePlanId } from "../utils/planUtils";
@@ -15,7 +15,7 @@ import { AVAILABLE_PLANS } from "../types/careers";
 import { XMarkIcon, CalendarDaysIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 
 interface SelectedCourse extends Subject {
-  selectedCommission: string;
+  selectedCommissions: string[];
   isPriority: boolean;
 }
 
@@ -28,6 +28,7 @@ interface PageProps {
 interface CalendarEvent {
   url: string;
   title: string;
+  commission?: string;
 }
 
 interface GroupedEvent {
@@ -38,6 +39,7 @@ interface GroupedEvent {
   startTime: string;
   endTime: string;
   location?: string;
+  commission?: string;
 }
 
 const VALID_CAREERS = Object.keys(AVAILABLE_PLANS);
@@ -87,48 +89,26 @@ export default function CareerPage({ }: PageProps) {
     redirect(`/${career}?plan=${defaultPlan}`);
   }
 
-  const handleCommissionSelect = (commissionId: string) => {
+  const handleCommissionSelect = (commissions: string[]) => {
     if (selectedCourseForModal) {
-      const commission =
-        commissionId === "any"
-          ? { name: "any" }
-          : selectedCourseForModal.commissions.find(
-              (c) => c.name === commissionId
-            );
-
-      if (!commission) {
-        console.error(
-          `Commission ${commissionId} not found for course ${selectedCourseForModal.name}`
-        );
-        return;
-      }
-
       const updatedCourses = [
         ...selectedCourses,
         {
           ...selectedCourseForModal,
-          selectedCommission: commission.name,
+          selectedCommissions: commissions,
           isPriority: false,
         },
       ];
       setSelectedCourses(updatedCourses);
       scheduler.setSubjects(updatedCourses);
+      setSelectedCourseForModal(null);
+      setModalOpen(false);
     }
-    setModalOpen(false);
-    setSelectedCourseForModal(null);
   };
 
   const handleReorderCourses = (reorderedCourses: SelectedCourse[]) => {
     setSelectedCourses(reorderedCourses);
-    scheduler.setSubjects(
-      reorderedCourses.map((course) => ({
-        ...course,
-        selectedCommission:
-          course.selectedCommission === "any"
-            ? "any"
-            : course.selectedCommission,
-      }))
-    );
+    scheduler.setSubjects(reorderedCourses);
   };
 
   const handleGenerateSchedules = () => {
@@ -138,7 +118,7 @@ export default function CareerPage({ }: PageProps) {
       "Selected Courses:",
       selectedCourses.map((course) => ({
         name: course.name,
-        selectedCommission: course.selectedCommission,
+        selectedCommissions: course.selectedCommissions,
       }))
     );
     console.log("Scheduler Options:", scheduler.getOptions());
@@ -241,11 +221,12 @@ export default function CareerPage({ }: PageProps) {
         acc[key] = {
           title: `${slot.subject_id} - ${slot.subject}`,
           day: slot.day.toLowerCase(),
-          startDate:slot.dateFrom,
-          endDate:slot.dateTo,
+          startDate: slot.dateFrom,
+          endDate: slot.dateTo,
           startTime: slot.timeFrom,
           endTime: slot.timeTo,
-          location: slot.classroom || ""
+          location: slot.classroom || "",
+          commission: slot.commission
         };
       } else if (slot.classroom && !acc[key].location?.includes(slot.classroom)) {
         acc[key].location = `${acc[key].location}, ${slot.classroom}`;
@@ -263,6 +244,7 @@ export default function CareerPage({ }: PageProps) {
       startTime: event.startTime,
       endTime: event.endTime,
       location: event.location || "",
+      commission: event.commission
     }));
 
     setScheduleEvents(scheduleEvents);
@@ -274,6 +256,7 @@ export default function CareerPage({ }: PageProps) {
     const calendarUrls = scheduleEvents.map((event) => ({
       url: createGoogleCalendarUrl(event),
       title: event.title,
+      commission: event.commission
     }));
     setRemainingCalendarUrls(calendarUrls);
   };
@@ -286,6 +269,7 @@ export default function CareerPage({ }: PageProps) {
     startDate: Date;
     endDate: Date;
     location?: string;
+    commission?: string;
   }): string => {
 
     const eventDate = getNextDayDate(event.day,event.startDate);
@@ -326,15 +310,17 @@ export default function CareerPage({ }: PageProps) {
         <CourseView
           selectedCourses={selectedCourses}
           onCommissionSelect={(course) => {
-            setSelectedCourseForModal(course);
-            setModalOpen(true);
+            if (!modalOpen) {
+              setSelectedCourseForModal(course);
+              setModalOpen(true);
+            }
           }}
-          onAddCourse={(course, commission) => {
+          onAddCourse={(course, commissions) => {
             const updatedCourses = [
               ...selectedCourses,
               {
                 ...course,
-                selectedCommission: commission.name,
+                selectedCommissions: commissions,
                 isPriority: false,
               },
             ];
@@ -404,14 +390,17 @@ export default function CareerPage({ }: PageProps) {
         <TabView tabs={tabs} />
       </div>
 
-      <CommissionModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSelect={handleCommissionSelect}
-        commission={selectedCourseForModal?.commissions || []}
-        courseName={selectedCourseForModal?.name || ""}
-        courseId={selectedCourseForModal?.subject_id || ""}
-      />
+      {modalOpen && selectedCourseForModal && (
+        <CommissionSelectionModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedCourseForModal(null);
+          }}
+          subject={selectedCourseForModal}
+          onAddCommissions={handleCommissionSelect}
+        />
+      )}
 
       {isCalendarPanelOpen && (
         <>
@@ -490,7 +479,12 @@ export default function CareerPage({ }: PageProps) {
                       className="w-full flex items-center gap-2 p-2 hover:bg-secondaryBackground rounded-lg text-left border border-gray/20"
                     >
                       <CalendarDaysIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                      <span className="text-xs sm:text-sm line-clamp-2">{event.title}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs sm:text-sm line-clamp-2">
+                          {event.title}
+                          {event.commission && ` - Comisión ${event.commission}`}
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>

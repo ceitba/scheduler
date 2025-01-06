@@ -186,7 +186,6 @@ const CourseView: React.FC<CourseViewProps> = ({
     <div className="max-w-7xl mx-auto">
       <SearchBox subjects={subjects} onSelectSubject={handleSubjectSelect} />
       {/* Desktop Layout */}
-      {/* Desktop Layout */}
       <div className="hidden md:grid md:grid-cols-2 md:gap-4 md:mt-4">
         <div className="sticky top-4 h-max">
           <div className="p-4">

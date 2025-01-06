@@ -112,42 +112,11 @@ html, body {
   padding: 0;
 }
 
-.content-wrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  position: relative;
-}
 
 main {
   min-height: 100vh;
   width: 100vw;
   overflow-x: hidden;
-}
-
-/* If you need scrolling in specific containers, add this class */
-.scroll-container {
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: 100%;
-  width: 100%;
-}
-
-.sticky-container {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--background);
-}
-
-.available-courses-container {
-  position: relative;
-  z-index: 40;
 }
 
 @layer base {

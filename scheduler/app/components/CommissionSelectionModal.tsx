@@ -78,7 +78,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
           <p>Seleccioná las comisiones que querés incluir en las combinaciones posibles</p>
         </div>
 
-        <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
           {validCommissions.map((commission) => (
             <button
               key={commission.name}

@@ -60,7 +60,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
   const formatSchedule = (schedule: CommissionSchedule[]) => {
     return schedule.map(s => {
       const location = s.building ? ` | ${s.classroom}` : ' | Virtual asincrónico';
-      return `${dayTranslations[s.day]}. ${s.time_from} - ${s.time_to}${location}`;
+      return `${dayTranslations[s.day]}. ${s.time_from.slice(0, 5)} - ${s.time_to.slice(0, 5)}${location}`;
     }).join('\n');
   };
 

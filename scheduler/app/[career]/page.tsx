@@ -12,7 +12,11 @@ import { normalizePlanId, denormalizePlanId } from "../utils/planUtils";
 import { Scheduler } from "../services/scheduler";
 import { PossibleSchedule } from "../types/scheduler";
 import { AVAILABLE_PLANS } from "../types/careers";
-import { XMarkIcon, CalendarDaysIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import {
+  XMarkIcon,
+  CalendarDaysIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/24/outline";
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[];
@@ -44,7 +48,7 @@ interface GroupedEvent {
 
 const VALID_CAREERS = Object.keys(AVAILABLE_PLANS);
 
-export default function CareerPage({ }: PageProps) {
+export default function CareerPage({}: PageProps) {
   const { career } = useParams();
   const searchParams = useSearchParams();
   const normalizedPlan = searchParams.get("plan");
@@ -58,8 +62,11 @@ export default function CareerPage({ }: PageProps) {
 
   /* Calendar */
   const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false);
-  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarEvent[]>([]);
-  const [currentSchedule, setCurrentSchedule] = useState<PossibleSchedule | null>(null);
+  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<
+    CalendarEvent[]
+  >([]);
+  const [currentSchedule, setCurrentSchedule] =
+    useState<PossibleSchedule | null>(null);
   const calendarPanelRef = useRef<HTMLDivElement>(null);
   const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([]);
 
@@ -138,7 +145,7 @@ export default function CareerPage({ }: PageProps) {
     ];
 
     scheduleEvents.forEach((event) => {
-      const eventDate = getNextDayDate(event.day,event.startDate);
+      const eventDate = getNextDayDate(event.day, event.startDate);
       const startTime = timeStringToDate(event.startTime, eventDate);
       const endTime = timeStringToDate(event.endTime, eventDate);
       const startDate = new Date(event.startDate);
@@ -147,7 +154,6 @@ export default function CareerPage({ }: PageProps) {
       const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
       const differenceInWeeks = differenceInDays / 7;
       const repetitions = Math.floor(differenceInWeeks);
-
 
       const formatDate = (date: Date): string => {
         return date
@@ -161,7 +167,7 @@ export default function CareerPage({ }: PageProps) {
         `SUMMARY:${event.title}`,
         `DTSTART:${formatDate(startTime)}`,
         `DTEND:${formatDate(endTime)}`,
-        `RRULE:FREQ=WEEKLY;COUNT=${repetitions+1}`,
+        `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
         `LOCATION:${event.location}`,
         "END:VEVENT",
       ]);
@@ -171,7 +177,10 @@ export default function CareerPage({ }: PageProps) {
     return icsContent.join("\r\n");
   };
 
-  const getNextDayDate = (dayName: string,startDate:Date|null = null): Date => {
+  const getNextDayDate = (
+    dayName: string,
+    startDate: Date | null = null
+  ): Date => {
     const days = [
       "sunday",
       "monday",
@@ -181,7 +190,7 @@ export default function CareerPage({ }: PageProps) {
       "friday",
       "saturday",
     ];
-    const firstDay = new Date(startDate?? new Date()); ;
+    const firstDay = new Date(startDate ?? new Date());
     const dayIndex = days.indexOf(dayName.toLowerCase());
 
     const targetDate = firstDay;
@@ -214,7 +223,9 @@ export default function CareerPage({ }: PageProps) {
     setIsCalendarPanelOpen(true);
 
     // First group the events by course, day and time
-    const groupedEvents = currentSchedule.slots.reduce<Record<string, GroupedEvent>>((acc, slot) => {
+    const groupedEvents = currentSchedule.slots.reduce<
+      Record<string, GroupedEvent>
+    >((acc, slot) => {
       const key = `${slot.subject_id}-${slot.day}-${slot.timeFrom}-${slot.timeTo}`;
 
       if (!acc[key]) {
@@ -226,9 +237,12 @@ export default function CareerPage({ }: PageProps) {
           startTime: slot.timeFrom,
           endTime: slot.timeTo,
           location: slot.classroom || "",
-          commission: slot.commission
+          commission: slot.commission,
         };
-      } else if (slot.classroom && !acc[key].location?.includes(slot.classroom)) {
+      } else if (
+        slot.classroom &&
+        !acc[key].location?.includes(slot.classroom)
+      ) {
         acc[key].location = `${acc[key].location}, ${slot.classroom}`;
       }
 
@@ -236,27 +250,29 @@ export default function CareerPage({ }: PageProps) {
     }, {});
 
     // Transform the grouped events into the final format
-    const scheduleEvents = Object.values(groupedEvents).map((event: GroupedEvent) => ({
-      title: event.title,
-      day: event.day,
-      startDate: event.startDate,
-      endDate: event.endDate,
-      startTime: event.startTime,
-      endTime: event.endTime,
-      location: event.location || "",
-      commission: event.commission
-    }));
+    const scheduleEvents = Object.values(groupedEvents).map(
+      (event: GroupedEvent) => ({
+        title: event.title,
+        day: event.day,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        location: event.location || "",
+        commission: event.commission,
+      })
+    );
 
     setScheduleEvents(scheduleEvents);
 
     console.log("Schedule!!! ");
-    console.log(scheduleEvents); 
+    console.log(scheduleEvents);
 
     // Create calendar URLs and open first one
     const calendarUrls = scheduleEvents.map((event) => ({
       url: createGoogleCalendarUrl(event),
       title: event.title,
-      commission: event.commission
+      commission: event.commission,
     }));
     setRemainingCalendarUrls(calendarUrls);
   };
@@ -271,18 +287,16 @@ export default function CareerPage({ }: PageProps) {
     location?: string;
     commission?: string;
   }): string => {
-
-    const eventDate = getNextDayDate(event.day,event.startDate);
+    const eventDate = getNextDayDate(event.day, event.startDate);
     const startTime = timeStringToDate(event.startTime, eventDate);
     const endTime = timeStringToDate(event.endTime, eventDate);
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
-   
+
     const differenceInMilliseconds = endDate.getTime() - startDate.getTime();
     const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
     const differenceInWeeks = differenceInDays / 7;
     const repetitions = Math.floor(differenceInWeeks);
-    
 
     const formatDate = (date: Date): string => {
       return date
@@ -296,7 +310,7 @@ export default function CareerPage({ }: PageProps) {
       text: event.title,
       dates: `${formatDate(startTime)}/${formatDate(endTime)}`,
       recur: `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
-      
+
       location: event.location || "",
     });
 
@@ -354,7 +368,7 @@ export default function CareerPage({ }: PageProps) {
           onExportToCalendar={handleExportToCalendar}
         />
       ),
-      onClick: handleGenerateSchedules
+      onClick: handleGenerateSchedules,
     },
   ];
 
@@ -369,23 +383,26 @@ export default function CareerPage({ }: PageProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (calendarPanelRef.current && !calendarPanelRef.current.contains(event.target as Node)) {
+      if (
+        calendarPanelRef.current &&
+        !calendarPanelRef.current.contains(event.target as Node)
+      ) {
         setIsCalendarPanelOpen(false);
       }
     };
 
     if (isCalendarPanelOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isCalendarPanelOpen]);
 
   return (
-<div className="flex-1 flex flex-col">
-<TopBar currentPlan={plan || ""} />
+    <div className="">
+      <TopBar currentPlan={plan || ""} />
       <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
         <TabView tabs={tabs} />
       </div>
@@ -406,12 +423,17 @@ export default function CareerPage({ }: PageProps) {
         <>
           {/* Backdrop */}
           <div className="fixed inset-0 bg-black/25 backdrop-blur-sm z-[100]" />
-          
+
           {/* Panel */}
-          <div ref={calendarPanelRef} className="fixed inset-y-0 right-0 w-full sm:w-[28rem] bg-background transform transition-transform border-l border-gray/20 overflow-y-auto z-[101] shadow-xl">
+          <div
+            ref={calendarPanelRef}
+            className="fixed inset-y-0 right-0 w-full sm:w-[28rem] bg-background transform transition-transform border-l border-gray/20 overflow-y-auto z-[101] shadow-xl"
+          >
             <div className="p-3 sm:p-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base sm:text-lg font-medium">Agregar al calendario</h3>
+                <h3 className="text-base sm:text-lg font-medium">
+                  Agregar al calendario
+                </h3>
                 <button
                   onClick={() => setIsCalendarPanelOpen(false)}
                   className="p-2 hover:bg-secondaryBackground rounded-lg"
@@ -433,7 +455,8 @@ export default function CareerPage({ }: PageProps) {
                   <li>1. Descarga el archivo de calendario</li>
                   <li>
                     2. Ve a{" "}
-                    <a href="https://calendar.google.com"
+                    <a
+                      href="https://calendar.google.com"
                       target="_blank"
                       className="text-primary"
                     >
@@ -446,9 +469,12 @@ export default function CareerPage({ }: PageProps) {
                 </ol>
                 <button
                   onClick={() => {
-                    const blob = new Blob([generateIcsContent(scheduleEvents)], {
-                      type: "text/calendar",
-                    });
+                    const blob = new Blob(
+                      [generateIcsContent(scheduleEvents)],
+                      {
+                        type: "text/calendar",
+                      }
+                    );
                     const link = document.createElement("a");
                     link.href = window.URL.createObjectURL(blob);
                     link.download = "horario.ics";
@@ -482,7 +508,8 @@ export default function CareerPage({ }: PageProps) {
                       <div className="flex items-center gap-2">
                         <span className="text-xs sm:text-sm line-clamp-2">
                           {event.title}
-                          {event.commission && ` - Comisión ${event.commission}`}
+                          {event.commission &&
+                            ` - Comisión ${event.commission}`}
                         </span>
                       </div>
                     </button>

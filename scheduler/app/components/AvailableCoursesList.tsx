@@ -56,7 +56,7 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
     // For exchanges, show a flat list of all subjects
     const exchangeSubjects = Object.values(courses)[0]?.subjects['1'] || [];
     return (
-      <div className="bg-secondaryBackground/30 rounded-xl flex flex-col">
+      <div className="bg-background rounded-xl flex flex-col">
         <h2 className="text-lg font-semibold text-textDefault p-4 pb-2">
           Cursos disponibles
         </h2>

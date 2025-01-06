@@ -15,8 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex flex-col min-h-screen bg-background">
-      {children}
-          <BottomBar />
+          <main>
+          {children}
+        </main>
+        <BottomBar />
       </body>
     </html>
   );

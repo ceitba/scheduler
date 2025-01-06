@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 
 interface DropdownSectionProps {
   title: string;
@@ -21,9 +21,9 @@ const DropdownSection: React.FC<DropdownSectionProps> = ({
         onClick={onToggle}
       >
         {isOpen ? (
-          <ChevronDownIcon className="h-4 w-4 mr-2" />
+          <ChevronUpIcon className="h-4 w-4 mr-2" />
         ) : (
-          <ChevronRightIcon className="h-4 w-4 mr-2" />
+          <ChevronDownIcon className="h-4 w-4 mr-2" />
         )}
         <span>{title}</span>
       </div>

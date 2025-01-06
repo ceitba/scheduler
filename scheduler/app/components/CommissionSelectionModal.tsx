@@ -89,7 +89,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
                   : "bg-secondaryBackground hover:brightness-95"
               }`}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between w-full">
                 <span>Comisión {commission.name}</span>
                 {selectedCommissions.includes(commission.name) && (
                   <CheckIcon className="h-5 w-5" />
@@ -97,7 +97,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
               </div>
               <div className={`text-sm mt-1 whitespace-pre-line ${
                 selectedCommissions.includes(commission.name)
-                  ? "text-white/80"
+                  ? "text-white"
                   : "text-gray"
               }`}>
                 {formatSchedule(commission.schedule)}
@@ -109,9 +109,9 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
         <div className="flex justify-between items-center gap-3 pt-4">
           <button
             onClick={handleSelectAll}
-            className="px-4 py-2 text-primary hover:bg-primary/10 rounded-lg"
+            className="px-4 py-2 text-textDefault hover:text-primary rounded-lg bg-secondaryBackground"
           >
-            Cualquier comisión
+            Agregar todas
           </button>
           <button
             onClick={handleAddCommissions}
@@ -122,7 +122,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
                 : "bg-primary text-white hover:bg-primary/90"
             }`}
           >
-            Agregar {selectedCommissions.length} comisión{selectedCommissions.length !== 1 ? 'es' : ''}
+            Agregar {selectedCommissions.length} {selectedCommissions.length !== 1 ? 'comisiones' : 'comisión'}
           </button>
         </div>
       </div>

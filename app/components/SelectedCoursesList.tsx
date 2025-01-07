@@ -48,6 +48,8 @@ const dayNames: Record<string, string> = {
 const SortableItem = ({ course, onRemove }: SortableItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: course.subject_id });
+  
+    const orderedSelectedCommissions = course.selectedCommissions.slice().sort();
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -114,8 +116,8 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
               : course.selectedCommissions.length === 1
               ? `Comisión ${course.selectedCommissions[0].toUpperCase()}`
               : course.selectedCommissions.length === 2
-              ? `Comisión ${course.selectedCommissions[0].toUpperCase()} o ${course.selectedCommissions[1].toUpperCase()}`
-              : `Comisión ${course.selectedCommissions.slice(0, -1).map(c => c.toUpperCase()).join(", ")}, o ${course.selectedCommissions[course.selectedCommissions.length - 1].toUpperCase()}`}
+              ? `Comisión ${orderedSelectedCommissions[0].toUpperCase()} o ${orderedSelectedCommissions[1].toUpperCase()}`
+              : `Comisión ${orderedSelectedCommissions.slice(0, -1).map(c => c.toUpperCase()).join(", ")}, o ${orderedSelectedCommissions[orderedSelectedCommissions.length - 1].toUpperCase()}`}
           </span>
           <button
             onClick={() => onRemove(course.subject_id)}
@@ -147,8 +149,6 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
     })
   );
 
-  const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -164,21 +164,7 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
   };
 
   return (
-    <div className="bg-secondaryBackground/30 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-4">
-        {/* <TooltipHeader
-          title="Cursos seleccionados"
-          tooltip="Arrastra las materias para ordenarlas según prioridad"
-        /> */}
-        <h2 className="text-lg font-semibold text-textDefault">
-          Cursos seleccionados
-        </h2>
-        {totalCredits > 0 && (
-          <div className="text-sm text-gray">
-            <span className="font-medium">{totalCredits}</span> créditos
-          </div>
-        )}
-      </div>
+    <div className="bg-secondaryBackground/30">
       {courses.length === 0 && (
         <div className="text-sm text-gray text-center">
           No hay cursos seleccionados

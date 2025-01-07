@@ -372,7 +372,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                     }}
                   >
                     {Math.abs(selection.endHour - selection.startHour) >= 1 && (
-                      <span className="text-[11px] text-textDefault font-medium select-none">
+                      <span className="text-[11px] text-center text-textDefault font-medium select-none">
                         {`${Math.min(selection.startHour, selection.endHour)}:00 - ${Math.max(selection.startHour, selection.endHour)}:00`}
                       </span>
                     )}

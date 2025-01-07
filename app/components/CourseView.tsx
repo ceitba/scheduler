@@ -28,16 +28,18 @@ interface NoScheduleModalProps {
   subjectName: string;
 }
 
-const NoScheduleModal: React.FC<NoScheduleModalProps> = ({ isOpen, onClose, subjectName }) => {
+const NoScheduleModal: React.FC<NoScheduleModalProps> = ({
+  isOpen,
+  onClose,
+  subjectName,
+}) => {
   return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Materia sin horarios"
-    >
+    <BaseModal isOpen={isOpen} onClose={onClose} title="Materia sin horarios">
       <div className="space-y-4">
         <p className="text-sm text-gray">
-          La materia <span className="font-medium text-textDefault">{subjectName}</span> no tiene horarios o comisiones disponibles actualmente.
+          La materia{" "}
+          <span className="font-medium text-textDefault">{subjectName}</span> no
+          tiene horarios o comisiones disponibles actualmente.
         </p>
         <div className="flex justify-end">
           <button
@@ -140,8 +142,9 @@ const CourseView: React.FC<CourseViewProps> = ({
 
   const handleSubjectSelect = (subject: Subject) => {
     // Check if subject has no commissions or all commissions have empty schedules
-    const hasNoSchedules = !subject.commissions?.length || 
-      subject.commissions.every(comm => !comm.schedule?.length);
+    const hasNoSchedules =
+      !subject.commissions?.length ||
+      subject.commissions.every((comm) => !comm.schedule?.length);
 
     if (hasNoSchedules) {
       setCurrentSubject(subject.name);
@@ -155,8 +158,10 @@ const CourseView: React.FC<CourseViewProps> = ({
     }
 
     // Only consider commissions with valid schedules
-    const validCommissions = subject.commissions.filter(comm => comm.schedule?.length > 0);
-    
+    const validCommissions = subject.commissions.filter(
+      (comm) => comm.schedule?.length > 0
+    );
+
     if (validCommissions.length === 1) {
       onAddCourse(subject, [validCommissions[0].name]);
       return;
@@ -182,24 +187,26 @@ const CourseView: React.FC<CourseViewProps> = ({
       <SearchBox subjects={subjects} onSelectSubject={handleSubjectSelect} />
       {/* Desktop Layout */}
       <div className="hidden md:grid md:grid-cols-2 md:gap-4 md:mt-4">
-        <div className="md:sticky md:top-4 md:h-max">
-          <SelectedCoursesList
-            courses={selectedCourses}
-            onRemove={onRemoveCourse}
-            onReorder={onReorderCourses}
-          />
+        <div className="sticky top-4 h-max">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-textDefault">
+                Cursos seleccionados
+              </h2>
+              {totalCredits > 0 && (
+                <div className="text-sm text-gray">
+                  <span className="font-medium">{totalCredits}</span> créditos
+                </div>
+              )}
+            </div>
+            <SelectedCoursesList
+              courses={selectedCourses}
+              onRemove={onRemoveCourse}
+              onReorder={onReorderCourses}
+            />
+          </div>
         </div>
-        <AvailableCoursesList
-          courses={sortedSubjectsByYear}
-          selectedCourses={selectedCourses}
-          onCourseClick={handleSubjectSelect}
-          isExchange={isExchange}
-        />
-      </div>
-
-      {/* Mobile Layout */}
-      <div className="md:hidden">
-        <div className="mt-4 pb-20">
+        <div className="overflow-y-auto">
           <AvailableCoursesList
             courses={sortedSubjectsByYear}
             selectedCourses={selectedCourses}
@@ -207,47 +214,38 @@ const CourseView: React.FC<CourseViewProps> = ({
             isExchange={isExchange}
           />
         </div>
+      </div>
 
+      {/* Mobile Layout */}
+      <div className="md:hidden">
         {selectedCourses.length > 0 && (
-          <div
-            className={`
-        sticky bottom-0 left-0 right-0 z-40 bg-background
-        ${isPreviewOpen ? "max-h-[70vh]" : "max-h-[20vh]"}
-      `}>
+          <div className="bg-background">
             <button
               onClick={() => setIsPreviewOpen(!isPreviewOpen)}
-              className={`
-          w-full flex items-center justify-between px-4 border-t border-surface
-          ${isPreviewOpen ? "h-8" : "h-20"}
-        `}
+              className="w-full flex items-center justify-between px-4 border-b border-surface h-20"
+              // style={{ height: isPreviewOpen ? "2rem" : "5rem" }}
             >
-              {!isPreviewOpen && (
-                <div className="flex flex-col items-start justify-between w-full">
-                  <div className="font-semibold text-lg">
-                    Cursos seleccionados
-                  </div>
-                  <div className="text-sm text-gray font-medium">
-                    {selectedCourses.length} curso
-                    {selectedCourses.length !== 1 ? "s" : ""} · {totalCredits}{" "}
-                    créditos
-                  </div>
+              <div className="flex flex-col items-start justify-between w-full">
+                <div className="font-semibold text-lg">
+                  Cursos seleccionados
                 </div>
-              )}
-              <div
-                className={`flex items-center ${
-                  isPreviewOpen ? "w-full justify-center" : ""
-                }`}
-              >
+                <div className="text-sm text-gray font-medium">
+                  {selectedCourses.length} curso
+                  {selectedCourses.length !== 1 ? "s" : ""} · {totalCredits}{" "}
+                  créditos
+                </div>
+              </div>
+              <div className="">
                 {isPreviewOpen ? (
-                  <ChevronDownIcon className="w-5 h-5 text-gray" />
-                ) : (
                   <ChevronUpIcon className="w-5 h-5 text-gray" />
+                ) : (
+                  <ChevronDownIcon className="w-5 h-5 text-gray" />
                 )}
               </div>
             </button>
 
             {isPreviewOpen && (
-              <div className="overflow-y-auto px-4">
+              <div className="border-b border-surface p-2">
                 <SelectedCoursesList
                   courses={selectedCourses}
                   onRemove={onRemoveCourse}
@@ -257,6 +255,15 @@ const CourseView: React.FC<CourseViewProps> = ({
             )}
           </div>
         )}
+        {/* {selectedCourses.length > 0 ? "mt-20 " : "" } */}
+        <div className="max-h-[70vh]">
+          <AvailableCoursesList
+            courses={sortedSubjectsByYear}
+            selectedCourses={selectedCourses}
+            onCourseClick={handleSubjectSelect}
+            isExchange={isExchange}
+          />
+        </div>
       </div>
 
       <NoScheduleModal

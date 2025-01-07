@@ -18,7 +18,6 @@ jobs:
           script: |
             cd scheduler/
             git pull https://CEITBA-git:${{ secrets.GITHUB_TOKEN}}@github.com/CEITBA-git/scheduler.git
-            cd scheduler/
             sudo npm install
             sudo npm run build
             pm2 restart scheduler

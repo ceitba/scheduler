@@ -54,7 +54,7 @@ export const getLatestPlan = (careerId: string): string => {
 
 // Career icons mapping
 export const CAREER_METADATA: Record<string, { icon: string }> = {
-  "BIO": { icon: "🥬" },
+  "BIO": { icon: "🩻" || "🔬" },
   "C": { icon: "🏗️" },
   "I": { icon: "🏭" },
   "K": { icon: "🔌" },

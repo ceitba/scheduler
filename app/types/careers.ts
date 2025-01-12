@@ -52,9 +52,28 @@ export const getLatestPlan = (careerId: string): string => {
   return plans ? plans[0].id : '';
 };
 
+// Helper function to check if an emoji is supported
+const getFirstSupportedEmoji = (...emojis: string[]): string => {
+  // If we can't check support (e.g., during SSR), return the first emoji
+  if (typeof document === 'undefined') return emojis[0];
+  
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return emojis[0];
+
+  for (const emoji of emojis) {
+    ctx.fillText(emoji, -10, -10);
+    const pixels = ctx.getImageData(0, 0, 10, 10).data;
+    const hasPixels = pixels.some(pixel => pixel !== 0);
+    if (hasPixels) return emoji;
+  }
+  
+  return emojis[0]; // Fallback to first emoji if none are supported
+};
+
 // Career icons mapping
 export const CAREER_METADATA: Record<string, { icon: string }> = {
-  "BIO": { icon: "🩻" || "🔬" },
+  "BIO": { icon: getFirstSupportedEmoji("🩻", "🔬") },
   "C": { icon: "🏗️" },
   "I": { icon: "🏭" },
   "K": { icon: "🔌" },

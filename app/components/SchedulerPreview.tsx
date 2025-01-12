@@ -23,6 +23,7 @@ interface SchedulerPreviewProps {
 
 interface ScheduleSettings {
   allowTimeOverlap: boolean;
+  allowUnlimitedOverlap: boolean;
   avoidLocationChanges: boolean;
   haveFreeDay: boolean;
   timeFormat: "12h" | "24h";
@@ -70,7 +71,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const filteredSchedules = schedules.filter((schedule) => {
     const options = scheduler.getOptions();
     return (
-      ((options.allowOverlap && Math.abs(schedule.maxOverlap) <= 30) || schedule.maxOverlap == 0) &&
+      (options.allowUnlimitedOverlap || 
+      (options.allowOverlap && Math.abs(schedule.maxOverlap) <= 30) || 
+      schedule.maxOverlap == 0) &&
       (!options.allowFreeDay || schedule.hasFreeDay)
     );
   });
@@ -102,6 +105,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   const [settings, setSettings] = useState<ScheduleSettings>({
     allowTimeOverlap: scheduler.getOptions().allowOverlap,
+    allowUnlimitedOverlap: scheduler.getOptions().allowUnlimitedOverlap,
     avoidLocationChanges: scheduler.getOptions().avoidBuildingChange,
     haveFreeDay: scheduler.getOptions().allowFreeDay,
     timeFormat: "24h",
@@ -337,19 +341,50 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end">
           <Checkbox
             id="allowOverlap"
-            checked={settings.allowTimeOverlap}
+            checked={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
             onChange={(checked) => {
-              setSettings((prev) => ({ ...prev, allowTimeOverlap: checked }));
+              setSettings((prev) => ({ 
+                ...prev, 
+                allowTimeOverlap: checked,
+                // Disable unlimited overlap when enabling limited overlap
+                allowUnlimitedOverlap: false
+              }));
               scheduler.setOptions({
                 ...scheduler.getOptions(),
                 allowOverlap: checked,
+                allowUnlimitedOverlap: false
               });
               setSchedules(scheduler.generateSchedules());
             }}
-            label="Permitir superposición de horarios"
-            isTooltip = {true} 
-            tooltip="Máx. diferencia: | 30 mins"
-            />
+            label="Permitir superposición limitada"
+            isTooltip={true}
+            tooltip="Máx. diferencia: 30 mins"
+            disabled={settings.allowUnlimitedOverlap}
+          />
+
+          <Checkbox
+            id="allowUnlimitedOverlap"
+            checked={settings.allowUnlimitedOverlap}
+            onChange={(checked) => {
+              setSettings((prev) => ({ 
+                ...prev, 
+                allowUnlimitedOverlap: checked,
+                // Enable regular overlap when enabling unlimited (required by scheduler)
+                allowTimeOverlap: checked
+              }));
+              scheduler.setOptions({
+                ...scheduler.getOptions(),
+                allowUnlimitedOverlap: checked,
+                // Enable regular overlap when enabling unlimited (required by scheduler)
+                allowOverlap: checked
+              });
+              setSchedules(scheduler.generateSchedules());
+            }}
+            label="Permitir superposición completa"
+            isTooltip={true}
+            tooltip="Sin límite de superposición"
+            disabled={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
+          />
 
           <Checkbox
             id="freeDay"

@@ -2,6 +2,7 @@ import { Subject } from "../hooks/useSubjects";
 
 export interface SchedulerOptions {
   allowOverlap: boolean;
+  allowUnlimitedOverlap: boolean;
   avoidBuildingChange: boolean;
   allowFreeDay: boolean;
 }

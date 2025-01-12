@@ -13,6 +13,7 @@ export class Scheduler {
   private subjects: SchedulerSubject[] = [];
   private options: SchedulerOptions = {
     allowOverlap: false,
+    allowUnlimitedOverlap: false,
     avoidBuildingChange: false,
     allowFreeDay: false
   };
@@ -60,6 +61,14 @@ export class Scheduler {
   public generateSchedules(): PossibleSchedule[] {
     this.possibleSchedules = [];
     this.backtrack([], 0);
+    
+    // Filter schedules based on overlap settings
+    if (this.options.allowOverlap && !this.options.allowUnlimitedOverlap) {
+      this.possibleSchedules = this.possibleSchedules.filter(schedule => 
+        schedule.maxOverlap <= 30
+      );
+    }
+    
     return this.possibleSchedules;
   }
 
@@ -119,6 +128,9 @@ export class Scheduler {
   }
 
   private canAddSlots(schedule: ScheduleSlot[], newSlots: ScheduleSlot[]): boolean {
+    // If unlimited overlaps are allowed, return true
+    if (this.options.allowUnlimitedOverlap) return true;
+    // If limited overlaps are allowed, check in generateSchedules
     if (this.options.allowOverlap) return true;
 
     // Check overlap with existing schedule slots
@@ -134,24 +146,6 @@ export class Scheduler {
         return newEnd <= existingStart || newStart >= existingEnd;
       })
     );
-
-    // Check overlap with blocked times
-    // const noBlockedOverlap = newSlots.every(newSlot =>
-    //   this.blockedTimes.every(blockedTime => {
-    //     if (blockedTime.day !== newSlot.day) return true;
-
-    //     const newStart = this.timeToMinutes(newSlot.timeFrom);
-    //     const newEnd = this.timeToMinutes(newSlot.timeTo);
-    //     const blockedStart = this.timeToMinutes(blockedTime.from);
-    //     const blockedEnd = this.timeToMinutes(blockedTime.to);
-
-    //     return newEnd <= blockedStart || newStart >= blockedEnd;
-    //   })
-    // );
-
-    // return noScheduleOverlap && noBlockedOverlap;
-    // return noScheduleOverlap;
-
   }
 
   private timeToMinutes(time: string): number {

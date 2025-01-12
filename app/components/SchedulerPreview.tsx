@@ -70,12 +70,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   // Filter schedules based on overlap option
   const filteredSchedules = schedules.filter((schedule) => {
     const options = scheduler.getOptions();
-    return (
-      (options.allowUnlimitedOverlap || 
-      (options.allowOverlap && Math.abs(schedule.maxOverlap) <= 30) || 
-      schedule.maxOverlap == 0) &&
-      (!options.allowFreeDay || schedule.hasFreeDay)
-    );
+    const hasValidOverlap = options.allowUnlimitedOverlap || 
+      (options.allowOverlap && schedule.maxOverlap <= 30) || 
+      schedule.maxOverlap === 0;
+    const hasValidFreeDay = !options.allowFreeDay || schedule.hasFreeDay;
+    return hasValidOverlap && hasValidFreeDay;
   });
 
   // Reset current schedule index if it's out of bounds
@@ -343,12 +342,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             id="allowOverlap"
             checked={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
             onChange={(checked) => {
-              setSettings((prev) => ({ 
-                ...prev, 
+              const newSettings = {
+                ...settings,
                 allowTimeOverlap: checked,
-                // Disable unlimited overlap when enabling limited overlap
                 allowUnlimitedOverlap: false
-              }));
+              };
+              setSettings(newSettings);
               scheduler.setOptions({
                 ...scheduler.getOptions(),
                 allowOverlap: checked,
@@ -366,16 +365,15 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             id="allowUnlimitedOverlap"
             checked={settings.allowUnlimitedOverlap}
             onChange={(checked) => {
-              setSettings((prev) => ({ 
-                ...prev, 
+              const newSettings = {
+                ...settings,
                 allowUnlimitedOverlap: checked,
-                // Enable regular overlap when enabling unlimited (required by scheduler)
                 allowTimeOverlap: checked
-              }));
+              };
+              setSettings(newSettings);
               scheduler.setOptions({
                 ...scheduler.getOptions(),
                 allowUnlimitedOverlap: checked,
-                // Enable regular overlap when enabling unlimited (required by scheduler)
                 allowOverlap: checked
               });
               setSchedules(scheduler.generateSchedules());
@@ -390,7 +388,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             id="freeDay"
             checked={settings.haveFreeDay}
             onChange={(checked) => {
-              setSettings((prev) => ({ ...prev, haveFreeDay: checked }));
+              const newSettings = { ...settings, haveFreeDay: checked };
+              setSettings(newSettings);
               scheduler.setOptions({
                 ...scheduler.getOptions(),
                 allowFreeDay: checked,

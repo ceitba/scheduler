@@ -8,16 +8,16 @@ export interface SchedulerOptions {
 }
 
 export interface TimeBlock {
-  day: string;    // "MONDAY", "TUESDAY", etc.
-  from: string;   // "HH:mm:ss"
-  to: string;     // "HH:mm:ss"
-  label?: string; // Optional label for the block
+  day: string;
+  from: string;
+  to: string;
+  label?: string;
 }
 
 export interface ScheduleSlot {
   day: string;
-  dateFrom:Date;
-  dateTo:Date;
+  dateFrom: Date;
+  dateTo: Date;
   timeFrom: string;
   timeTo: string;
   subject: string;
@@ -35,7 +35,7 @@ export interface PossibleSchedule {
 }
 
 export interface SchedulerSubject extends Subject {
-  selectedCommissions: string[];  // Array of commission ids or ['any'] for any commission
+  selectedCommissions: string[];
 }
 
 export interface CommissionSchedule {

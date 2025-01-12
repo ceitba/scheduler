@@ -186,9 +186,9 @@ const CourseView: React.FC<CourseViewProps> = ({
     <div className="max-w-7xl mx-auto">
       <SearchBox subjects={subjects} onSelectSubject={handleSubjectSelect} />
       {/* Desktop Layout */}
-      <div className="hidden md:grid md:grid-cols-2 md:gap-4 md:mt-4">
-        <div className="sticky top-4 h-max">
-          <div className="p-4">
+      <div className="hidden md:grid md:grid-cols-2 md:gap-4 mt-4">
+        <div className="sticky top-4">
+          <div className="p-4 bg-secondaryBackground/30 rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-textDefault">
                 Cursos seleccionados
@@ -206,7 +206,7 @@ const CourseView: React.FC<CourseViewProps> = ({
             />
           </div>
         </div>
-        <div className="overflow-y-auto">
+        <div>
           <AvailableCoursesList
             courses={sortedSubjectsByYear}
             selectedCourses={selectedCourses}
@@ -223,7 +223,6 @@ const CourseView: React.FC<CourseViewProps> = ({
             <button
               onClick={() => setIsPreviewOpen(!isPreviewOpen)}
               className="w-full flex items-center justify-between px-4 border-b border-surface h-20"
-              // style={{ height: isPreviewOpen ? "2rem" : "5rem" }}
             >
               <div className="flex flex-col items-start justify-between w-full">
                 <div className="font-semibold text-lg">
@@ -235,7 +234,7 @@ const CourseView: React.FC<CourseViewProps> = ({
                   créditos
                 </div>
               </div>
-              <div className="">
+              <div>
                 {isPreviewOpen ? (
                   <ChevronUpIcon className="w-5 h-5 text-gray" />
                 ) : (
@@ -255,8 +254,7 @@ const CourseView: React.FC<CourseViewProps> = ({
             )}
           </div>
         )}
-        {/* {selectedCourses.length > 0 ? "mt-20 " : "" } */}
-        <div className="max-h-[70vh]">
+        <div>
           <AvailableCoursesList
             courses={sortedSubjectsByYear}
             selectedCourses={selectedCourses}

@@ -187,8 +187,8 @@ const CourseView: React.FC<CourseViewProps> = ({
       <SearchBox subjects={subjects} onSelectSubject={handleSubjectSelect} />
       {/* Desktop Layout */}
       <div className="hidden md:grid md:grid-cols-2 md:gap-4 mt-4">
-        <div className="sticky top-4">
-          <div className="p-4 bg-secondaryBackground/30 rounded-xl">
+        <div>
+          <div className="sticky top-[3.5rem] rounded-xl p-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-textDefault">
                 Cursos seleccionados
@@ -206,7 +206,7 @@ const CourseView: React.FC<CourseViewProps> = ({
             />
           </div>
         </div>
-        <div>
+        <div className="overflow-y-auto">
           <AvailableCoursesList
             courses={sortedSubjectsByYear}
             selectedCourses={selectedCourses}

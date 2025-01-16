@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import BottomBar from "./components/BottomBar";
+import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
   title: "Combinador de horarios ITBA 2024",
@@ -13,12 +14,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="flex flex-col min-h-screen bg-background">
-        <main>
-          {children}
-        </main>
-        <BottomBar />
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <main>
+            {children}
+          </main>
+          <BottomBar />
+        </ThemeProvider>
       </body>
     </html>
   );

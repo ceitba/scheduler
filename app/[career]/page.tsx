@@ -51,9 +51,9 @@ const VALID_CAREERS = Object.keys(AVAILABLE_PLANS);
 export default function CareerPage({}: PageProps) {
   const { career } = useParams();
   const searchParams = useSearchParams();
-  const { subjects, loading: loadingSubjects } = useSubjects();
+  const { subjects } = useSubjects();
   const normalizedPlan = searchParams.get("plan");
-  const preselectedSubjectsIds = searchParams.getAll("code");
+  const preselectedSubjectsIds = useRef(searchParams.getAll("code"));
   const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null;
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCourseForModal, setSelectedCourseForModal] =
@@ -100,9 +100,9 @@ export default function CareerPage({}: PageProps) {
 
   // Add the preselected to the selected courses
   useEffect(() => {
-    if (preselectedSubjectsIds.length && subjects.length) {
+    if (preselectedSubjectsIds.current.length && subjects.length) {
       const preselectedSubjects = subjects.filter((subject) =>
-        preselectedSubjectsIds.includes(subject.subject_id)
+        preselectedSubjectsIds.current.includes(subject.subject_id)
       );
 
       setSelectedCourses((prev) => [
@@ -114,7 +114,7 @@ export default function CareerPage({}: PageProps) {
         })),
       ]);
     }
-  }, [loadingSubjects]);
+  }, [subjects]);
 
   const handleCommissionSelect = (commissions: string[]) => {
     if (selectedCourseForModal) {

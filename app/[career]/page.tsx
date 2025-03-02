@@ -6,7 +6,7 @@ import { SettingsView } from "../components/SettingsView";
 import { SchedulerPreview } from "../components/SchedulerPreview";
 import TopBar from "../components/Topbar";
 import CommissionSelectionModal from "../components/CommissionSelectionModal";
-import { Subject } from "../hooks/useSubjects";
+import { Subject, useSubjects } from "../hooks/useSubjects";
 import { useState, useEffect, useRef } from "react";
 import { normalizePlanId, denormalizePlanId } from "../utils/planUtils";
 import { Scheduler } from "../services/scheduler";
@@ -51,7 +51,9 @@ const VALID_CAREERS = Object.keys(AVAILABLE_PLANS);
 export default function CareerPage({}: PageProps) {
   const { career } = useParams();
   const searchParams = useSearchParams();
+  const { subjects } = useSubjects();
   const normalizedPlan = searchParams.get("plan");
+  const preselectedSubjectsIds = useRef(searchParams.getAll("code"));
   const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null;
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCourseForModal, setSelectedCourseForModal] =
@@ -95,6 +97,24 @@ export default function CareerPage({}: PageProps) {
     );
     redirect(`/${career}?plan=${defaultPlan}`);
   }
+
+  // Add the preselected to the selected courses
+  useEffect(() => {
+    if (preselectedSubjectsIds.current.length && subjects.length) {
+      const preselectedSubjects = subjects.filter((subject) =>
+        preselectedSubjectsIds.current.includes(subject.subject_id)
+      );
+
+      setSelectedCourses((prev) => [
+        ...prev,
+        ...preselectedSubjects.map((subject) => ({
+          ...subject,
+          selectedCommissions: subject.commissions.map((c) => c.name),
+          isPriority: false,
+        })),
+      ]);
+    }
+  }, [subjects]);
 
   const handleCommissionSelect = (commissions: string[]) => {
     if (selectedCourseForModal) {

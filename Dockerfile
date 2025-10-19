@@ -30,6 +30,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
+ENV CEITBA_API_URL=${CEITBA_API_URL:-'http://localhost:3000'}
+
 # Copy production dependencies
 COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force

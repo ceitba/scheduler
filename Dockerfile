@@ -30,7 +30,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-ENV CEITBA_API_URL=${CEITBA_API_URL:-'http://localhost:3000'}
+ENV CEITBA_API_URL=${CEITBA_API_URL:-'http://localhost'}
 
 # Copy production dependencies
 COPY package*.json ./

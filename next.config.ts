@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  basePath: '/scheduler',
-  output: 'standalone',
+  basePath: "/",
+  output: "standalone",
 };
 
 export default nextConfig;

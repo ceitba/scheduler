@@ -1,6 +1,6 @@
 const config = {
   api: {
-    baseUrl: process.env.CEITBA_API_URL || "https://localhost",
+    baseUrl: process.env.CEITBA_API_URL,
     endpoints: {
       subjects: "/api/v1/subjects",
     },

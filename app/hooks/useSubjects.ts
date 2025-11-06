@@ -52,7 +52,7 @@ export function useSubjects() {
     const fetchSubjects = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${config.api.baseUrl}${config.api.endpoints.subjects}?plan=${plan}`, {
+        const response = await fetch(`/${config.api.endpoints.subjects}?plan=${plan}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { PossibleSchedule } from "../types/scheduler"
 import ScheduleGrid from "./ScheduleGrid"
 import { Scheduler } from "../services/scheduler"
@@ -29,6 +30,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   hasSubjects,
   onExportToCalendar,
 }) => {
+  const { t } = useTranslation()
   const scheduler = Scheduler.getInstance()
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0)
   const [lastOptionsString, setLastOptionsString] = useState(
@@ -109,20 +111,20 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         <div className="flex flex-wrap gap-3 font-body text-body-sm text-ink-secondary items-center">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${schedule.maxOverlap ? "bg-red-500" : "bg-green-500"}`} />
-            <span>{schedule.maxOverlap ? "Tiene superposición" : "Sin superposición"}</span>
+            <span>{schedule.maxOverlap ? t('scheduler.hasOverlap') : t('scheduler.noOverlap')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${schedule.hasBuildingConflict ? "bg-red-500" : "bg-green-500"}`} />
-            <span>{schedule.hasBuildingConflict ? "Conflicto de edificios" : "Sin conflicto de edificios"}</span>
+            <span>{schedule.hasBuildingConflict ? t('scheduler.buildingConflict') : t('scheduler.noBuildingConflict')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${schedule.hasFreeDay ? "bg-green-500" : "bg-red-500"}`} />
-            <span>{schedule.hasFreeDay ? "Tiene día libre" : "Sin día libre"}</span>
+            <span>{schedule.hasFreeDay ? t('scheduler.hasFreeDay') : t('scheduler.noFreeDay')}</span>
           </div>
         </div>
         <div className="flex items-center gap-2 font-mono text-label text-ink-secondary">
           <div className="w-5 h-5 border-2 border-dashed border-ink-secondary/30 bg-surface"></div>
-          <span>Horario bloqueado</span>
+          <span>{t('scheduler.blockedTime')}</span>
         </div>
       </div>
     )
@@ -253,7 +255,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   const handleShareLink = () => {
     const url = window.location.href
     navigator.clipboard.writeText(url)
-    alert("¡Enlace copiado al portapapeles!")
+    alert(t('save.linkCopied'))
   }
 
   return (
@@ -269,9 +271,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               scheduler.setOptions({ ...scheduler.getOptions(), allowOverlap: checked, allowUnlimitedOverlap: false })
               setSchedules(scheduler.generateSchedules())
             }}
-            label="Permitir superposición limitada"
+            label={t('scheduler.allowOverlap')}
             isTooltip={true}
-            tooltip="Máx. diferencia: 30 mins"
+            tooltip={t('scheduler.allowOverlapTooltip')}
             disabled={settings.allowUnlimitedOverlap}
           />
 
@@ -284,9 +286,9 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               scheduler.setOptions({ ...scheduler.getOptions(), allowUnlimitedOverlap: checked, allowOverlap: checked })
               setSchedules(scheduler.generateSchedules())
             }}
-            label="Permitir superposición completa"
+            label={t('scheduler.allowUnlimitedOverlap')}
             isTooltip={true}
-            tooltip="Sin límite de superposición"
+            tooltip={t('scheduler.allowUnlimitedOverlapTooltip')}
             disabled={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
           />
 
@@ -299,16 +301,16 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               scheduler.setOptions({ ...scheduler.getOptions(), allowFreeDay: checked })
               setSchedules(scheduler.generateSchedules())
             }}
-            label="Tener un día libre"
+            label={t('scheduler.freeDay')}
           />
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-border mb-4">
           <div className="flex items-center gap-4">
-            <h2 className="font-body font-semibold text-body text-ink-primary">Vista previa de horarios</h2>
+            <h2 className="font-body font-semibold text-body text-ink-primary">{t('scheduler.title')}</h2>
             {hasSubjects && hasSchedules && (
               <span className="font-mono text-label text-ink-secondary whitespace-nowrap flex-shrink-0">
-                Opción {currentScheduleIndex + 1} de {filteredSchedules.length}
+                {t('scheduler.option')} {currentScheduleIndex + 1} {t('scheduler.of')} {filteredSchedules.length}
               </span>
             )}
           </div>
@@ -347,8 +349,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                 <button
                   onClick={() => setIsSaveModalOpen(true)}
                   className="p-2 text-ink-secondary hover:bg-surface hover:text-primary rounded-sm transition-colors duration-150"
-                  title="Guardar horario"
-                  aria-label="Guardar horario"
+                  title={t('save.title')}
+                  aria-label={t('save.title')}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -364,12 +366,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         <div ref={scheduleRef}>
           {!hasSubjects ? (
             <EmptyState
-              title="Sin materias seleccionadas"
+              title={t('scheduler.noSubjects')}
               message="Seleccioná materias en la pestaña Cursos y luego volvé aquí para ver las combinaciones posibles."
             />
           ) : filteredSchedules.length === 0 ? (
             <EmptyState
-              title="Sin combinaciones posibles"
+              title={t('scheduler.noCombinations')}
               message="No hay combinaciones posibles para esta configuración. Probá cambiando las opciones o seleccionando otras comisiones."
             />
           ) : currentSchedule ? (

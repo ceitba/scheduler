@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import BaseModal from './BaseModal'
 import { Subject } from '../hooks/useSubjects'
 import { CommissionSchedule } from '../types/scheduler'
@@ -10,22 +11,13 @@ interface CommissionSelectionModalProps {
   onAddCommissions: (commissions: string[]) => void
 }
 
-const dayTranslations: { [key: string]: string } = {
-  'MONDAY': 'Lun',
-  'TUESDAY': 'Mar',
-  'WEDNESDAY': 'Mie',
-  'THURSDAY': 'Jue',
-  'FRIDAY': 'Vie',
-  'SATURDAY': 'Sab',
-  'SUNDAY': 'Dom'
-}
-
 const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
   isOpen,
   onClose,
   subject,
   onAddCommissions,
 }) => {
+  const { t } = useTranslation()
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([])
   const validCommissions = subject.commissions.filter(comm => comm.schedule?.length > 0)
 
@@ -57,8 +49,8 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
 
   const formatSchedule = (schedule: CommissionSchedule[]) => {
     return schedule.map(s => {
-      const location = s.building ? ` | ${s.classroom}` : ' | Virtual asincrónico'
-      return `${dayTranslations[s.day]}. ${s.time_from.slice(0, 5)} - ${s.time_to.slice(0, 5)}${location}`
+      const location = s.building ? ` | ${s.classroom}` : ` | ${t('commission.virtual')}`
+      return `${t(`days.${s.day}`)}. ${s.time_from.slice(0, 5)} - ${s.time_to.slice(0, 5)}${location}`
     }).join('\n')
   }
 
@@ -66,7 +58,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Seleccionar comisión"
+      title={t('commission.title')}
     >
       <div className="space-y-4">
         <div className="font-body text-body-sm text-ink-secondary">
@@ -74,7 +66,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
             <span className="font-mono text-label text-ink-secondary">({subject.subject_id})</span>{' '}
             {subject.name}
           </div>
-          <p>Seleccioná las comisiones que querés incluir en las combinaciones posibles</p>
+          <p>{t('commission.selectHint')}</p>
         </div>
 
         <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
@@ -89,7 +81,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
               }`}
             >
               <div className="flex items-center justify-between w-full">
-                <span className="font-body font-semibold text-body-sm">Comisión {commission.name}</span>
+                <span className="font-body font-semibold text-body-sm">{t('commission.commission')} {commission.name}</span>
                 {selectedCommissions.includes(commission.name) && (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                     <polyline points="20 6 9 17 4 12" />
@@ -112,7 +104,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
             onClick={handleSelectAll}
             className="px-4 py-2 font-body text-body-sm text-ink-secondary hover:text-primary rounded-sm hover:bg-primary-50 transition-colors duration-150"
           >
-            Agregar todas
+            {t('commission.addAll')}
           </button>
           <button
             onClick={handleAddCommissions}
@@ -123,7 +115,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
                 : "bg-primary text-surface hover:bg-primary-600"
             }`}
           >
-            Agregar {selectedCommissions.length} {selectedCommissions.length !== 1 ? 'comisiones' : 'comisión'}
+            {t('commission.addSelected', { count: selectedCommissions.length })}
           </button>
         </div>
       </div>

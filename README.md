@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CEITBA | Combinador de Horarios
 
-## Getting Started
+Herramienta para combinar y planificar horarios académicos del ITBA, desarrollada por el IT Team de CEITBA.
 
-First, run the development server:
+## Stack
+
+- **React 18** + **Vite 5** — fast dev server and optimized builds
+- **TypeScript** — fully typed
+- **React Router v6** — client-side routing
+- **Tailwind CSS v3** — utility-first styles with the Editorial UI design system
+- **@dnd-kit** — accessible drag-and-drop for course reordering
+- **Fuse.js** — fuzzy search for course lookup
+- **html2canvas + jsPDF** — schedule export as image or PDF
+
+## Getting started
 
 ```bash
+# 1. Install dependencies
+npm install
+
+# 2. Set environment variable
+cp .env.example .env.local
+# Edit .env.local and set VITE_CEITBA_API_URL
+
+# 3. Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:5173](http://localhost:5173).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Type-check + production build |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
 
-## Learn More
+## Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Description |
+|---|---|
+| `VITE_CEITBA_API_URL` | Base URL for the CEITBA subjects API |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Browse subjects by career and study plan
+- Select commissions (course sections) with conflict detection
+- Drag-and-drop course prioritization
+- Automatic schedule combination generator
+- Visual weekly calendar preview
+- Export schedule as PDF, image, or `.ics` calendar file
+- Import to Google Calendar
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+├── components/    UI components
+├── hooks/         Custom React hooks
+├── pages/         Page-level components
+├── services/      Scheduler algorithm
+├── types/         TypeScript types
+└── utils/         Utility functions
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing
+
+Issues and PRs welcome at [github.com/CEITBA-git/scheduler](https://github.com/CEITBA-git/scheduler).
+
+---
+
+Developed with care by the **IT Team CEITBA** — Ian Dalton, Lautaro Bonseñor, Camila Lee, Uriel Sosa Vázquez.

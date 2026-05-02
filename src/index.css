@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --subject-color-1: rgba(179, 229, 252, 0.75);
+    --subject-color-2: rgba(225, 190, 231, 0.75);
+    --subject-color-3: rgba(200, 230, 201, 0.75);
+    --subject-color-4: rgba(255, 224, 178, 0.75);
+    --subject-color-5: rgba(248, 187, 208, 0.75);
+    --subject-color-6: rgba(178, 235, 242, 0.75);
+    --subject-color-7: rgba(209, 196, 233, 0.75);
+    --subject-color-8: rgba(220, 237, 200, 0.75);
+    --subject-color-9: rgba(178, 223, 219, 0.75);
+    --subject-color-10: rgba(255, 204, 188, 0.75);
+  }
+
+  html {
+    background-color: #FAFAF8;
+    color: #1C1C1E;
+    font-family: 'Source Sans 3', Lato, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  *:focus-visible {
+    outline: 2px solid #F5A623;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-content {
+    @apply max-w-content mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, #e9e9e7 25%, #f0f0ee 50%, #e9e9e7 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.4s infinite linear;
+  }
+}
+
+html, body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}

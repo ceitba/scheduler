@@ -40,7 +40,7 @@ export default function Navbar({ currentPlan }: NavbarProps) {
     : careerName
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-surface/95 dark:bg-[#111318]/95 backdrop-blur-sm border-b border-border dark:border-[#2D3748]">
+    <header className="sticky top-0 z-40 h-16 bg-surface/95 dark:bg-[#18181b]/95 backdrop-blur-sm border-b border-border dark:border-[#3f3f46]">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-sm"
@@ -51,7 +51,7 @@ export default function Navbar({ currentPlan }: NavbarProps) {
         {/* Logotype */}
         <Link to="/" className="flex-shrink-0 flex flex-col justify-center hover:opacity-80 transition-opacity duration-150">
           <span className="font-display text-h5 font-bold text-primary tracking-tight leading-tight">CEITBA</span>
-          <span className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF] uppercase tracking-widest leading-tight">
+          <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] uppercase tracking-widest leading-tight">
             {careerCode && shortName ? shortName : 'Combinador de Horarios'}
           </span>
         </Link>
@@ -60,7 +60,7 @@ export default function Navbar({ currentPlan }: NavbarProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={toggleLanguage}
-            className="min-h-[36px] px-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#9BA3AF] hover:text-primary transition-colors duration-150"
+            className="min-h-[36px] px-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] hover:text-primary transition-colors duration-150"
             aria-label={i18n.language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
           >
             {i18n.language === 'es' ? 'EN' : 'ES'}
@@ -69,7 +69,7 @@ export default function Navbar({ currentPlan }: NavbarProps) {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-1.5 min-h-[36px] px-3 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#9BA3AF] hover:bg-primary-50 dark:hover:bg-primary-900 rounded-sm transition-colors duration-150"
+                className="flex items-center gap-1.5 min-h-[36px] px-3 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] hover:bg-primary-50 dark:hover:bg-primary-900 rounded-sm transition-colors duration-150"
                 aria-expanded={isDropdownOpen}
                 aria-haspopup="listbox"
               >
@@ -80,7 +80,7 @@ export default function Navbar({ currentPlan }: NavbarProps) {
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 z-50 mt-1 w-48 rounded-card bg-white dark:bg-[#1C2130] border border-border dark:border-[#2D3748] shadow-card-hover" role="listbox">
+                <div className="absolute right-0 z-50 mt-1 w-48 rounded-card bg-white dark:bg-[#27272a] border border-border dark:border-[#3f3f46] shadow-card-hover" role="listbox">
                   <div className="py-1">
                     {plans.map(plan => (
                       <button
@@ -91,7 +91,7 @@ export default function Navbar({ currentPlan }: NavbarProps) {
                         className={`block w-full text-left px-4 py-2.5 font-mono text-label uppercase tracking-widest transition-colors duration-100 ${
                           currentPlan === plan.id
                             ? 'bg-primary-50 dark:bg-primary-900 text-primary font-bold'
-                            : 'text-ink-secondary dark:text-[#9BA3AF] hover:bg-surface dark:hover:bg-[#111318]'
+                            : 'text-ink-secondary dark:text-[#a1a1aa] hover:bg-surface dark:hover:bg-[#18181b]'
                         }`}
                       >
                         {plan.id}
@@ -105,7 +105,7 @@ export default function Navbar({ currentPlan }: NavbarProps) {
           {/* Theme toggle */}
           <button
             onClick={toggle}
-            className="min-h-[36px] w-9 flex items-center justify-center text-ink-secondary dark:text-[#9BA3AF] hover:text-primary transition-colors duration-150 rounded-sm hover:bg-primary-50 dark:hover:bg-primary-900"
+            className="min-h-[36px] w-9 flex items-center justify-center text-ink-secondary dark:text-[#a1a1aa] hover:text-primary transition-colors duration-150 rounded-sm hover:bg-primary-50 dark:hover:bg-primary-900"
             aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
             {theme === 'dark' ? (

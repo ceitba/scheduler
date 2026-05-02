@@ -12,14 +12,14 @@ function CareerCard({ id, name }: { id: string; name: string }) {
   return (
     <Link
       to={`/${id}?plan=${planParam}`}
-      className="rounded-card border border-border dark:border-[#2D3748] bg-white dark:bg-[#1C2130] shadow-card hover:shadow-card-hover transition-shadow duration-200 flex flex-col p-5 group"
+      className="rounded-card border border-border dark:border-[#3f3f46] bg-white dark:bg-[#27272a] shadow-card hover:shadow-card-hover transition-shadow duration-200 flex flex-col p-5 group"
       aria-label={`${t('home.viewSchedules')} ${name}`}
     >
-      <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#9BA3AF] mb-2">{id}</span>
-      <h2 className="font-display text-h5 font-bold text-ink-primary dark:text-[#F0F2F5] group-hover:text-primary transition-colors duration-150 leading-snug flex-1">
+      <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] mb-2">{id}</span>
+      <h2 className="font-display text-h5 font-bold text-ink-primary dark:text-[#f4f4f5] group-hover:text-primary transition-colors duration-150 leading-snug flex-1">
         {name}
       </h2>
-      <div className="flex items-center gap-1.5 text-primary font-body text-body-sm mt-4 pt-3 border-t border-border dark:border-[#2D3748]">
+      <div className="flex items-center gap-1.5 text-primary font-body text-body-sm mt-4 pt-3 border-t border-border dark:border-[#3f3f46]">
         <span>{t('home.viewSchedules')}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <path d="M5 12h14M12 5l7 7-7 7" />
@@ -35,18 +35,18 @@ export default function HomePage() {
   const careersList = Object.entries(CAREERS).map(([id, name]) => ({ id, name }))
 
   return (
-    <div className="flex flex-col min-h-screen bg-surface dark:bg-[#111318]">
-      <header className="border-b border-border dark:border-[#2D3748] bg-surface/95 dark:bg-[#111318]/95 backdrop-blur-sm sticky top-0 z-40">
+    <div className="flex flex-col min-h-screen bg-surface dark:bg-[#18181b]">
+      <header className="border-b border-border dark:border-[#3f3f46] bg-surface/95 dark:bg-[#18181b]/95 backdrop-blur-sm sticky top-0 z-40">
         <div className="container-content h-16 flex items-center justify-between">
           <div className="flex flex-col justify-center">
             <span className="font-display text-h5 font-bold text-primary tracking-tight leading-tight">CEITBA</span>
-            <span className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF] uppercase tracking-widest leading-tight">{t('nav.scheduler')}</span>
+            <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] uppercase tracking-widest leading-tight">{t('nav.scheduler')}</span>
           </div>
 
           {/* Theme toggle */}
           <button
             onClick={toggle}
-            className="min-h-[36px] w-9 flex items-center justify-center text-ink-secondary dark:text-[#9BA3AF] hover:text-primary transition-colors duration-150 rounded-sm hover:bg-primary-50 dark:hover:bg-primary-900"
+            className="min-h-[36px] w-9 flex items-center justify-center text-ink-secondary dark:text-[#a1a1aa] hover:text-primary transition-colors duration-150 rounded-sm hover:bg-primary-50 dark:hover:bg-primary-900"
             aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
             {theme === 'dark' ? (
@@ -73,10 +73,10 @@ export default function HomePage() {
       <main id="main-content" className="flex-1">
         <section className="container-content py-section-mobile lg:py-section">
           <div className="mb-10">
-            <h1 className="font-display text-h1 lg:text-display font-bold text-ink-primary dark:text-[#F0F2F5] leading-tight mb-3">
+            <h1 className="font-display text-h1 lg:text-display font-bold text-ink-primary dark:text-[#f4f4f5] leading-tight mb-3">
               {t('home.title')}
             </h1>
-            <p className="font-body text-body-lg text-ink-secondary dark:text-[#9BA3AF] max-w-xl">
+            <p className="font-body text-body-lg text-ink-secondary dark:text-[#a1a1aa] max-w-xl">
               {t('home.subtitle')}
             </p>
           </div>
@@ -87,18 +87,18 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-8 pt-8 border-t border-border dark:border-[#2D3748]">
+          <div className="mt-8 pt-8 border-t border-border dark:border-[#3f3f46]">
             <Link
               to={`/${EXCHANGE_CAREER.id}?plan=${normalizePlanId(getLatestPlan(EXCHANGE_CAREER.id))}`}
-              className="inline-flex items-center gap-4 rounded-card border border-dashed border-primary/40 hover:border-primary bg-white dark:bg-[#1C2130] px-6 py-4 transition-colors duration-150 group"
+              className="inline-flex items-center gap-4 rounded-card border border-dashed border-primary/40 hover:border-primary bg-white dark:bg-[#27272a] px-6 py-4 transition-colors duration-150 group"
               aria-label={t('home.viewSchedules')}
             >
               <div>
-                <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#9BA3AF] block mb-0.5">{EXCHANGE_CAREER.id}</span>
-                <p className="font-display text-h5 font-bold text-ink-primary dark:text-[#F0F2F5] group-hover:text-primary transition-colors duration-150">
+                <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] block mb-0.5">{EXCHANGE_CAREER.id}</span>
+                <p className="font-display text-h5 font-bold text-ink-primary dark:text-[#f4f4f5] group-hover:text-primary transition-colors duration-150">
                   {t('home.exchange.name')}
                 </p>
-                <p className="font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF]">{t('home.exchange.description')}</p>
+                <p className="font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa]">{t('home.exchange.description')}</p>
               </div>
               <svg className="ml-auto w-5 h-5 text-primary flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M5 12h14M12 5l7 7-7 7" />

@@ -11,8 +11,8 @@ export default function EmptyState({ title, message }: EmptyStateProps) {
         <div className="absolute top-3 left-3 w-10 h-10 rotate-45 bg-accent-100 dark:bg-accent-900" />
         <div className="absolute bottom-4 right-3 w-6 h-6 rounded-full bg-primary-200 dark:bg-primary-800" />
       </div>
-      <p className="font-display text-h4 font-bold text-ink-primary dark:text-[#F0F2F5]">{title}</p>
-      <p className="font-body text-body text-ink-secondary dark:text-[#9BA3AF] mt-1">{message}</p>
+      <p className="font-display text-h4 font-bold text-ink-primary dark:text-[#f4f4f5]">{title}</p>
+      <p className="font-body text-body text-ink-secondary dark:text-[#a1a1aa] mt-1">{message}</p>
     </div>
   )
 }

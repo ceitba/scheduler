@@ -28,7 +28,7 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
           flex items-center justify-center w-5 h-5 rounded-sm border transition-colors duration-150 flex-shrink-0
           ${checked
             ? 'bg-primary border-primary'
-            : 'bg-white dark:bg-[#1C2130] border-border dark:border-[#2D3748] hover:border-primary'
+            : 'bg-white dark:bg-[#27272a] border-border dark:border-[#3f3f46] hover:border-primary'
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
@@ -43,7 +43,7 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
 
       <label
         htmlFor={id}
-        className={`font-body text-body-sm text-ink-primary dark:text-[#F0F2F5] select-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`font-body text-body-sm text-ink-primary dark:text-[#f4f4f5] select-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         onClick={() => !disabled && onChange(!checked)}
       >
         {label}

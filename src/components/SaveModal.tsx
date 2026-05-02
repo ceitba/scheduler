@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import BaseModal from './BaseModal'
 
 interface SaveModalProps {
@@ -16,10 +17,12 @@ const SaveModal: React.FC<SaveModalProps> = ({
   onSaveAsImage,
   onExportToCalendar,
 }) => {
+  const { t } = useTranslation()
+
   const options = [
     {
-      title: 'Guardar como PDF',
-      description: 'Descarga tu horario en formato PDF',
+      title: t('save.saveAsPDF'),
+      description: t('save.saveAsPDFDescription'),
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -30,8 +33,8 @@ const SaveModal: React.FC<SaveModalProps> = ({
       onClick: onSaveAsPDF,
     },
     {
-      title: 'Guardar como imagen',
-      description: 'Descarga tu horario como imagen PNG',
+      title: t('save.saveAsImage'),
+      description: t('save.saveAsImageDescription'),
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -42,8 +45,8 @@ const SaveModal: React.FC<SaveModalProps> = ({
       onClick: onSaveAsImage,
     },
     {
-      title: 'Exportar a Google Calendar',
-      description: 'Sincroniza tu horario con Google Calendar',
+      title: t('save.exportToCalendar'),
+      description: t('save.exportToCalendarDescription'),
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -60,7 +63,7 @@ const SaveModal: React.FC<SaveModalProps> = ({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Guardar horario"
+      title={t('save.title')}
     >
       <div className="space-y-2">
         {options.map((option) => (
@@ -70,14 +73,14 @@ const SaveModal: React.FC<SaveModalProps> = ({
               option.onClick()
               onClose()
             }}
-            className="w-full flex items-center gap-4 p-3 rounded-card border border-border dark:border-[#2D3748] hover:bg-primary-50 dark:hover:bg-primary-900 hover:border-primary transition-colors duration-150 text-left group"
+            className="w-full flex items-center gap-4 p-3 rounded-card border border-border dark:border-[#3f3f46] hover:bg-primary-50 dark:hover:bg-primary-900 hover:border-primary transition-colors duration-150 text-left group"
           >
-            <span className="text-ink-secondary dark:text-[#9BA3AF] group-hover:text-primary transition-colors duration-150 flex-shrink-0">
+            <span className="text-ink-secondary dark:text-[#a1a1aa] group-hover:text-primary transition-colors duration-150 flex-shrink-0">
               {option.icon}
             </span>
             <div>
-              <div className="font-body font-semibold text-body-sm text-ink-primary dark:text-[#F0F2F5]">{option.title}</div>
-              <div className="font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF]">{option.description}</div>
+              <div className="font-body font-semibold text-body-sm text-ink-primary dark:text-[#f4f4f5]">{option.title}</div>
+              <div className="font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa]">{option.description}</div>
             </div>
           </button>
         ))}

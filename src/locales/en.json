@@ -32,7 +32,10 @@
     "year": "th Year",
     "noScheduleTitle": "Subject has no schedule",
     "noScheduleMessage": "The subject {{name}} has no available schedules or commissions.",
-    "understood": "Got it"
+    "understood": "Got it",
+    "noneSelected": "No courses selected",
+    "anyCommission": "Any commission",
+    "commissionAbbr": "Sec."
   },
   "commission": {
     "title": "Select commission",
@@ -60,13 +63,18 @@
     "noFreeDay": "No free day",
     "blockedTime": "Blocked time",
     "noSubjects": "No subjects selected",
-    "noCombinations": "No possible combinations for this configuration"
+    "noSubjectsMessage": "Select subjects in the Courses tab then come back here to see possible combinations.",
+    "noCombinations": "No possible combinations for this configuration",
+    "noCombinationsMessage": "Try changing the options or selecting different commissions."
   },
   "save": {
     "title": "Save schedule",
     "saveAsPDF": "Save as PDF",
+    "saveAsPDFDescription": "Download your schedule as a PDF file",
     "saveAsImage": "Save as image",
-    "exportToCalendar": "Export to calendar",
+    "saveAsImageDescription": "Download your schedule as a PNG image",
+    "exportToCalendar": "Export to Google Calendar",
+    "exportToCalendarDescription": "Sync your schedule with Google Calendar",
     "shareLink": "Copy link",
     "linkCopied": "Link copied to clipboard!"
   },
@@ -85,7 +93,13 @@
   "settings": {
     "title": "Additional settings",
     "blockedTimes": "Blocked times",
-    "addBlockedTime": "Add blocked time"
+    "addBlockedTime": "Add blocked time",
+    "editBlock": "Edit block",
+    "blockLabel": "Block title",
+    "blockLabelPlaceholder": "e.g. Lunch, Work, etc.",
+    "delete": "Delete",
+    "save": "Save",
+    "hour": "Hour"
   },
   "footer": {
     "itTeam": "IT Team CEITBA",

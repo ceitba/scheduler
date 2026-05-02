@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { ScheduleSlot } from "../types/scheduler"
 import { Scheduler } from "../services/scheduler"
 
@@ -16,6 +17,7 @@ interface GroupedSlot {
 }
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
+  const { t } = useTranslation()
   const scheduler = Scheduler.getInstance()
   const blockedTimes = scheduler.getBlockedTimes()
 
@@ -25,7 +27,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
   })
 
   const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
-  const dayNames = ["Lun", "Mar", "Mie", "Jue", "Vie"]
+  const dayNames = days.map(d => t(`days.${d}`))
 
   const timeToMinutes = (time: string): number => {
     const [hours, minutes] = time.split(":").map(Number)
@@ -98,13 +100,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
       <div className="w-full">
         {/* Header with days */}
         <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5 mb-0.5">
-          <div className="h-8 flex items-center justify-center text-xs min-w-[50px] font-mono text-ink-secondary dark:text-[#9BA3AF]">
-            Hora
+          <div className="h-8 flex items-center justify-center text-xs min-w-[50px] font-mono text-ink-secondary dark:text-[#a1a1aa]">
+            {t('settings.hour')}
           </div>
           {dayNames.map((day) => (
             <div
               key={day}
-              className="h-8 flex items-center justify-center font-mono text-label text-ink-secondary dark:text-[#9BA3AF] bg-surface dark:bg-[#111318] rounded-sm"
+              className="h-8 flex items-center justify-center font-mono text-label text-ink-secondary dark:text-[#a1a1aa] bg-surface dark:bg-[#18181b] rounded-sm"
             >
               {day}
             </div>
@@ -118,7 +120,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
             {timeSlots.map((time) => (
               <div
                 key={time}
-                className="h-12 flex items-start justify-center font-mono text-label text-ink-secondary dark:text-[#9BA3AF] pt-0.5"
+                className="h-12 flex items-start justify-center font-mono text-label text-ink-secondary dark:text-[#a1a1aa] pt-0.5"
               >
                 {time}
               </div>
@@ -155,7 +157,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                 {timeSlots.map((time) => (
                   <div
                     key={time}
-                    className="absolute w-full h-12 bg-surface dark:bg-[#111318] border-b border-border/50 dark:border-[#2D3748]/50"
+                    className="absolute w-full h-12 bg-surface dark:bg-[#18181b] border-b border-border/50 dark:border-[#3f3f46]/50"
                     style={{ top: ((timeToMinutes(time) - 8 * 60) / 60) * 48 }}
                   />
                 ))}
@@ -200,7 +202,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                     return (
                       <div
                         key={`blocked-${block.day}-${block.from}-${index}`}
-                        className="absolute w-full border-2 border-dashed border-ink-secondary/30 dark:border-[#9BA3AF]/30 bg-surface/80 dark:bg-[#111318]/80 items-center justify-center"
+                        className="absolute w-full border-2 border-dashed border-ink-secondary/30 dark:border-[#a1a1aa]/30 bg-surface/80 dark:bg-[#18181b]/80 items-center justify-center"
                         style={{ top: `${top}px`, height: `${height}px`, zIndex: 1 }}
                       >
                         {showLabel && (
@@ -209,11 +211,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                             style={{ top: `${labelTop - top}px`, height: '48px' }}
                           >
                             {block.label && (
-                              <div className="font-body font-semibold text-ink-primary dark:text-[#F0F2F5] text-center break-words text-[10px] lg:text-xs pt-2">
+                              <div className="font-body font-semibold text-ink-primary dark:text-[#f4f4f5] text-center break-words text-[10px] lg:text-xs pt-2">
                                 {block.label}
                               </div>
                             )}
-                            <div className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF] text-center">
+                            <div className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] text-center">
                               {block.from} - {block.to}
                             </div>
                           </div>
@@ -241,7 +243,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                           style={{ top: `${top}px`, height: `${height}px`, width, left, zIndex: 2 }}
                         >
                           <div className="w-full h-full justify-center flex flex-col gap-0.5 text-[10px] lg:text-xs">
-                            <div className="font-body font-semibold text-ink-primary dark:text-[#F0F2F5] text-center truncate sm:overflow-visible sm:whitespace-normal mb-1">
+                            <div className="font-body font-semibold text-ink-primary dark:text-[#f4f4f5] text-center truncate sm:overflow-visible sm:whitespace-normal mb-1">
                               {slot.subject}
                             </div>
                             <div className="space-y-0.5 text-ink-secondary text-center text-[9px] lg:text-[11px]">

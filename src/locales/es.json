@@ -32,7 +32,10 @@
     "year": "° Año",
     "noScheduleTitle": "Materia sin horarios",
     "noScheduleMessage": "La materia {{name}} no tiene horarios o comisiones disponibles actualmente.",
-    "understood": "Entendido"
+    "understood": "Entendido",
+    "noneSelected": "No hay cursos seleccionados",
+    "anyCommission": "Cualquier comisión",
+    "commissionAbbr": "Com."
   },
   "commission": {
     "title": "Seleccionar comisión",
@@ -60,13 +63,18 @@
     "noFreeDay": "Sin día libre",
     "blockedTime": "Horario bloqueado",
     "noSubjects": "No hay materias seleccionadas",
-    "noCombinations": "No hay combinaciones posibles para esta configuración"
+    "noSubjectsMessage": "Seleccioná materias en la pestaña Cursos y luego volvé aquí para ver las combinaciones posibles.",
+    "noCombinations": "No hay combinaciones posibles para esta configuración",
+    "noCombinationsMessage": "Probá cambiando las opciones o seleccionando otras comisiones."
   },
   "save": {
     "title": "Guardar horario",
     "saveAsPDF": "Guardar como PDF",
+    "saveAsPDFDescription": "Descarga tu horario en formato PDF",
     "saveAsImage": "Guardar como imagen",
-    "exportToCalendar": "Exportar al calendario",
+    "saveAsImageDescription": "Descarga tu horario como imagen PNG",
+    "exportToCalendar": "Exportar a Google Calendar",
+    "exportToCalendarDescription": "Sincroniza tu horario con Google Calendar",
     "shareLink": "Copiar enlace",
     "linkCopied": "¡Enlace copiado al portapapeles!"
   },
@@ -85,7 +93,13 @@
   "settings": {
     "title": "Configuración adicional",
     "blockedTimes": "Horarios bloqueados",
-    "addBlockedTime": "Agregar horario bloqueado"
+    "addBlockedTime": "Agregar horario bloqueado",
+    "editBlock": "Editar bloque",
+    "blockLabel": "Título del bloque",
+    "blockLabelPlaceholder": "Ej: Almuerzo, Trabajo, etc.",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "hour": "Hora"
   },
   "footer": {
     "itTeam": "IT Team CEITBA",

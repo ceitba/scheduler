@@ -2,6 +2,7 @@ import { type Subject } from "../hooks/useSubjects"
 import DropdownSection from "./DropdownSection"
 import CourseCard from "./CourseCard"
 import { useState } from "react"
+import { useTranslation } from 'react-i18next'
 
 interface AvailableCoursesListProps {
   courses: Record<number, {
@@ -25,7 +26,7 @@ const QuarterSection: React.FC<{
   return (
     <div className="space-y-2">
       {showTitle && (
-        <h3 className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#9BA3AF] pt-2">{title}</h3>
+        <h3 className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] pt-2">{title}</h3>
       )}
       <div className={`space-y-2 ${showTitle ? 'ml-2' : ''}`}>
         {subjects.map((course) => {
@@ -52,14 +53,15 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
   onCourseClick,
   isExchange = false
 }) => {
+  const { t } = useTranslation()
   const [openSection, setOpenSection] = useState<string | null>(null)
 
   if (isExchange) {
     const exchangeSubjects = Object.values(courses)[0]?.subjects['1'] || []
     return (
       <div className="rounded-card flex flex-col">
-        <h2 className="font-body font-semibold text-body text-ink-primary dark:text-[#F0F2F5] p-4 pb-2">
-          Cursos disponibles
+        <h2 className="font-body font-semibold text-body text-ink-primary dark:text-[#f4f4f5] p-4 pb-2">
+          {t('courses.available')}
         </h2>
         <div className="overflow-y-auto flex-1 px-4 pb-4">
           <QuarterSection
@@ -76,8 +78,8 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
 
   return (
     <div className="rounded-card flex flex-col">
-      <h2 className="font-body font-semibold text-body text-ink-primary p-4 pb-2">
-        Cursos disponibles
+      <h2 className="font-body font-semibold text-body text-ink-primary dark:text-[#f4f4f5] p-4 pb-2">
+        {t('courses.available')}
       </h2>
       <div className="overflow-y-auto flex-1 px-4 pb-4">
         <div className="space-y-2">
@@ -92,13 +94,13 @@ const AvailableCoursesList: React.FC<AvailableCoursesListProps> = ({
             >
               <div className="space-y-4">
                 <QuarterSection
-                  title="PRIMER CUATRIMESTRE"
+                  title={t('courses.semester1').toUpperCase()}
                   subjects={yearData.subjects['1']}
                   selectedCourses={selectedCourses}
                   onCourseClick={onCourseClick}
                 />
                 <QuarterSection
-                  title="SEGUNDO CUATRIMESTRE"
+                  title={t('courses.semester2').toUpperCase()}
                   subjects={yearData.subjects['2']}
                   selectedCourses={selectedCourses}
                   onCourseClick={onCourseClick}

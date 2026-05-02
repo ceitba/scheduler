@@ -27,11 +27,11 @@
   }
 
   html.dark {
-    background-color: #111318;
-    color: #F0F2F5;
-    --card-bg: #1C2130;
-    --page-bg: #111318;
-    --border-color: #2D3748;
+    background-color: #18181b;
+    color: #f4f4f5;
+    --card-bg: #27272a;
+    --page-bg: #18181b;
+    --border-color: #3f3f46;
   }
 
   *:focus-visible {
@@ -53,7 +53,7 @@
 }
 
 html.dark .skeleton {
-  background: linear-gradient(90deg, #1e2535 25%, #252d3e 50%, #1e2535 75%);
+  background: linear-gradient(90deg, #222225 25%, #2d2d31 50%, #222225 75%);
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
 }

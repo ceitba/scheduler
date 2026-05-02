@@ -70,21 +70,35 @@ export function useSubjects() {
         const isValidSchedule = (schedule: Schedule) =>
           schedule.day && schedule.time_from && schedule.time_to
 
+        const seen = new Set<string>()
         const flattenedSubjects: Subject[] = []
+
         Object.entries(data).forEach(([, yearData]) => {
           Object.entries(yearData).forEach(([year, semesterData]) => {
             Object.entries(semesterData).forEach(([semester, subjs]) => {
               subjs.forEach(subject => {
-                flattenedSubjects.push({
-                  ...subject,
-                  year: parseInt(year),
-                  semester: parseInt(semester),
-                  commissions: subject.commissions?.map(commission => ({
+                if (seen.has(subject.subject_id)) return
+                seen.add(subject.subject_id)
+
+                const seenCommissions = new Set<string>()
+                const uniqueCommissions = (subject.commissions ?? [])
+                  .filter(c => {
+                    if (seenCommissions.has(c.name)) return false
+                    seenCommissions.add(c.name)
+                    return true
+                  })
+                  .map(commission => ({
                     ...commission,
                     schedule: Array.isArray(commission.schedule)
                       ? commission.schedule.filter(isValidSchedule)
                       : [],
-                  })) || [],
+                  }))
+
+                flattenedSubjects.push({
+                  ...subject,
+                  year: parseInt(year),
+                  semester: parseInt(semester),
+                  commissions: uniqueCommissions,
                 })
               })
             })

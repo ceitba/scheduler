@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import useClickOutside from '../hooks/useClickOutside'
-import { CAREERS, AVAILABLE_PLANS, CAREER_METADATA, EXCHANGE_CAREER } from '../types/careers'
+import { CAREERS, AVAILABLE_PLANS } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
 
 interface NavbarProps {
@@ -15,10 +15,6 @@ export default function Navbar({ currentPlan }: NavbarProps) {
   const careerName = careerCode ? (CAREERS[careerCode] || '') : ''
   const plans = careerCode ? (AVAILABLE_PLANS[careerCode] || []) : []
   const hasMultiplePlans = plans.length > 1
-  const careerIcon = careerCode === 'X'
-    ? EXCHANGE_CAREER.icon
-    : careerCode ? CAREER_METADATA[careerCode]?.icon : ''
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   useClickOutside(dropdownRef as React.RefObject<HTMLElement>, () => setIsDropdownOpen(false))
@@ -53,10 +49,6 @@ export default function Navbar({ currentPlan }: NavbarProps) {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {careerCode && careerIcon && (
-            <span className="text-xl hidden sm:inline" aria-hidden="true">{careerIcon}</span>
-          )}
-
           {hasMultiplePlans && currentPlan && (
             <div className="relative" ref={dropdownRef}>
               <button

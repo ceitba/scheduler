@@ -179,7 +179,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
       })
 
       const imgData = canvas.toDataURL('image/png', 1.0)
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height], hotfixes: ['px_scaling'] })
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] })
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
       pdf.save('horario.pdf')
     } catch (error) {

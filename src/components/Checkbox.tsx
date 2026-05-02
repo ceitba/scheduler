@@ -28,7 +28,7 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
           flex items-center justify-center w-5 h-5 rounded-sm border transition-colors duration-150 flex-shrink-0
           ${checked
             ? 'bg-primary border-primary'
-            : 'bg-white border-border hover:border-primary'
+            : 'bg-white dark:bg-[#1C2130] border-border dark:border-[#2D3748] hover:border-primary'
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
@@ -43,7 +43,7 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
 
       <label
         htmlFor={id}
-        className={`font-body text-body-sm text-ink-primary select-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`font-body text-body-sm text-ink-primary dark:text-[#F0F2F5] select-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         onClick={() => !disabled && onChange(!checked)}
       >
         {label}
@@ -55,7 +55,7 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
             type="button"
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
-            className="w-4 h-4 rounded-full bg-primary-50 text-primary flex items-center justify-center font-mono text-label"
+            className="w-4 h-4 rounded-full bg-primary-50 dark:bg-primary-900 text-primary flex items-center justify-center font-mono text-label"
             aria-label="Más información"
           >
             ?

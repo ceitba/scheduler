@@ -84,7 +84,7 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex flex-col p-3 bg-white rounded-card border border-border shadow-card space-y-2 select-none"
+      className="flex flex-col p-3 bg-white dark:bg-[#1C2130] rounded-card border border-border dark:border-[#2D3748] shadow-card space-y-2 select-none"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3 min-w-0">
@@ -93,7 +93,7 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
             {...attributes}
             {...listeners}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ink-secondary" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ink-secondary dark:text-[#9BA3AF]" aria-hidden="true">
               <line x1="8" y1="6" x2="21" y2="6" />
               <line x1="8" y1="12" x2="21" y2="12" />
               <line x1="8" y1="18" x2="21" y2="18" />
@@ -108,7 +108,7 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
               {course.name}
             </span>
             {Object.values(groupedSchedule).map((schedule, i) => (
-              <div key={i} className="font-mono text-label text-ink-secondary">
+              <div key={i} className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF]">
                 {dayNames[schedule.day]} {schedule.timeFrom?.slice(0, 5) || ""}{" "}
                 - {schedule.timeTo?.slice(0, 5) || ""} |{" "}
                 {schedule.classrooms.join(", ")}
@@ -177,7 +177,7 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
   return (
     <div>
       {courses.length === 0 && (
-        <div className="font-body text-body-sm text-ink-secondary text-center py-4">
+        <div className="font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF] text-center py-4">
           No hay cursos seleccionados
         </div>
       )}

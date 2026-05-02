@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     './index.html',
     './src/**/*.{js,jsx,ts,tsx}',
@@ -53,6 +54,8 @@ export default {
         subject_color_8:  'rgba(220, 237, 200, 0.75)',
         subject_color_9:  'rgba(178, 223, 219, 0.75)',
         subject_color_10: 'rgba(255, 204, 188, 0.75)',
+        'card-bg': 'var(--card-bg)',
+        'page-bg': 'var(--page-bg)',
       },
       fontFamily: {
         display: ['"Fraunces"', '"Playfair Display"', 'Georgia', 'serif'],

@@ -253,11 +253,11 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
   }
 
   return (
-    <div className="bg-white rounded-card border border-border px-4 py-4">
-      <h2 className="font-body font-semibold text-body text-ink-primary pb-2">
+    <div className="bg-white dark:bg-[#1C2130] rounded-card border border-border dark:border-[#2D3748] px-4 py-4">
+      <h2 className="font-body font-semibold text-body text-ink-primary dark:text-[#F0F2F5] pb-2">
         Horarios bloqueados
       </h2>
-      <div className="font-body text-body-sm text-ink-secondary mb-4">
+      <div className="font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF] mb-4">
         Los horarios bloqueados son períodos específicos en los que no deseas tener clases programadas.
         <div className="space-y-2 mt-3">
           {[
@@ -271,8 +271,8 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
               <div>
-                <span className="font-semibold text-ink-primary">{title}</span>
-                <span className="text-ink-secondary"> — {desc}</span>
+                <span className="font-semibold text-ink-primary dark:text-[#F0F2F5]">{title}</span>
+                <span className="text-ink-secondary dark:text-[#9BA3AF]"> — {desc}</span>
               </div>
             </div>
           ))}
@@ -283,13 +283,13 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
         <div className="w-full">
           {/* Header */}
           <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] gap-0.5 mb-0.5">
-            <div className="h-8 flex items-center justify-start font-mono text-label text-ink-secondary min-w-[40px]">
+            <div className="h-8 flex items-center justify-start font-mono text-label text-ink-secondary dark:text-[#9BA3AF] min-w-[40px]">
               Hora
             </div>
             {dayNames.short.map((day) => (
               <div
                 key={day}
-                className="h-8 flex items-center text-center justify-center font-mono text-label text-ink-secondary bg-surface rounded-sm"
+                className="h-8 flex items-center text-center justify-center font-mono text-label text-ink-secondary dark:text-[#9BA3AF] bg-surface dark:bg-[#111318] rounded-sm"
               >
                 {day}
               </div>

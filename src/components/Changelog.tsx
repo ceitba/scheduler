@@ -26,7 +26,7 @@ const Changelog: React.FC = () => {
     <div className="relative inline-block">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="hover:text-primary underline flex items-center gap-1 transition-colors font-body text-body-sm text-ink-secondary"
+        className="hover:text-primary underline flex items-center gap-1 transition-colors font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF]"
       >
         Changelog
         <svg
@@ -44,12 +44,12 @@ const Changelog: React.FC = () => {
           {changelog.map((entry, index) => (
             <div key={entry.version} className={index > 0 ? 'mt-4' : ''}>
               <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold text-ink-primary">v{entry.version}</span>
-                <span className="font-mono text-label text-ink-secondary">{entry.date}</span>
+                <span className="font-semibold text-ink-primary dark:text-[#F0F2F5]">v{entry.version}</span>
+                <span className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF]">{entry.date}</span>
               </div>
               <ul className="space-y-1">
                 {entry.changes.map((change, i) => (
-                  <li key={i} className="text-ink-secondary">
+                  <li key={i} className="text-ink-secondary dark:text-[#9BA3AF]">
                     • {change}
                   </li>
                 ))}

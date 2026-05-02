@@ -47,7 +47,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
     <div ref={wrapperRef} className="relative">
       <div className="relative">
         <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-secondary pointer-events-none"
+          className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-secondary dark:text-[#9BA3AF] pointer-events-none"
           width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2" strokeLinecap="round"
           aria-hidden="true"
@@ -64,13 +64,13 @@ const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Buscar materias por nombre o código..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-sm bg-white font-body text-body text-ink-primary placeholder:text-ink-secondary border border-border focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 rounded-sm bg-white dark:bg-[#1C2130] font-body text-body text-ink-primary dark:text-[#F0F2F5] placeholder:text-ink-secondary dark:placeholder:text-[#9BA3AF] border border-border dark:border-[#2D3748] focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors"
         />
       </div>
 
       {/* Dropdown results */}
       {isOpen && query.length > 0 && (
-        <div className="absolute w-full mt-1 bg-white rounded-card shadow-card border border-border max-h-60 overflow-y-auto z-50">
+        <div className="absolute w-full mt-1 bg-white dark:bg-[#1C2130] rounded-card shadow-card border border-border dark:border-[#2D3748] max-h-60 overflow-y-auto z-50">
           {filteredSubjects.length > 0 ? (
             filteredSubjects.map((subject) => (
               <button
@@ -80,14 +80,14 @@ const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
                   setQuery("")
                   setIsOpen(false)
                 }}
-                className="w-full px-4 py-2.5 text-left hover:bg-primary-50 transition-colors duration-150"
+                className="w-full px-4 py-2.5 text-left hover:bg-primary-50 dark:hover:bg-primary-900 transition-colors duration-150"
               >
-                <span className="font-mono text-label text-ink-secondary mr-2">({subject.subject_id})</span>
-                <span className="font-body text-body-sm text-ink-primary">{subject.name}</span>
+                <span className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF] mr-2">({subject.subject_id})</span>
+                <span className="font-body text-body-sm text-ink-primary dark:text-[#F0F2F5]">{subject.name}</span>
               </button>
             ))
           ) : (
-            <div className="px-4 py-3 font-body text-body-sm text-ink-secondary">
+            <div className="px-4 py-3 font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF]">
               No se encontraron materias
             </div>
           )}

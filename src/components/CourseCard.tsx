@@ -12,8 +12,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isSelected, onClick }) 
       onClick={onClick}
       className={`flex items-center justify-between p-3 rounded-card border cursor-pointer transition-shadow duration-200 group ${
         isSelected
-          ? 'border-primary bg-primary-50'
-          : 'border-border bg-white shadow-card hover:shadow-card-hover'
+          ? 'border-primary bg-primary-50 dark:bg-primary-900'
+          : 'border-border dark:border-[#2D3748] bg-white dark:bg-[#1C2130] shadow-card hover:shadow-card-hover'
       }`}
     >
       <div className="flex flex-row space-x-2 min-w-0">

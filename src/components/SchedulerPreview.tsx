@@ -123,7 +123,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2 font-mono text-label text-ink-secondary">
-          <div className="w-5 h-5 border-2 border-dashed border-ink-secondary/30 bg-surface"></div>
+          <div className="w-5 h-5 border-2 border-dashed border-ink-secondary/30 dark:border-[#9BA3AF]/30 bg-surface dark:bg-[#111318]"></div>
           <span>{t('scheduler.blockedTime')}</span>
         </div>
       </div>
@@ -260,7 +260,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
 
   return (
     <div className="flex flex-col">
-      <div className="bg-white rounded-card border border-border px-4 py-4">
+      <div className="bg-white dark:bg-[#1C2130] rounded-card border border-border dark:border-[#2D3748] px-4 py-4">
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end mb-4">
           <Checkbox
             id="allowOverlap"
@@ -305,11 +305,11 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           />
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-border mb-4">
+        <div className="flex items-center justify-between pt-4 border-t border-border dark:border-[#2D3748] mb-4">
           <div className="flex items-center gap-4">
             <h2 className="font-body font-semibold text-body text-ink-primary">{t('scheduler.title')}</h2>
             {hasSubjects && hasSchedules && (
-              <span className="font-mono text-label text-ink-secondary whitespace-nowrap flex-shrink-0">
+              <span className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF] whitespace-nowrap flex-shrink-0">
                 {t('scheduler.option')} {currentScheduleIndex + 1} {t('scheduler.of')} {filteredSchedules.length}
               </span>
             )}
@@ -322,7 +322,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                   <>
                     <button
                       onClick={handlePrevSchedule}
-                      className="p-2 text-ink-secondary hover:bg-surface hover:text-primary rounded-sm transition-colors duration-150"
+                      className="p-2 text-ink-secondary dark:text-[#9BA3AF] hover:bg-surface dark:hover:bg-[#111318] hover:text-primary rounded-sm transition-colors duration-150"
                       title="Anterior horario"
                       aria-label="Horario anterior"
                     >
@@ -334,7 +334,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                     </button>
                     <button
                       onClick={handleNextSchedule}
-                      className="p-2 text-ink-secondary hover:bg-surface hover:text-primary rounded-sm transition-colors duration-150"
+                      className="p-2 text-ink-secondary dark:text-[#9BA3AF] hover:bg-surface dark:hover:bg-[#111318] hover:text-primary rounded-sm transition-colors duration-150"
                       title="Siguiente horario"
                       aria-label="Siguiente horario"
                     >

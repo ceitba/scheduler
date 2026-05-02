@@ -61,9 +61,9 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
       title={t('commission.title')}
     >
       <div className="space-y-4">
-        <div className="font-body text-body-sm text-ink-secondary">
-          <div className="font-semibold text-ink-primary text-body mb-1">
-            <span className="font-mono text-label text-ink-secondary">({subject.subject_id})</span>{' '}
+        <div className="font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF]">
+          <div className="font-semibold text-ink-primary dark:text-[#F0F2F5] text-body mb-1">
+            <span className="font-mono text-label text-ink-secondary dark:text-[#9BA3AF]">({subject.subject_id})</span>{' '}
             {subject.name}
           </div>
           <p>{t('commission.selectHint')}</p>
@@ -77,7 +77,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
               className={`w-full px-4 py-3 rounded-card text-left transition-colors duration-150 flex flex-col border ${
                 selectedCommissions.includes(commission.name)
                   ? "bg-primary border-primary text-white"
-                  : "bg-surface border-border hover:bg-primary-50 hover:border-primary"
+                  : "bg-surface dark:bg-[#111318] border-border dark:border-[#2D3748] hover:bg-primary-50 dark:hover:bg-primary-900 hover:border-primary"
               }`}
             >
               <div className="flex items-center justify-between w-full">
@@ -99,10 +99,10 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
           ))}
         </div>
 
-        <div className="flex justify-between items-center gap-3 pt-4 border-t border-border">
+        <div className="flex justify-between items-center gap-3 pt-4 border-t border-border dark:border-[#2D3748]">
           <button
             onClick={handleSelectAll}
-            className="px-4 py-2 font-body text-body-sm text-ink-secondary hover:text-primary rounded-sm hover:bg-primary-50 transition-colors duration-150"
+            className="px-4 py-2 font-body text-body-sm text-ink-secondary dark:text-[#9BA3AF] hover:text-primary rounded-sm hover:bg-primary-50 dark:hover:bg-primary-900 transition-colors duration-150"
           >
             {t('commission.addAll')}
           </button>
@@ -111,7 +111,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
             disabled={selectedCommissions.length === 0}
             className={`min-h-[44px] px-4 py-2 rounded-sm font-body font-semibold text-body-sm transition-colors duration-150 ${
               selectedCommissions.length === 0
-                ? "bg-border text-ink-secondary cursor-not-allowed"
+                ? "bg-border dark:bg-[#2D3748] text-ink-secondary dark:text-[#9BA3AF] cursor-not-allowed"
                 : "bg-primary text-surface hover:bg-primary-600"
             }`}
           >

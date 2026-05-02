@@ -16,7 +16,7 @@ const DropdownSection: React.FC<DropdownSectionProps> = ({
   return (
     <div>
       <div
-        className="cursor-pointer select-none py-2 flex items-center font-mono text-label uppercase tracking-widest text-ink-secondary hover:text-ink-primary transition-colors duration-150"
+        className="cursor-pointer select-none py-2 flex items-center font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#9BA3AF] hover:text-ink-primary dark:hover:text-[#F0F2F5] transition-colors duration-150"
         onClick={onToggle}
       >
         <svg

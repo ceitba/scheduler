@@ -6,7 +6,7 @@ import CareerPage from './pages/CareerPage'
 export default function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter basename="/scheduler">
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/:career" element={<CareerPage />} />

@@ -39,7 +39,7 @@ export default function HomePage() {
   const toggleLanguage = () => {
     const next = i18n.language === 'es' ? 'en' : 'es'
     i18n.changeLanguage(next)
-    localStorage.setItem('lang', next)
+    localStorage.setItem('prefs.lang', next)
   }
   const careersList = Object.entries(CAREERS).map(([id, name]) => ({ id, name }))
 

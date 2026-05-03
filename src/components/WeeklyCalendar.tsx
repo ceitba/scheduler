@@ -348,7 +348,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                     <button
                       key={block.id}
                       onClick={() => setEditingBlock(block)}
-                      className={`absolute inset-x-0 flex flex-col items-center justify-center hover:brightness-90 text-ink-primary cursor-pointer group/block transition-all px-2 z-10 select-none ${colorClass}`}
+                      className={`absolute inset-x-0 flex flex-col items-center justify-center hover:brightness-90 text-[#1c1c1e] cursor-pointer group/block transition-all px-2 z-10 select-none ${colorClass}`}
                       style={{
                         top: `${top}px`,
                         height: `${height}px`,
@@ -358,13 +358,13 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                       {block.label ? (
                         <div className="flex flex-col items-center justify-center w-full h-full p-1">
                           <span className="font-body text-body-sm font-semibold truncate w-full text-center">{block.label}</span>
-                          <span className="font-mono text-label text-ink-secondary w-full text-center">
+                          <span className="font-mono text-label text-[#374151] w-full text-center">
                             {block.from} - {block.to}
                           </span>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full h-full">
-                          <span className="font-mono text-label text-ink-secondary w-full text-center">
+                          <span className="font-mono text-label text-[#374151] w-full text-center">
                             {block.from} - {block.to}
                           </span>
                         </div>
@@ -372,7 +372,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                       <svg
                         width="14" height="14" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-                        className="absolute right-2 opacity-0 group-hover/block:opacity-100 text-ink-secondary"
+                        className="absolute right-2 opacity-0 group-hover/block:opacity-100 text-[#374151]"
                         aria-hidden="true"
                       >
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

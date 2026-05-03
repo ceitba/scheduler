@@ -243,10 +243,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
                           style={{ top: `${top}px`, height: `${height}px`, width, left, zIndex: 2 }}
                         >
                           <div className="w-full h-full justify-center flex flex-col gap-0.5 text-[10px] lg:text-xs">
-                            <div className="font-body font-semibold text-ink-primary dark:text-[#f4f4f5] text-center truncate sm:overflow-visible sm:whitespace-normal mb-1">
+                            <div className="font-body font-semibold text-[#1c1c1e] text-center truncate sm:overflow-visible sm:whitespace-normal mb-1">
                               {slot.subject}
                             </div>
-                            <div className="space-y-0.5 text-ink-secondary text-center text-[9px] lg:text-[11px]">
+                            <div className="space-y-0.5 text-[#374151] text-center text-[9px] lg:text-[11px]">
                               <div>Com. {slot.commission}</div>
                               <div>{formatRooms(slot.rooms)}</div>
                               <div>{slot.timeFrom.slice(0, 5)} - {slot.timeTo.slice(0, 5)}</div>

@@ -42,7 +42,6 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
       </button>
 
       <label
-        htmlFor={id}
         className={`font-body text-body-sm text-ink-primary dark:text-[#f4f4f5] select-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         onClick={() => !disabled && onChange(!checked)}
       >

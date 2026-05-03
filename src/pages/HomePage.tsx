@@ -34,8 +34,13 @@ function CareerCard({ id, name }: { id: string; name: string }) {
 }
 
 export default function HomePage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { theme, toggle } = useThemeContext()
+  const toggleLanguage = () => {
+    const next = i18n.language === 'es' ? 'en' : 'es'
+    i18n.changeLanguage(next)
+    localStorage.setItem('lang', next)
+  }
   const careersList = Object.entries(CAREERS).map(([id, name]) => ({ id, name }))
 
   return (
@@ -46,6 +51,15 @@ export default function HomePage() {
             <span className="font-display text-h5 font-bold text-primary tracking-tight leading-tight">CEITBA</span>
             <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] uppercase tracking-widest leading-tight">{t('nav.scheduler')}</span>
           </div>
+
+          <div className="flex items-center gap-1">
+          <button
+            onClick={toggleLanguage}
+            className="min-h-[36px] px-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] hover:text-primary transition-colors duration-150"
+            aria-label={i18n.language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+          >
+            {i18n.language === 'es' ? 'EN' : 'ES'}
+          </button>
 
           {/* Theme toggle */}
           <button
@@ -71,6 +85,7 @@ export default function HomePage() {
               </svg>
             )}
           </button>
+          </div>
         </div>
       </header>
 

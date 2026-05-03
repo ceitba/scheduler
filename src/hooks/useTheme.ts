@@ -4,7 +4,7 @@ type Theme = 'light' | 'dark'
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme') as Theme | null
+    const saved = localStorage.getItem('prefs.theme') as Theme | null
     if (saved === 'light' || saved === 'dark') return saved
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
@@ -16,7 +16,7 @@ export function useTheme() {
     } else {
       root.classList.remove('dark')
     }
-    localStorage.setItem('theme', theme)
+    localStorage.setItem('prefs.theme', theme)
   }, [theme])
 
   const toggle = () => setTheme(prev => prev === 'light' ? 'dark' : 'light')

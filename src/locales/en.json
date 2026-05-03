@@ -35,7 +35,9 @@
     "understood": "Got it",
     "noneSelected": "No courses selected",
     "anyCommission": "Any commission",
-    "commissionAbbr": "Sec."
+    "commissionAbbr": "Sec.",
+    "searchPlaceholder": "Search subjects by name or code...",
+    "noResults": "No subjects found"
   },
   "commission": {
     "title": "Select commission",

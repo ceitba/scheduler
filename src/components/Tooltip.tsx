@@ -9,12 +9,12 @@ interface TooltipHeaderProps {
 const TooltipHeader: React.FC<TooltipHeaderProps> = ({ title, tooltip, className = "" }) => {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <h2 className="font-body text-body font-semibold text-ink-primary">
+      <h2 className="font-body text-body font-semibold text-ink-primary dark:text-[#f4f4f5]">
         {title}
       </h2>
       <div className="group relative inline-block">
         <svg
-          className="h-5 w-5 text-ink-secondary hover:text-primary cursor-help"
+          className="h-5 w-5 text-ink-secondary dark:text-[#a1a1aa] hover:text-primary cursor-help"
           width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2" strokeLinecap="round"
           aria-hidden="true"

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Subject } from "../hooks/useSubjects"
 import Fuse from 'fuse.js'
 
@@ -8,6 +9,7 @@ interface SearchBoxProps {
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
+  const { t } = useTranslation()
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -63,7 +65,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="Buscar materias por nombre o código..."
+          placeholder={t('courses.searchPlaceholder')}
           className="w-full pl-10 pr-4 py-2.5 rounded-sm bg-white dark:bg-[#27272a] font-body text-body text-ink-primary dark:text-[#f4f4f5] placeholder:text-ink-secondary dark:placeholder:text-[#a1a1aa] border border-border dark:border-[#3f3f46] focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors"
         />
       </div>
@@ -88,7 +90,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ subjects, onSelectSubject }) => {
             ))
           ) : (
             <div className="px-4 py-3 font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa]">
-              No se encontraron materias
+              {t('courses.noResults')}
             </div>
           )}
         </div>

@@ -52,6 +52,35 @@
   }
 }
 
+/* ink-secondary (#6B7280) is too dark on zinc backgrounds; remap globally */
+.dark .text-ink-secondary {
+  color: #a1a1aa;
+}
+/* ink-primary (#1C1C1E) is near-black; remap globally */
+.dark .text-ink-primary {
+  color: #f4f4f5;
+}
+
+/* primary (#1A3C6E) is dark navy — unreadable on dark backgrounds; remap to primary-300 */
+html.dark .text-primary {
+  color: #7FA1D4;
+}
+html.dark .hover\:text-primary:hover {
+  color: #7FA1D4;
+}
+html.dark .group:hover .group-hover\:text-primary {
+  color: #7FA1D4;
+}
+html.dark .focus\:border-primary:focus {
+  border-color: #7FA1D4;
+}
+html.dark .border-primary {
+  border-color: #7FA1D4;
+}
+html.dark .hover\:border-primary:hover {
+  border-color: #7FA1D4;
+}
+
 html.dark .shadow-card {
   box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
 }

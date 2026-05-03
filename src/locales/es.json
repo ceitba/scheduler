@@ -35,7 +35,9 @@
     "understood": "Entendido",
     "noneSelected": "No hay cursos seleccionados",
     "anyCommission": "Cualquier comisión",
-    "commissionAbbr": "Com."
+    "commissionAbbr": "Com.",
+    "searchPlaceholder": "Buscar materias por nombre o código...",
+    "noResults": "No se encontraron materias"
   },
   "commission": {
     "title": "Seleccionar comisión",

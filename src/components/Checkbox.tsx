@@ -55,7 +55,7 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
             type="button"
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
-            className="w-4 h-4 rounded-full bg-primary-50 dark:bg-primary-900 text-primary flex items-center justify-center font-mono text-label"
+            className="w-4 h-4 rounded-full bg-primary-50 dark:bg-[#3f3f46] text-primary dark:text-[#a1a1aa] flex items-center justify-center font-mono text-label"
             aria-label="Más información"
           >
             ?

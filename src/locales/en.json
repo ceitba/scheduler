@@ -1,0 +1,132 @@
+{
+  "nav": {
+    "scheduler": "Schedule Builder",
+    "skipToContent": "Skip to content"
+  },
+  "home": {
+    "title": "Plan your schedule",
+    "subtitle": "Select your degree program to start combining schedules and find the perfect combination.",
+    "viewSchedules": "View schedules",
+    "exchange": {
+      "code": "EXCHANGE",
+      "name": "Exchange",
+      "description": "Subjects for exchange students"
+    }
+  },
+  "career": {
+    "tabs": {
+      "courses": "Courses",
+      "settings": "Options",
+      "calendar": "Calendar"
+    }
+  },
+  "courses": {
+    "selected": "Selected courses",
+    "available": "Available courses",
+    "credits": "credits",
+    "course": "course",
+    "courses": "courses",
+    "semester1": "First semester",
+    "semester2": "Second semester",
+    "electives": "Electives",
+    "year": "th Year",
+    "noScheduleTitle": "Subject has no schedule",
+    "noScheduleMessage": "The subject {{name}} has no available schedules or commissions.",
+    "understood": "Got it",
+    "noneSelected": "No courses selected",
+    "anyCommission": "Any commission",
+    "commissionAbbr": "Sec.",
+    "searchPlaceholder": "Search subjects by name or code...",
+    "noResults": "No subjects found"
+  },
+  "commission": {
+    "title": "Select commission",
+    "selectHint": "Select the commissions you want to include in the possible combinations",
+    "addAll": "Add all",
+    "addSelected_one": "Add {{count}} commission",
+    "addSelected_other": "Add {{count}} commissions",
+    "commission": "Commission",
+    "virtual": "Async virtual"
+  },
+  "scheduler": {
+    "title": "Schedule preview",
+    "option": "Option",
+    "of": "of",
+    "allowOverlap": "Allow limited overlap",
+    "allowOverlapTooltip": "Max difference: 30 min",
+    "allowUnlimitedOverlap": "Allow full overlap",
+    "allowUnlimitedOverlapTooltip": "No overlap limit",
+    "freeDay": "Have a free day",
+    "hasOverlap": "Has overlap",
+    "noOverlap": "No overlap",
+    "buildingConflict": "Building conflict",
+    "noBuildingConflict": "No building conflict",
+    "hasFreeDay": "Has free day",
+    "noFreeDay": "No free day",
+    "blockedTime": "Blocked time",
+    "noSubjects": "No subjects selected",
+    "noSubjectsMessage": "Select subjects in the Courses tab then come back here to see possible combinations.",
+    "noCombinations": "No possible combinations for this configuration",
+    "noCombinationsMessage": "Try changing the options or selecting different commissions."
+  },
+  "save": {
+    "title": "Save schedule",
+    "saveAsPDF": "Save as PDF",
+    "saveAsPDFDescription": "Download your schedule as a PDF file",
+    "saveAsImage": "Save as image",
+    "saveAsImageDescription": "Download your schedule as a PNG image",
+    "exportToCalendar": "Export to Google Calendar",
+    "exportToCalendarDescription": "Sync your schedule with Google Calendar",
+    "shareLink": "Copy link",
+    "linkCopied": "Link copied to clipboard!"
+  },
+  "calendar": {
+    "title": "Add to calendar",
+    "option1Title": "Option 1: All events",
+    "option1Description": "Download the file and upload it to Google Calendar to add all events at once.",
+    "option1Step1": "Download the calendar file",
+    "option1Step2": "Go to Google Calendar",
+    "option1Step3": "Settings → Import & export",
+    "option1Step4": "Upload the downloaded file",
+    "downloadFile": "Download calendar file",
+    "option2Title": "Option 2: Events one by one",
+    "commission": "Commission"
+  },
+  "settings": {
+    "title": "Additional settings",
+    "blockedTimes": "Blocked times",
+    "addBlockedTime": "Add blocked time",
+    "editBlock": "Edit block",
+    "blockLabel": "Block title",
+    "blockLabelPlaceholder": "e.g. Lunch, Work, etc.",
+    "delete": "Delete",
+    "save": "Save",
+    "hour": "Hour",
+    "blockedTimesDescription": "Blocked times are specific periods when you don't want classes scheduled.",
+    "blockedReason1Title": "Personal activities",
+    "blockedReason1Desc": "Work, lunch, exercise, family time",
+    "blockedReason2Title": "Travel time",
+    "blockedReason2Desc": "Trips to and from the university",
+    "blockedReason3Title": "Fixed commitments",
+    "blockedReason3Desc": "Other academic activities, courses, or responsibilities"
+  },
+  "footer": {
+    "itTeam": "IT Team CEITBA",
+    "github": "GitHub",
+    "contact": "Contact"
+  },
+  "days": {
+    "MONDAY": "Mon",
+    "TUESDAY": "Tue",
+    "WEDNESDAY": "Wed",
+    "THURSDAY": "Thu",
+    "FRIDAY": "Fri",
+    "SATURDAY": "Sat",
+    "SUNDAY": "Sun"
+  },
+  "errors": {
+    "somethingWrong": "Something went wrong",
+    "retry": "Retry",
+    "loading": "Loading"
+  }
+}

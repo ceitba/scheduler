@@ -4,13 +4,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Next.js
-.next/
-out/
+# Vite build output
+dist/
 
 # Production build
 build/
-dist/
+out/
 
 # Environment files
 .env
@@ -94,9 +93,6 @@ pids/
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
-
-# next.js build output
-.next
 
 # nuxt.js build output
 .nuxt

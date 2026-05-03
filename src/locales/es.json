@@ -15,17 +15,17 @@
   },
   "career": {
     "tabs": {
-      "courses": "Cursos",
+      "courses": "Materias",
       "settings": "Adicionales",
       "calendar": "Calendario"
     }
   },
   "courses": {
-    "selected": "Cursos seleccionados",
-    "available": "Cursos disponibles",
+    "selected": "Materias seleccionadas",
+    "available": "Materias disponibles",
     "credits": "créditos",
-    "course": "curso",
-    "courses": "cursos",
+    "course": "materia",
+    "courses": "materias",
     "semester1": "Primer cuatrimestre",
     "semester2": "Segundo cuatrimestre",
     "electives": "Electivas",
@@ -33,7 +33,7 @@
     "noScheduleTitle": "Materia sin horarios",
     "noScheduleMessage": "La materia {{name}} no tiene horarios o comisiones disponibles actualmente.",
     "understood": "Entendido",
-    "noneSelected": "No hay cursos seleccionados",
+    "noneSelected": "No hay materias seleccionadas",
     "anyCommission": "Cualquier comisión",
     "commissionAbbr": "Com.",
     "searchPlaceholder": "Buscar materias por nombre o código...",
@@ -65,7 +65,7 @@
     "noFreeDay": "Sin día libre",
     "blockedTime": "Horario bloqueado",
     "noSubjects": "No hay materias seleccionadas",
-    "noSubjectsMessage": "Seleccioná materias en la pestaña Cursos y luego volvé aquí para ver las combinaciones posibles.",
+    "noSubjectsMessage": "Seleccioná materias en la pestaña Materias y luego volvé aquí para ver las combinaciones posibles.",
     "noCombinations": "No hay combinaciones posibles para esta configuración",
     "noCombinationsMessage": "Probá cambiando las opciones o seleccionando otras comisiones."
   },

@@ -28,7 +28,7 @@ jobs:
         run: npm run build
         env:
           VITE_BASE_PATH: /scheduler/
-          VITE_CEITBA_API_URL: https://ceitba.org.ar/api
+          VITE_CEITBA_API_URL: https://ceitba.org.ar
 
       - name: Zip dist
         if: github.ref == 'refs/heads/main'

@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,10 +27,19 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upload artifact
-        if: github.event_name == 'push'
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-${{ github.ref_name }}-${{ github.sha }}
-          path: dist/
-          retention-days: 30
+      - name: Zip dist
+        if: github.ref == 'refs/heads/main'
+        run: zip -r dist.zip dist/
+
+      - name: Release
+        if: github.ref == 'refs/heads/main'
+        run: |
+          gh release delete latest --yes 2>/dev/null || true
+          git tag -f latest
+          git push origin latest --force
+          gh release create latest dist.zip \
+            --title "Latest build" \
+            --notes "Built from commit ${{ github.sha }}" \
+            --latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

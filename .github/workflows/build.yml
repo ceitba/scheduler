@@ -54,12 +54,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            mkdir -p /var/www/scheduler
             cd /tmp
             rm -rf dist dist.zip
-            gh release download latest --repo ceitba/scheduler --pattern "dist.zip" --clobber
+            curl -fsSL https://github.com/ceitba/scheduler/releases/latest/download/dist.zip -o dist.zip
             unzip -o dist.zip
-            rsync -a --delete dist/ /var/www/scheduler/
+            rsync -r --delete dist/ /var/www/scheduler/
             rm -rf dist dist.zip
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

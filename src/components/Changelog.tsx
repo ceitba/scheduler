@@ -40,7 +40,7 @@ const Changelog: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full mb-2 right-0 sm:right-auto w-64 bg-white border border-border rounded-card shadow-card-hover p-3 font-body text-body-sm z-50">
+        <div className="absolute bottom-full mb-2 right-0 sm:right-auto w-64 bg-white dark:bg-[#27272a] border border-border dark:border-[#3f3f46] rounded-card shadow-card-hover p-3 font-body text-body-sm z-50">
           {changelog.map((entry, index) => (
             <div key={entry.version} className={index > 0 ? 'mt-4' : ''}>
               <div className="flex justify-between items-center mb-2">

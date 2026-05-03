@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useTranslation } from "react-i18next"
 import SearchBox from "./SearchBox"
 import { useSubjects, type Subject } from "../hooks/useSubjects"
 import SelectedCoursesList from "./SelectedCoursesList"
@@ -32,20 +33,19 @@ const NoScheduleModal: React.FC<NoScheduleModalProps> = ({
   onClose,
   subjectName,
 }) => {
+  const { t } = useTranslation()
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="Materia sin horarios">
+    <BaseModal isOpen={isOpen} onClose={onClose} title={t('courses.noScheduleTitle')}>
       <div className="space-y-4">
-        <p className="font-body text-body-sm text-ink-secondary">
-          La materia{" "}
-          <span className="font-semibold text-ink-primary">{subjectName}</span> no
-          tiene horarios o comisiones disponibles actualmente.
+        <p className="font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa]">
+          {t('courses.noScheduleMessage', { name: subjectName })}
         </p>
         <div className="flex justify-end">
           <button
             onClick={onClose}
             className="min-h-[44px] px-4 py-2 bg-primary text-surface font-body font-semibold text-body-sm rounded-sm hover:bg-primary-600 transition-colors duration-150"
           >
-            Entendido
+            {t('courses.understood')}
           </button>
         </div>
       </div>
@@ -60,6 +60,7 @@ const CourseView: React.FC<CourseViewProps> = ({
   onRemoveCourse,
   onReorderCourses,
 }) => {
+  const { t } = useTranslation()
   const { subjects, loading, error } = useSubjects()
   const { career } = useParams()
   const isExchange = career === "X"
@@ -74,7 +75,7 @@ const CourseView: React.FC<CourseViewProps> = ({
   const subjectsByYear = isExchange
     ? {
         1: {
-          year: "Materias Disponibles",
+          year: t('courses.available'),
           subjects: { "1": subjects, "2": [] },
         },
       }
@@ -83,7 +84,7 @@ const CourseView: React.FC<CourseViewProps> = ({
           const year = subject.year || 0
           if (!acc[year]) {
             acc[year] = {
-              year: year === 0 ? "ELECTIVAS" : `${year}° Año`,
+              year: year === 0 ? t('courses.electives').toUpperCase() : `${year}${t('courses.year')}`,
               subjects: { "1": [], "2": [] },
             }
           }
@@ -165,14 +166,14 @@ const CourseView: React.FC<CourseViewProps> = ({
       {/* Desktop Layout */}
       <div className="hidden md:grid md:grid-cols-2 md:gap-4 mt-4">
         <div>
-          <div className="sticky top-[4.5rem] rounded-card p-4 bg-surface border border-border">
+          <div className="sticky top-[4.5rem] rounded-card p-4 bg-surface dark:bg-[#27272a] border border-border dark:border-[#3f3f46]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-body font-semibold text-body text-ink-primary">
-                Cursos seleccionados
+              <h2 className="font-body font-semibold text-body text-ink-primary dark:text-[#f4f4f5]">
+                {t('courses.selected')}
               </h2>
               {totalCredits > 0 && (
-                <div className="font-mono text-label text-ink-secondary">
-                  <span className="font-semibold">{totalCredits}</span> créditos
+                <div className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa]">
+                  <span className="font-semibold">{totalCredits}</span> {t('courses.credits')}
                 </div>
               )}
             </div>
@@ -196,19 +197,17 @@ const CourseView: React.FC<CourseViewProps> = ({
       {/* Mobile Layout */}
       <div className="md:hidden">
         {selectedCourses.length > 0 && (
-          <div className="bg-white border border-border rounded-card mt-4">
+          <div className="bg-white dark:bg-[#27272a] border border-border dark:border-[#3f3f46] rounded-card mt-4">
             <button
               onClick={() => setIsPreviewOpen(!isPreviewOpen)}
-              className="w-full flex items-center justify-between px-4 border-b border-border h-20"
+              className="w-full flex items-center justify-between px-4 border-b border-border dark:border-[#3f3f46] h-20"
             >
               <div className="flex flex-col items-start justify-between w-full">
-                <div className="font-body font-semibold text-body text-ink-primary">
-                  Cursos seleccionados
+                <div className="font-body font-semibold text-body text-ink-primary dark:text-[#f4f4f5]">
+                  {t('courses.selected')}
                 </div>
-                <div className="font-mono text-label text-ink-secondary">
-                  {selectedCourses.length} curso
-                  {selectedCourses.length !== 1 ? "s" : ""} · {totalCredits}{" "}
-                  créditos
+                <div className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa]">
+                  {selectedCourses.length} {selectedCourses.length !== 1 ? t('courses.courses') : t('courses.course')} · {totalCredits} {t('courses.credits')}
                 </div>
               </div>
               <div>

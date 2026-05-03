@@ -61,7 +61,7 @@ export default function Footer() {
                 </svg>
               </button>
               {showCreators && (
-                <div className="absolute bottom-full right-0 mb-2 w-48 rounded-card bg-white border border-border shadow-card-hover z-10">
+                <div className="absolute bottom-full right-0 mb-2 w-48 rounded-card bg-white dark:bg-[#27272a] border border-border dark:border-[#3f3f46] shadow-card-hover z-10">
                   {creators.map(creator => (
                     <div key={creator} className="px-4 py-2 font-body text-body-sm text-ink-primary dark:text-[#f4f4f5] border-b border-border dark:border-[#3f3f46] last:border-b-0">
                       {creator}

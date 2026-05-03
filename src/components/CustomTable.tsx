@@ -88,7 +88,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
         {data.map((row, rowIndex) => (
           <div
             key={rowIndex}
-            className="p-3 rounded-card border border-border bg-white shadow-card"
+            className="p-3 rounded-card border border-border dark:border-[#3f3f46] bg-white dark:bg-[#27272a] shadow-card"
           >
             {columns.map((column) => (
               <div key={column.accessor} className="mb-2">

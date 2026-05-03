@@ -23,7 +23,7 @@ const TooltipHeader: React.FC<TooltipHeaderProps> = ({ title, tooltip, className
           <line x1="12" y1="8" x2="12" y2="12" />
           <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
-        <span className="pointer-events-none absolute -top-2 left-6 min-w-[100px] sm:min-w-[350px] whitespace-normal opacity-0 transition-opacity group-hover:opacity-100 bg-white font-body text-body-sm text-ink-primary py-1.5 px-3 rounded-card shadow-card-hover border border-border z-10">
+        <span className="pointer-events-none absolute -top-2 left-6 min-w-[100px] sm:min-w-[350px] whitespace-normal opacity-0 transition-opacity group-hover:opacity-100 bg-white dark:bg-[#27272a] font-body text-body-sm text-ink-primary dark:text-[#f4f4f5] py-1.5 px-3 rounded-card shadow-card-hover border border-border dark:border-[#3f3f46] z-10">
           {tooltip}
         </span>
       </div>

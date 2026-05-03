@@ -52,6 +52,13 @@
   }
 }
 
+html.dark .shadow-card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+}
+html.dark .shadow-card-hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.3);
+}
+
 html.dark .skeleton {
   background: linear-gradient(90deg, #222225 25%, #2d2d31 50%, #222225 75%);
   background-size: 800px 100%;

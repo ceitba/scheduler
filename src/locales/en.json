@@ -99,7 +99,14 @@
     "blockLabelPlaceholder": "e.g. Lunch, Work, etc.",
     "delete": "Delete",
     "save": "Save",
-    "hour": "Hour"
+    "hour": "Hour",
+    "blockedTimesDescription": "Blocked times are specific periods when you don't want classes scheduled.",
+    "blockedReason1Title": "Personal activities",
+    "blockedReason1Desc": "Work, lunch, exercise, family time",
+    "blockedReason2Title": "Travel time",
+    "blockedReason2Desc": "Trips to and from the university",
+    "blockedReason3Title": "Fixed commitments",
+    "blockedReason3Desc": "Other academic activities, courses, or responsibilities"
   },
   "footer": {
     "itTeam": "IT Team CEITBA",

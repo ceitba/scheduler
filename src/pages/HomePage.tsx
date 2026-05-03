@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CAREERS, EXCHANGE_CAREER, getLatestPlan } from '../types/careers'
+import { CAREERS, CAREER_METADATA, EXCHANGE_CAREER, getLatestPlan } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
 import Footer from '../components/Footer'
 import { useThemeContext } from '../context/ThemeContext'
@@ -8,6 +8,7 @@ import { useThemeContext } from '../context/ThemeContext'
 function CareerCard({ id, name }: { id: string; name: string }) {
   const { t } = useTranslation()
   const planParam = normalizePlanId(getLatestPlan(id))
+  const icon = CAREER_METADATA[id]?.icon
 
   return (
     <Link
@@ -15,7 +16,10 @@ function CareerCard({ id, name }: { id: string; name: string }) {
       className="rounded-card border border-border dark:border-[#3f3f46] bg-white dark:bg-[#27272a] shadow-card hover:shadow-card-hover transition-shadow duration-200 flex flex-col p-5 group"
       aria-label={`${t('home.viewSchedules')} ${name}`}
     >
-      <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] mb-2">{id}</span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa]">{id}</span>
+        {icon && <span className="text-lg leading-none" aria-hidden="true">{icon}</span>}
+      </div>
       <h2 className="font-display text-h5 font-bold text-ink-primary dark:text-[#f4f4f5] group-hover:text-primary transition-colors duration-150 leading-snug flex-1">
         {name}
       </h2>
@@ -93,6 +97,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-4 rounded-card border border-dashed border-primary/40 hover:border-primary bg-white dark:bg-[#27272a] px-6 py-4 transition-colors duration-150 group"
               aria-label={t('home.viewSchedules')}
             >
+              {EXCHANGE_CAREER.icon && <span className="text-2xl leading-none flex-shrink-0" aria-hidden="true">{EXCHANGE_CAREER.icon}</span>}
               <div>
                 <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] block mb-0.5">{EXCHANGE_CAREER.id}</span>
                 <p className="font-display text-h5 font-bold text-ink-primary dark:text-[#f4f4f5] group-hover:text-primary transition-colors duration-150">

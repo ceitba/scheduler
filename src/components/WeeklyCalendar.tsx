@@ -254,21 +254,21 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
         {t('settings.blockedTimes')}
       </h2>
       <div className="font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa] mb-4">
-        Los horarios bloqueados son períodos específicos en los que no deseas tener clases programadas.
+        {t('settings.blockedTimesDescription')}
         <div className="space-y-2 mt-3">
-          {[
-            ['Actividades personales', 'Trabajo, almuerzo, ejercicio, tiempo en familia'],
-            ['Tiempos de traslado', 'Viajes hacia y desde la universidad'],
-            ['Compromisos fijos', 'Otras actividades académicas, cursos o responsabilidades'],
-          ].map(([title, desc]) => (
-            <div key={title} className="flex items-start gap-2">
+          {([
+            ['settings.blockedReason1Title', 'settings.blockedReason1Desc'],
+            ['settings.blockedReason2Title', 'settings.blockedReason2Desc'],
+            ['settings.blockedReason3Title', 'settings.blockedReason3Desc'],
+          ] as const).map(([titleKey, descKey]) => (
+            <div key={titleKey} className="flex items-start gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" className="flex-shrink-0 mt-0.5" aria-hidden="true">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
               <div>
-                <span className="font-semibold text-ink-primary dark:text-[#f4f4f5]">{title}</span>
-                <span className="text-ink-secondary dark:text-[#a1a1aa]"> — {desc}</span>
+                <span className="font-semibold text-ink-primary dark:text-[#f4f4f5]">{t(titleKey)}</span>
+                <span className="text-ink-secondary dark:text-[#a1a1aa]"> — {t(descKey)}</span>
               </div>
             </div>
           ))}

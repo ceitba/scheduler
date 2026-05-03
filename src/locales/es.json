@@ -99,7 +99,14 @@
     "blockLabelPlaceholder": "Ej: Almuerzo, Trabajo, etc.",
     "delete": "Eliminar",
     "save": "Guardar",
-    "hour": "Hora"
+    "hour": "Hora",
+    "blockedTimesDescription": "Los horarios bloqueados son períodos específicos en los que no deseas tener clases programadas.",
+    "blockedReason1Title": "Actividades personales",
+    "blockedReason1Desc": "Trabajo, almuerzo, ejercicio, tiempo en familia",
+    "blockedReason2Title": "Tiempos de traslado",
+    "blockedReason2Desc": "Viajes hacia y desde la universidad",
+    "blockedReason3Title": "Compromisos fijos",
+    "blockedReason3Desc": "Otras actividades académicas, cursos o responsabilidades"
   },
   "footer": {
     "itTeam": "IT Team CEITBA",

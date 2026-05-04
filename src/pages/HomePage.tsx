@@ -47,10 +47,10 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-surface dark:bg-[#18181b]">
       <header className="border-b border-border dark:border-[#3f3f46] bg-surface/95 dark:bg-[#18181b]/95 backdrop-blur-sm sticky top-0 z-40">
         <div className="container-content h-16 flex items-center justify-between">
-          <div className="flex flex-col justify-center">
+          <a href="https://ceitba.org.ar/" className="flex flex-col justify-center hover:opacity-80 transition-opacity duration-150">
             <span className="font-display text-h5 font-bold text-primary tracking-tight leading-tight">CEITBA</span>
             <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] uppercase tracking-widest leading-tight">{t('nav.scheduler')}</span>
-          </div>
+          </a>
 
           <div className="flex items-center gap-1">
           <button

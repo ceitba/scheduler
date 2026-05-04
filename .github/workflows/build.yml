@@ -5,9 +5,6 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,24 +27,17 @@ jobs:
           VITE_BASE_PATH: /scheduler/
           VITE_CEITBA_API_URL: https://ceitba.org.ar
 
-      - name: Zip dist
+      - name: Upload dist to VPS staging
         if: github.ref == 'refs/heads/main'
-        run: zip -r dist.zip dist/
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "dist/"
+          target: "/tmp/scheduler-deploy-${{ github.sha }}"
 
-      - name: Release
-        if: github.ref == 'refs/heads/main'
-        run: |
-          gh release delete latest --yes 2>/dev/null || true
-          git tag -f latest
-          git push origin latest --force
-          gh release create latest dist.zip \
-            --title "Latest build" \
-            --notes "Built from commit ${{ github.sha }}" \
-            --latest
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Deploy to VPS
+      - name: Activate deployment
         if: github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@v1
         with:
@@ -55,9 +45,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /tmp
-            rm -rf dist dist.zip
-            curl -fsSL https://github.com/ceitba/scheduler/releases/latest/download/dist.zip -o dist.zip
-            unzip -o dist.zip
-            rsync -r --delete dist/ /var/www/scheduler/
-            rm -rf dist dist.zip
+            set -e
+            STAGE=/tmp/scheduler-deploy-${{ github.sha }}
+            rsync -r --delete "$STAGE/dist/" /var/www/scheduler/
+            rm -rf "$STAGE"

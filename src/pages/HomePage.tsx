@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CAREERS, CAREER_METADATA, EXCHANGE_CAREER, getLatestPlan } from '../types/careers'
@@ -34,6 +35,10 @@ function CareerCard({ id, name }: { id: string; name: string }) {
 }
 
 export default function HomePage() {
+  useEffect(() => {
+    window.location.replace('https://ceitba.org.ar/')
+  }, [])
+
   const { t, i18n } = useTranslation()
   const { theme, toggle } = useThemeContext()
   const toggleLanguage = () => {

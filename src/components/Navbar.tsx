@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import useClickOutside from '../hooks/useClickOutside'
 import { CAREERS, AVAILABLE_PLANS } from '../types/careers'
@@ -49,12 +49,12 @@ export default function Navbar({ currentPlan }: NavbarProps) {
       </a>
       <div className="container-content h-full flex items-center justify-between">
         {/* Logotype */}
-        <a href="https://ceitba.org.ar/" className="flex-shrink-0 flex flex-col justify-center hover:opacity-80 transition-opacity duration-150">
+        <Link to="/" className="flex-shrink-0 flex flex-col justify-center hover:opacity-80 transition-opacity duration-150">
           <span className="font-display text-h5 font-bold text-primary tracking-tight leading-tight">CEITBA</span>
           <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] uppercase tracking-widest leading-tight">
             {careerCode && shortName ? shortName : 'Combinador de Horarios'}
           </span>
-        </a>
+        </Link>
 
         {/* Right side */}
         <div className="flex items-center gap-3">

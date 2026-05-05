@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { CAREERS, CAREER_METADATA, EXCHANGE_CAREER, getLatestPlan } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
 import Footer from '../components/Footer'
+import AuthMenu from '../components/AuthMenu'
 import { useThemeContext } from '../context/ThemeContext'
 
 function CareerCard({ id, name }: { id: string; name: string }) {
@@ -85,6 +86,8 @@ export default function HomePage() {
               </svg>
             )}
           </button>
+
+          <AuthMenu />
           </div>
         </div>
       </header>

@@ -10,7 +10,25 @@
   "auth": {
     "signIn": "Iniciar sesión",
     "signOut": "Cerrar sesión",
-    "profile": "Mi perfil"
+    "profile": "Mi perfil",
+    "savedSchedules": "Mis horarios guardados"
+  },
+  "saved": {
+    "pageTitle": "Mis horarios guardados",
+    "usage": "{{count}} de {{max}} guardados",
+    "empty": "Aún no guardaste ningún horario.",
+    "open": "Abrir",
+    "rename": "Renombrar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "saveSchedule": "Guardar horario",
+    "dialogTitle": "Guardar este horario",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "ej. 1er cuatri 2026",
+    "limitReached": "Llegaste al límite de {{max}} horarios. Eliminá uno para guardar otro.",
+    "confirmDelete": "¿Eliminar este horario guardado?",
+    "openMissingContext": "Este horario no tiene carrera o plan asociados."
   },
   "home": {
     "title": "Planificá tu horario",

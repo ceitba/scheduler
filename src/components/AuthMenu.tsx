@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { signOut, startGoogleSignIn } from '../store/authStore'
@@ -9,6 +10,7 @@ import { signOut, startGoogleSignIn } from '../store/authStore'
 export default function AuthMenu() {
   const { t } = useTranslation()
   const { profile, loading } = useAuth()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -81,6 +83,14 @@ export default function AuthMenu() {
           >
             {t('auth.profile')}
           </a>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => { setOpen(false); navigate('/saved') }}
+            className="w-full text-left px-3 py-2 font-body text-body-sm text-ink-primary dark:text-[#f4f4f5] hover:bg-primary-50 dark:hover:bg-primary-900"
+          >
+            {t('auth.savedSchedules')}
+          </button>
           <button
             type="button"
             role="menuitem"

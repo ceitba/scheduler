@@ -1,4 +1,4 @@
-import { useSearchParams, useParams, useNavigate, Navigate } from 'react-router-dom'
+import { useSearchParams, useParams, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import TabView from '../components/TabView'
 import CourseView from '../components/CourseView'
@@ -7,12 +7,15 @@ import { SchedulerPreview } from '../components/SchedulerPreview'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import CommissionSelectionModal from '../components/CommissionSelectionModal'
+import SaveScheduleDialog from '../components/SaveScheduleDialog'
 import { Subject, useSubjects } from '../hooks/useSubjects'
+import { useAuth } from '../hooks/useAuth'
 import { useState, useEffect, useRef } from 'react'
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils'
 import { Scheduler } from '../services/scheduler'
-import { PossibleSchedule } from '../types/scheduler'
+import { PossibleSchedule, SchedulerOptions, TimeBlock } from '../types/scheduler'
 import { AVAILABLE_PLANS } from '../types/careers'
+import { createSavedSchedule, listSavedSchedules, MAX_SAVED_SCHEDULES, type SavedSchedule } from '../api/schedules'
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
@@ -38,15 +41,43 @@ interface GroupedEvent {
 
 const VALID_CAREERS = Object.keys(AVAILABLE_PLANS)
 
+// Payload shape we round-trip through the saved_schedules.payload JSONB
+// column. Bump `version` if the shape ever changes; restore() should refuse
+// unknown versions instead of silently mis-restoring.
+interface SavedSchedulePayload {
+  version: 1
+  selectedCourses: { subject_id: string; selectedCommissions: string[]; isPriority: boolean }[]
+  options: SchedulerOptions
+  blockedTimes: TimeBlock[]
+}
+
 export default function CareerPage() {
   const { t } = useTranslation()
   const { career } = useParams<{ career: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { profile } = useAuth()
   const { subjects } = useSubjects()
   const normalizedPlan = searchParams.get('plan')
   const preselectedSubjectsIds = useRef(searchParams.getAll('code'))
   const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null
+
+  // /saved → "Open" sets this via router state. We restore once the subjects
+  // catalog has loaded so we can hydrate full SelectedCourse objects.
+  const pendingRestore = useRef<SavedSchedulePayload | null>(
+    (location.state as { savedSchedule?: SavedSchedule } | null)?.savedSchedule?.payload as SavedSchedulePayload | undefined ?? null,
+  )
+  const restoredRef = useRef(false)
+
+  const [saveOpen, setSaveOpen] = useState(false)
+  const [saveBusy, setSaveBusy] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [savedCount, setSavedCount] = useState(0)
+  useEffect(() => {
+    if (!profile) { setSavedCount(0); return }
+    listSavedSchedules().then((l) => setSavedCount(l.length)).catch(() => { /* ignore */ })
+  }, [profile])
 
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null)
@@ -92,6 +123,33 @@ export default function CareerPage() {
     }
   }, [subjects])
 
+  // Restore from a saved schedule once the subject catalog is loaded. We
+  // hydrate SelectedCourse from the API-provided Subject; the payload only
+  // stores subject_id + selectedCommissions + isPriority, since the rest is
+  // derivable. Unknown subject_ids are dropped silently — the catalog may
+  // have changed since the schedule was saved.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (restoredRef.current) return
+    if (!pendingRestore.current) return
+    if (!subjects.length) return
+    const payload = pendingRestore.current
+    if (payload.version !== 1) { restoredRef.current = true; return }
+    const byId = new Map(subjects.map((s) => [s.subject_id, s]))
+    const restoredCourses: SelectedCourse[] = payload.selectedCourses
+      .map((sc) => {
+        const subject = byId.get(sc.subject_id)
+        if (!subject) return null
+        return { ...subject, selectedCommissions: sc.selectedCommissions, isPriority: sc.isPriority }
+      })
+      .filter((x): x is SelectedCourse => x !== null)
+    setSelectedCourses(restoredCourses)
+    scheduler.setSubjects(restoredCourses)
+    scheduler.setOptions(payload.options)
+    scheduler.setBlockedTimes(payload.blockedTimes)
+    restoredRef.current = true
+  }, [subjects, scheduler])
+
   const handleCommissionSelect = (commissions: string[]) => {
     if (selectedCourseForModal) {
       const updated = [...selectedCourses, { ...selectedCourseForModal, selectedCommissions: commissions, isPriority: false }]
@@ -116,6 +174,34 @@ export default function CareerPage() {
     const generated = scheduler.generateSchedules()
     console.log("Generated Schedules:", generated)
     setSchedules(generated)
+  }
+
+  async function handleSave(name: string) {
+    setSaveBusy(true); setSaveError(null)
+    try {
+      const payload: SavedSchedulePayload = {
+        version: 1,
+        selectedCourses: selectedCourses.map((c) => ({
+          subject_id: c.subject_id,
+          selectedCommissions: c.selectedCommissions,
+          isPriority: c.isPriority,
+        })),
+        options: scheduler.getOptions(),
+        blockedTimes: scheduler.getBlockedTimes(),
+      }
+      await createSavedSchedule({
+        name,
+        careerId: career ?? null,
+        plan: plan ?? null,
+        payload: payload as unknown as Record<string, unknown>,
+      })
+      setSavedCount((c) => c + 1)
+      setSaveOpen(false)
+    } catch (e) {
+      setSaveError((e as Error).message)
+    } finally {
+      setSaveBusy(false)
+    }
   }
 
   const generateIcsContent = (events: GroupedEvent[]) => {
@@ -265,9 +351,34 @@ export default function CareerPage() {
 
       <main id="main-content" className="flex-1">
         <div className="container-content py-6">
+          {profile && (
+            <div className="flex justify-end mb-3">
+              <button
+                type="button"
+                onClick={() => { setSaveError(null); setSaveOpen(true) }}
+                disabled={selectedCourses.length === 0}
+                className="px-3 py-1.5 rounded-sm border border-primary text-primary font-mono text-label uppercase tracking-widest hover:bg-primary hover:text-white transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-primary"
+                aria-label={t('saved.dialogTitle')}
+              >
+                {t('saved.saveSchedule')}
+              </button>
+            </div>
+          )}
           <TabView tabs={tabs} />
         </div>
       </main>
+
+      {saveOpen && (
+        <SaveScheduleDialog
+          open={saveOpen}
+          count={savedCount}
+          max={MAX_SAVED_SCHEDULES}
+          busy={saveBusy}
+          error={saveError}
+          onSave={handleSave}
+          onClose={() => setSaveOpen(false)}
+        />
+      )}
 
       <Footer />
 

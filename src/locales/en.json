@@ -10,7 +10,25 @@
   "auth": {
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "profile": "My profile"
+    "profile": "My profile",
+    "savedSchedules": "My saved schedules"
+  },
+  "saved": {
+    "pageTitle": "My saved schedules",
+    "usage": "{{count}} of {{max}} saved",
+    "empty": "You haven't saved any schedules yet.",
+    "open": "Open",
+    "rename": "Rename",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saveSchedule": "Save schedule",
+    "dialogTitle": "Save this schedule",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Spring 2026",
+    "limitReached": "You've hit the {{max}}-schedule limit. Delete one to save another.",
+    "confirmDelete": "Delete this saved schedule?",
+    "openMissingContext": "This schedule has no career or plan attached."
   },
   "home": {
     "title": "Plan your schedule",

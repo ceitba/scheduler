@@ -56,16 +56,16 @@ export default function HomePage() {
           <button
             onClick={toggleLanguage}
             className="min-h-[36px] px-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] hover:text-primary transition-colors duration-150"
-            aria-label={i18n.language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+            aria-label={t('nav.langToggleAria')}
           >
-            {i18n.language === 'es' ? 'EN' : 'ES'}
+            {t('nav.langToggleLabel')}
           </button>
 
           {/* Theme toggle */}
           <button
             onClick={toggle}
             className="min-h-[36px] w-9 flex items-center justify-center text-ink-secondary dark:text-[#a1a1aa] hover:text-primary transition-colors duration-150 rounded-sm hover:bg-primary-50 dark:hover:bg-primary-900"
-            aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            aria-label={theme === 'dark' ? t('nav.themeToggleLight') : t('nav.themeToggleDark')}
           >
             {theme === 'dark' ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">

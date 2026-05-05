@@ -1,7 +1,11 @@
 {
   "nav": {
     "scheduler": "Schedule Builder",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "langToggleLabel": "ES",
+    "langToggleAria": "Switch to Spanish",
+    "themeToggleLight": "Switch to light mode",
+    "themeToggleDark": "Switch to dark mode"
   },
   "auth": {
     "signIn": "Sign in",

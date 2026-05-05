@@ -1,7 +1,11 @@
 {
   "nav": {
     "scheduler": "Combinador de Horarios",
-    "skipToContent": "Ir al contenido"
+    "skipToContent": "Ir al contenido",
+    "langToggleLabel": "EN",
+    "langToggleAria": "Cambiar a inglés",
+    "themeToggleLight": "Cambiar a modo claro",
+    "themeToggleDark": "Cambiar a modo oscuro"
   },
   "auth": {
     "signIn": "Iniciar sesión",

@@ -3,6 +3,11 @@
     "scheduler": "Combinador de Horarios",
     "skipToContent": "Ir al contenido"
   },
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "profile": "Mi perfil"
+  },
   "home": {
     "title": "Planificá tu horario",
     "subtitle": "Seleccioná tu carrera para comenzar a combinar horarios y encontrar la combinación perfecta.",

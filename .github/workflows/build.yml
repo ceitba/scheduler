@@ -26,6 +26,7 @@ jobs:
         env:
           VITE_BASE_PATH: /scheduler/
           VITE_CEITBA_API_URL: https://ceitba.org.ar
+          VITE_GOOGLE_REDIRECT_URI: https://ceitba.org.ar/scheduler/auth/callback
 
       - name: Upload dist to VPS staging
         if: github.ref == 'refs/heads/main'

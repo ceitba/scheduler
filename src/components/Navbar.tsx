@@ -5,6 +5,7 @@ import useClickOutside from '../hooks/useClickOutside'
 import { CAREERS, AVAILABLE_PLANS } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
 import { useThemeContext } from '../context/ThemeContext'
+import AuthMenu from './AuthMenu'
 
 interface NavbarProps {
   currentPlan?: string
@@ -16,8 +17,8 @@ export default function Navbar({ currentPlan }: NavbarProps) {
   const { i18n } = useTranslation()
   const toggleLanguage = () => {
     const next = i18n.language === 'es' ? 'en' : 'es'
+    // i18n.on('languageChanged') in src/i18n.ts handles persistence + server sync.
     i18n.changeLanguage(next)
-    localStorage.setItem('prefs.lang', next)
   }
   const careerCode = (params?.career as string) || ''
   const careerName = careerCode ? (CAREERS[careerCode] || '') : ''
@@ -126,6 +127,8 @@ export default function Navbar({ currentPlan }: NavbarProps) {
               </svg>
             )}
           </button>
+
+          <AuthMenu />
         </div>
       </div>
     </header>

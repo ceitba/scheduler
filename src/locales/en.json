@@ -3,6 +3,11 @@
     "scheduler": "Schedule Builder",
     "skipToContent": "Skip to content"
   },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "profile": "My profile"
+  },
   "home": {
     "title": "Plan your schedule",
     "subtitle": "Select your degree program to start combining schedules and find the perfect combination.",

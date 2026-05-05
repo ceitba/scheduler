@@ -63,16 +63,10 @@ export default function CareerPage() {
   const preselectedSubjectsIds = useRef(searchParams.getAll('code'))
   const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null
 
-  // /saved → "Open" sets this via router state. We restore once the subjects
-  // catalog has loaded so we can hydrate full SelectedCourse objects.
-  const pendingRestore = useRef<SavedSchedulePayload | null>(
-    (location.state as { savedSchedule?: SavedSchedule } | null)?.savedSchedule?.payload as SavedSchedulePayload | undefined ?? null,
-  )
-  const restoredRef = useRef(false)
-
   const [saveOpen, setSaveOpen] = useState(false)
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
   const [savedCount, setSavedCount] = useState(0)
   useEffect(() => {
     if (!profile) { setSavedCount(0); return }
@@ -91,6 +85,11 @@ export default function CareerPage() {
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([])
 
+  // Restoration is keyed by saved-schedule id so navigating back to /:career
+  // via Open from /saved reapplies the right snapshot. Stays before any
+  // conditional return to keep hook order stable across renders.
+  const restoredId = useRef<string | null>(null)
+
   useEffect(() => {
     scheduler.setSubjects(selectedCourses)
   }, [selectedCourses, scheduler])
@@ -99,20 +98,7 @@ export default function CareerPage() {
     setSchedules(scheduler.getSchedules())
   }, [scheduler])
 
-  // Redirect logic
-  if (!career || !VALID_CAREERS.includes(career)) {
-    return <Navigate to="/" replace />
-  }
-
-  const validPlans = AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS].map(p => normalizePlanId(p.id))
-
-  if (!normalizedPlan || !validPlans.includes(normalizedPlan)) {
-    const defaultPlan = normalizePlanId(AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS][0].id)
-    return <Navigate to={`/${career}?plan=${defaultPlan}`} replace />
-  }
-
-  // Add preselected subjects
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // Add preselected subjects from ?code= URL params (existing flow).
   useEffect(() => {
     if (preselectedSubjectsIds.current.length && subjects.length) {
       const preselected = subjects.filter(s => preselectedSubjectsIds.current.includes(s.subject_id))
@@ -123,20 +109,21 @@ export default function CareerPage() {
     }
   }, [subjects])
 
-  // Restore from a saved schedule once the subject catalog is loaded. We
-  // hydrate SelectedCourse from the API-provided Subject; the payload only
-  // stores subject_id + selectedCommissions + isPriority, since the rest is
-  // derivable. Unknown subject_ids are dropped silently — the catalog may
-  // have changed since the schedule was saved.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // Restore from a saved schedule once the subject catalog is loaded.
+  // Effect guards: same id never re-applies; missing subjects pause until
+  // they arrive; unknown payload versions skip silently. After applying we
+  // wipe location.state so a refresh / back-forward doesn't re-restore an
+  // already-merged snapshot.
   useEffect(() => {
-    if (restoredRef.current) return
-    if (!pendingRestore.current) return
     if (!subjects.length) return
-    const payload = pendingRestore.current
-    if (payload.version !== 1) { restoredRef.current = true; return }
+    const navState = location.state as { savedSchedule?: SavedSchedule } | null
+    const saved = navState?.savedSchedule
+    if (!saved) return
+    if (restoredId.current === saved.id) return
+    const payload = saved.payload as unknown as Partial<SavedSchedulePayload>
+    if (payload?.version !== 1) { restoredId.current = saved.id; return }
     const byId = new Map(subjects.map((s) => [s.subject_id, s]))
-    const restoredCourses: SelectedCourse[] = payload.selectedCourses
+    const restoredCourses: SelectedCourse[] = (payload.selectedCourses ?? [])
       .map((sc) => {
         const subject = byId.get(sc.subject_id)
         if (!subject) return null
@@ -145,10 +132,24 @@ export default function CareerPage() {
       .filter((x): x is SelectedCourse => x !== null)
     setSelectedCourses(restoredCourses)
     scheduler.setSubjects(restoredCourses)
-    scheduler.setOptions(payload.options)
-    scheduler.setBlockedTimes(payload.blockedTimes)
-    restoredRef.current = true
-  }, [subjects, scheduler])
+    if (payload.options) scheduler.setOptions(payload.options)
+    if (payload.blockedTimes) scheduler.setBlockedTimes(payload.blockedTimes)
+    restoredId.current = saved.id
+    navigate(location.pathname + location.search, { replace: true, state: null })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjects, location.state])
+
+  // Redirect logic — kept AFTER all hooks so hook order is stable.
+  if (!career || !VALID_CAREERS.includes(career)) {
+    return <Navigate to="/" replace />
+  }
+
+  const validPlans = AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS].map(p => normalizePlanId(p.id))
+
+  if (!normalizedPlan || !validPlans.includes(normalizedPlan)) {
+    const defaultPlan = normalizePlanId(AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS][0].id)
+    return <Navigate to={`/${career}?plan=${defaultPlan}`} replace />
+  }
 
   const handleCommissionSelect = (commissions: string[]) => {
     if (selectedCourseForModal) {
@@ -189,7 +190,7 @@ export default function CareerPage() {
         options: scheduler.getOptions(),
         blockedTimes: scheduler.getBlockedTimes(),
       }
-      await createSavedSchedule({
+      const saved = await createSavedSchedule({
         name,
         careerId: career ?? null,
         plan: plan ?? null,
@@ -197,12 +198,21 @@ export default function CareerPage() {
       })
       setSavedCount((c) => c + 1)
       setSaveOpen(false)
+      setSaveSuccess(saved.name)
     } catch (e) {
       setSaveError((e as Error).message)
     } finally {
       setSaveBusy(false)
     }
   }
+
+  // Auto-dismiss the toast a few seconds after a successful save. Cleanup
+  // cancels the timer if the user dismisses or saves again before timeout.
+  useEffect(() => {
+    if (!saveSuccess) return
+    const t = setTimeout(() => setSaveSuccess(null), 4500)
+    return () => clearTimeout(t)
+  }, [saveSuccess])
 
   const generateIcsContent = (events: GroupedEvent[]) => {
     let ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Combinador de Horarios//EN', 'CALSCALE:GREGORIAN']
@@ -378,6 +388,40 @@ export default function CareerPage() {
           onSave={handleSave}
           onClose={() => setSaveOpen(false)}
         />
+      )}
+
+      {saveSuccess && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-4 right-4 z-50 max-w-sm bg-white dark:bg-[#27272a] border border-border dark:border-[#3f3f46] rounded-card shadow-card-hover p-4 flex items-center gap-3 animate-slide-up"
+        >
+          <div className="w-9 h-9 rounded-full bg-primary-50 dark:bg-primary-900 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-body text-body-sm font-semibold text-ink-primary dark:text-[#f4f4f5] truncate">
+              {t('saved.toastSavedTitle', { name: saveSuccess })}
+            </p>
+            <button
+              type="button"
+              onClick={() => { setSaveSuccess(null); navigate('/saved') }}
+              className="font-mono text-label uppercase tracking-widest text-primary hover:underline mt-0.5"
+            >
+              {t('saved.toastViewLink')}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSaveSuccess(null)}
+            aria-label={t('saved.toastDismiss')}
+            className="text-ink-secondary dark:text-[#a1a1aa] hover:text-ink-primary"
+          >
+            ×
+          </button>
+        </div>
       )}
 
       <Footer />

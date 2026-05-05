@@ -28,7 +28,10 @@
     "namePlaceholder": "ej. 1er cuatri 2026",
     "limitReached": "Llegaste al límite de {{max}} horarios. Eliminá uno para guardar otro.",
     "confirmDelete": "¿Eliminar este horario guardado?",
-    "openMissingContext": "Este horario no tiene carrera o plan asociados."
+    "openMissingContext": "Este horario no tiene carrera o plan asociados.",
+    "toastSavedTitle": "Horario \"{{name}}\" guardado",
+    "toastViewLink": "Ver mis guardados",
+    "toastDismiss": "Cerrar"
   },
   "home": {
     "title": "Planificá tu horario",

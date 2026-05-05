@@ -28,7 +28,10 @@
     "namePlaceholder": "e.g. Spring 2026",
     "limitReached": "You've hit the {{max}}-schedule limit. Delete one to save another.",
     "confirmDelete": "Delete this saved schedule?",
-    "openMissingContext": "This schedule has no career or plan attached."
+    "openMissingContext": "This schedule has no career or plan attached.",
+    "toastSavedTitle": "Schedule \"{{name}}\" saved",
+    "toastViewLink": "View my saved",
+    "toastDismiss": "Dismiss"
   },
   "home": {
     "title": "Plan your schedule",

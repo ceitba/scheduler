@@ -1,5 +1,10 @@
 import { apiRequest, BASE_URL } from '../api/client'
-import { applyServerPrefs } from './prefsStore'
+
+// Note: server prefs (theme/language) are applied inline below instead of
+// delegating to prefsStore.applyServerPrefs. The previous version created
+// a circular import (authStore → prefsStore → authStore) which Rollup
+// minified into a TDZ crash on click events. prefsStore can still import
+// from us; we don't import from prefsStore.
 
 export interface UserProfile {
   id: string
@@ -41,9 +46,6 @@ export async function getSession(opts: { force?: boolean } = {}): Promise<UserPr
       const res = await apiRequest('GET', '/auth/me')
       if (res.ok) {
         _profile = (await res.json()) as UserProfile
-        // Server is canonical for theme/language once signed in. The cache
-        // overwrite happens here so the rest of the app sees the right
-        // values without each component checking auth.
         applyServerPrefs(_profile)
       } else {
         _profile = null
@@ -58,6 +60,21 @@ export async function getSession(opts: { force?: boolean } = {}): Promise<UserPr
     return _profile
   })()
   return _hydratePromise
+}
+
+// Inline copy of what prefsStore.applyServerPrefs used to do. Lives here so
+// authStore has no dependency on prefsStore — see top-of-file comment for
+// the cycle-induced TDZ this avoids. Subscribers (useTheme, i18n) pick up
+// the new localStorage values on the notify() that follows.
+function applyServerPrefs(profile: UserProfile | null): void {
+  if (!profile) return
+  if (profile.theme === 'light' || profile.theme === 'dark') {
+    localStorage.setItem('prefs.theme', profile.theme)
+    document.documentElement.classList.toggle('dark', profile.theme === 'dark')
+  }
+  if (profile.language === 'es' || profile.language === 'en') {
+    localStorage.setItem('prefs.lang', profile.language)
+  }
 }
 
 export function getCachedSession(): UserProfile | null {

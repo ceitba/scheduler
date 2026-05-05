@@ -32,19 +32,6 @@ export function writeLocalLang(l: Lang): void {
   void syncPrefToServer({ language: l })
 }
 
-// Called from authStore after a successful /me. Server values overwrite
-// the local cache; the `dark` class is applied here so the page repaints
-// without the user toggling.
-export function applyServerPrefs(profile: { theme: string | null; language: string | null }): void {
-  if (profile.theme === 'light' || profile.theme === 'dark') {
-    localStorage.setItem(KEYS.theme, profile.theme)
-    document.documentElement.classList.toggle('dark', profile.theme === 'dark')
-  }
-  if (profile.language === 'es' || profile.language === 'en') {
-    localStorage.setItem(KEYS.lang, profile.language)
-  }
-}
-
 async function syncPrefToServer(patch: { theme?: Theme; language?: Lang }): Promise<void> {
   if (getCachedSession() == null) return
   try { await apiRequest('PATCH', '/me/preferences', patch) } catch { /* ignore */ }

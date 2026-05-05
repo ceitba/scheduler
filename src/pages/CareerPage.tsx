@@ -73,6 +73,34 @@ export default function CareerPage() {
     listSavedSchedules().then((l) => setSavedCount(l.length)).catch(() => { /* ignore */ })
   }, [profile])
 
+  // Auto-dismiss the save toast a few seconds after it appears. Has to live
+  // here, BEFORE the conditional <Navigate> returns below, so the hook count
+  // doesn't change between renders that early-return and ones that don't.
+  useEffect(() => {
+    if (!saveSuccess) return
+    const t = setTimeout(() => setSaveSuccess(null), 4500)
+    return () => clearTimeout(t)
+  }, [saveSuccess])
+
+  // Sync currentSchedule to the first generated schedule. Same hook-order
+  // reasoning: must be declared before any conditional return.
+  useEffect(() => {
+    if (schedules.length > 0) setCurrentSchedule(schedules[0])
+    else setCurrentSchedule(null)
+  }, [schedules])
+
+  // Outside-click closes the calendar export panel.
+  useEffect(() => {
+    if (!isCalendarPanelOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (calendarPanelRef.current && !calendarPanelRef.current.contains(e.target as Node)) {
+        setIsCalendarPanelOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [isCalendarPanelOpen])
+
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null)
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([])
@@ -206,14 +234,6 @@ export default function CareerPage() {
     }
   }
 
-  // Auto-dismiss the toast a few seconds after a successful save. Cleanup
-  // cancels the timer if the user dismisses or saves again before timeout.
-  useEffect(() => {
-    if (!saveSuccess) return
-    const t = setTimeout(() => setSaveSuccess(null), 4500)
-    return () => clearTimeout(t)
-  }, [saveSuccess])
-
   const generateIcsContent = (events: GroupedEvent[]) => {
     let ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Combinador de Horarios//EN', 'CALSCALE:GREGORIAN']
     events.forEach(event => {
@@ -297,24 +317,6 @@ export default function CareerPage() {
     })
     return `https://calendar.google.com/calendar/render?${params}`
   }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    if (schedules.length > 0) setCurrentSchedule(schedules[0])
-    else setCurrentSchedule(null)
-  }, [schedules])
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    if (!isCalendarPanelOpen) return
-    const handleClick = (e: MouseEvent) => {
-      if (calendarPanelRef.current && !calendarPanelRef.current.contains(e.target as Node)) {
-        setIsCalendarPanelOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [isCalendarPanelOpen])
 
   // Suppress unused variable warning for navigate
   void navigate

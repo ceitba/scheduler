@@ -63,27 +63,40 @@ export default function CareerPage() {
   const preselectedSubjectsIds = useRef(searchParams.getAll('code'))
   const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null
 
+  // ALL useState / useRef declarations come first, so the useEffect dep
+  // arrays that follow can reference them without hitting TDZ during render.
+  // (Hooks must be called in the same order each render; arranging them
+  // declarations-first → effects-second satisfies both rules cleanly.)
   const [saveOpen, setSaveOpen] = useState(false)
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
   const [savedCount, setSavedCount] = useState(0)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null)
+  const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([])
+  const [schedules, setSchedules] = useState<PossibleSchedule[]>([])
+  const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false)
+  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarEvent[]>([])
+  const [currentSchedule, setCurrentSchedule] = useState<PossibleSchedule | null>(null)
+  const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([])
+  const calendarPanelRef = useRef<HTMLDivElement>(null)
+  const restoredId = useRef<string | null>(null)
+  const scheduler = Scheduler.getInstance()
+
   useEffect(() => {
     if (!profile) { setSavedCount(0); return }
     listSavedSchedules().then((l) => setSavedCount(l.length)).catch(() => { /* ignore */ })
   }, [profile])
 
-  // Auto-dismiss the save toast a few seconds after it appears. Has to live
-  // here, BEFORE the conditional <Navigate> returns below, so the hook count
-  // doesn't change between renders that early-return and ones that don't.
+  // Auto-dismiss the save toast a few seconds after it appears.
   useEffect(() => {
     if (!saveSuccess) return
     const t = setTimeout(() => setSaveSuccess(null), 4500)
     return () => clearTimeout(t)
   }, [saveSuccess])
 
-  // Sync currentSchedule to the first generated schedule. Same hook-order
-  // reasoning: must be declared before any conditional return.
+  // Sync currentSchedule to the first generated schedule.
   useEffect(() => {
     if (schedules.length > 0) setCurrentSchedule(schedules[0])
     else setCurrentSchedule(null)
@@ -100,23 +113,6 @@ export default function CareerPage() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [isCalendarPanelOpen])
-
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null)
-  const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([])
-  const [schedules, setSchedules] = useState<PossibleSchedule[]>([])
-  const scheduler = Scheduler.getInstance()
-
-  const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false)
-  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarEvent[]>([])
-  const [currentSchedule, setCurrentSchedule] = useState<PossibleSchedule | null>(null)
-  const calendarPanelRef = useRef<HTMLDivElement>(null)
-  const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([])
-
-  // Restoration is keyed by saved-schedule id so navigating back to /:career
-  // via Open from /saved reapplies the right snapshot. Stays before any
-  // conditional return to keep hook order stable across renders.
-  const restoredId = useRef<string | null>(null)
 
   useEffect(() => {
     scheduler.setSubjects(selectedCourses)

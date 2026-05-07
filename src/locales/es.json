@@ -18,6 +18,7 @@
     "usage": "{{count}} de {{max}} guardados",
     "empty": "Aún no guardaste ningún horario.",
     "open": "Abrir",
+    "share": "Compartir",
     "rename": "Renombrar",
     "delete": "Eliminar",
     "save": "Guardar",
@@ -83,6 +84,34 @@
     "status_partial": "Posible conflicto",
     "status_all": "Conflicto total",
     "conflictsWith": "Choca con: {{names}}"
+  },
+  "share": {
+    "untitledSession": "Sesión compartida",
+    "createdBy": "Creada por {{name}}",
+    "participantCount_one": "{{count}} participante",
+    "participantCount_other": "{{count}} participantes",
+    "copyLink": "Copiar enlace",
+    "addMySchedule": "Agregar mi horario",
+    "signInToJoin": "Iniciá sesión para unirte",
+    "leave": "Salir",
+    "deleteSession": "Eliminar sesión",
+    "confirmLeave": "¿Salir de esta sesión compartida?",
+    "confirmDelete": "¿Eliminar la sesión para todos los participantes?",
+    "creatorTag": "Creador",
+    "scheduleRemoved": "horario eliminado",
+    "participantsHeading": "Participantes",
+    "join": {
+      "title": "Elegí qué horario sumás",
+      "hint": "Tu selección aparecerá en el mapa junto al resto del grupo.",
+      "noSaved": "Aún no guardaste ningún horario. Guardá uno antes de unirte.",
+      "confirm": "Sumar al grupo"
+    },
+    "heatmap": {
+      "label": "Mapa de horarios compartidos",
+      "noneBusy": "Nadie ocupado en este intervalo",
+      "busy_one": "{{count}} de {{total}} ocupados: {{names}}",
+      "busy_other": "{{count}} de {{total}} ocupados: {{names}}"
+    }
   },
   "scheduler": {
     "title": "Vista previa de horarios",

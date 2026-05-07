@@ -10,7 +10,8 @@ import CommissionSelectionModal from '../components/CommissionSelectionModal'
 import SaveScheduleDialog from '../components/SaveScheduleDialog'
 import { Subject, useSubjects } from '../hooks/useSubjects'
 import { useAuth } from '../hooks/useAuth'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { detectConflicts, liveSlotsFromCourses } from '../services/conflicts'
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils'
 import { Scheduler } from '../services/scheduler'
 import { PossibleSchedule, SchedulerOptions, TimeBlock } from '../types/scheduler'
@@ -83,6 +84,9 @@ export default function CareerPage() {
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const restoredId = useRef<string | null>(null)
   const scheduler = Scheduler.getInstance()
+
+  const liveSlots = useMemo(() => liveSlotsFromCourses(selectedCourses), [selectedCourses])
+  const liveConflictCount = useMemo(() => detectConflicts(selectedCourses).totalConflicts, [selectedCourses])
 
   useEffect(() => {
     if (!profile) { setSavedCount(0); return }
@@ -347,6 +351,8 @@ export default function CareerPage() {
           setSchedules={setSchedules}
           hasSubjects={selectedCourses.length > 0}
           onExportToCalendar={handleExportToCalendar}
+          liveSlots={liveSlots}
+          liveConflictCount={liveConflictCount}
         />
       ),
       onClick: handleGenerateSchedules,

@@ -9,6 +9,7 @@ import {
   MAX_SAVED_SCHEDULES,
   type SavedSchedule,
 } from '../api/schedules'
+import { createShareSession } from '../api/share'
 import { normalizePlanId } from '../utils/planUtils'
 import SimpleHeader from '../components/SimpleHeader'
 
@@ -48,6 +49,18 @@ export default function SavedSchedulesPage() {
     try {
       await deleteSavedSchedule(id)
       setList((prev) => prev.filter((s) => s.id !== id))
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function share(s: SavedSchedule) {
+    setBusyId(s.id); setError(null)
+    try {
+      const session = await createShareSession({ savedScheduleId: s.id, name: s.name })
+      navigate(`/share/${session.token}`)
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -170,6 +183,7 @@ export default function SavedSchedulesPage() {
                   ) : (
                     <>
                       <button onClick={() => open(s)} className="px-3 py-1.5 rounded-sm bg-primary text-white font-mono text-label uppercase tracking-widest">{t('saved.open')}</button>
+                      <button onClick={() => share(s)} disabled={busyId === s.id} className="px-3 py-1.5 font-mono text-label uppercase tracking-widest text-primary border border-primary rounded-sm disabled:opacity-50">{t('saved.share')}</button>
                       <button onClick={() => setRenaming({ id: s.id, name: s.name })} className="px-3 py-1.5 font-mono text-label uppercase tracking-widest text-primary border border-primary rounded-sm">{t('saved.rename')}</button>
                       <button onClick={() => remove(s.id)} disabled={busyId === s.id} className="px-3 py-1.5 font-mono text-label uppercase tracking-widest text-red-600 border border-red-200 rounded-sm disabled:opacity-50">{t('saved.delete')}</button>
                     </>

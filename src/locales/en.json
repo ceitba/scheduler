@@ -18,6 +18,7 @@
     "usage": "{{count}} of {{max}} saved",
     "empty": "You haven't saved any schedules yet.",
     "open": "Open",
+    "share": "Share",
     "rename": "Rename",
     "delete": "Delete",
     "save": "Save",
@@ -99,6 +100,34 @@
     "status_partial": "Possible conflict",
     "status_all": "Full conflict",
     "conflictsWith": "Clashes with: {{names}}"
+  },
+  "share": {
+    "untitledSession": "Shared session",
+    "createdBy": "Created by {{name}}",
+    "participantCount_one": "{{count}} participant",
+    "participantCount_other": "{{count}} participants",
+    "copyLink": "Copy link",
+    "addMySchedule": "Add my schedule",
+    "signInToJoin": "Sign in to join",
+    "leave": "Leave",
+    "deleteSession": "Delete session",
+    "confirmLeave": "Leave this shared session?",
+    "confirmDelete": "Delete this session for everyone?",
+    "creatorTag": "Creator",
+    "scheduleRemoved": "schedule removed",
+    "participantsHeading": "Participants",
+    "join": {
+      "title": "Pick which schedule you bring",
+      "hint": "Your selection will be added to the heatmap with the rest of the group.",
+      "noSaved": "No saved schedules yet. Save one before joining.",
+      "confirm": "Join with this"
+    },
+    "heatmap": {
+      "label": "Group schedule heatmap",
+      "noneBusy": "Nobody busy in this slot",
+      "busy_one": "{{count}} of {{total}} busy: {{names}}",
+      "busy_other": "{{count}} of {{total}} busy: {{names}}"
+    }
   },
   "scheduler": {
     "title": "Schedule preview",

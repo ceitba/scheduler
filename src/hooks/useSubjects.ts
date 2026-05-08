@@ -38,8 +38,9 @@ interface SubjectsResponse {
   }
 }
 
-// Standalone fetch+flatten so callers without a route context (e.g. the
-// comparison view, which loads multiple plans at once) can reuse it.
+// Standalone fetch+flatten so callers without a route context (the
+// comparison view and the share viewer both load multiple plans at once)
+// can reuse the logic.
 export async function fetchSubjectsByPlan(plan: string): Promise<Subject[]> {
   const url = `${config.api.baseUrl}${config.api.endpoints.subjects}?plan=${encodeURIComponent(plan)}`
   const response = await fetch(url, {

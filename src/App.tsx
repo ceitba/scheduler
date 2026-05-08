@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage'
 import CareerPage from './pages/CareerPage'
 import SavedSchedulesPage from './pages/SavedSchedulesPage'
 import ComparisonPage from './pages/ComparisonPage'
+import SharePage from './pages/SharePage'
 import { getSession, subscribe } from './store/authStore'
 
 // Lands here after the API redirects post-OAuth. The session cookie is
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/saved" element={<SavedSchedulesPage />} />
           <Route path="/compare" element={<ComparisonPage />} />
+          <Route path="/share/:token" element={<SharePage />} />
           <Route path="/:career" element={<CareerPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

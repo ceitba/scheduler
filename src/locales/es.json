@@ -76,7 +76,12 @@
     "addSelected_one": "Agregar {{count}} comisión",
     "addSelected_other": "Agregar {{count}} comisiones",
     "commission": "Comisión",
-    "virtual": "Virtual asincrónico"
+    "virtual": "Virtual asincrónico",
+    "turnFilterLabel": "Turno",
+    "turn_morning": "Mañana",
+    "turn_afternoon": "Tarde",
+    "turn_evening": "Noche",
+    "noMatchTurns": "Ninguna comisión coincide con el turno seleccionado."
   },
   "scheduler": {
     "title": "Vista previa de horarios",

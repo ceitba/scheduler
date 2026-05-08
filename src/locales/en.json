@@ -76,7 +76,12 @@
     "addSelected_one": "Add {{count}} commission",
     "addSelected_other": "Add {{count}} commissions",
     "commission": "Commission",
-    "virtual": "Async virtual"
+    "virtual": "Async virtual",
+    "turnFilterLabel": "Turn",
+    "turn_morning": "Morning",
+    "turn_afternoon": "Afternoon",
+    "turn_evening": "Evening",
+    "noMatchTurns": "No commissions match the selected turn."
   },
   "scheduler": {
     "title": "Schedule preview",

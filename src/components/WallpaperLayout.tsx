@@ -49,19 +49,22 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
     }
     Object.values(byDay).forEach((arr) => arr.sort((a, b) => a.timeFrom.localeCompare(b.timeFrom)))
 
-    // Density-aware scale: with many courses on a single day the layout
-    // would otherwise overflow 1920px. We tighten paddings/fonts in tiers
-    // based on the busiest day rather than the total — that's the dimension
-    // that drives vertical pressure.
+    // Density-aware scale. Sized for a typical 2-3 courses/day case so the
+    // wallpaper actually reads at arm's length on a phone lock screen — the
+    // earlier conservative sizes left ~30% of vertical space empty. Tier
+    // only kicks in for genuinely-busy days (5+ courses) so the rare edge
+    // case still fits inside 1920px.
     const maxPerDay = Math.max(0, ...DAYS.map((d) => (byDay[d] ?? []).length))
-    const dense = maxPerDay >= 4
-    const subjectFont = dense ? 22 : 26
-    const timeFont = dense ? 20 : 24
-    const metaFont = dense ? 13 : 14
-    const dayLabelFont = dense ? 30 : 34
-    const courseGap = dense ? 6 : 10
-    const sectionGap = dense ? 12 : 16
-    const sectionPadTop = dense ? 10 : 14
+    const dense = maxPerDay >= 5
+    const subjectFont = dense ? 26 : 36
+    const timeFont = dense ? 24 : 30
+    const metaFont = dense ? 14 : 17
+    const dayLabelFont = dense ? 36 : 44
+    const courseGap = dense ? 8 : 14
+    const sectionGap = dense ? 14 : 18
+    const sectionPadTop = dense ? 12 : 16
+    const timeCol = dense ? 170 : 200
+    const timeGap = dense ? 22 : 28
 
     return (
       <div
@@ -85,10 +88,10 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
           overflow: 'hidden',
         }}
       >
-        <header style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '28px' }}>
+        <header style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '32px' }}>
           <span style={{
             fontFamily: '"JetBrains Mono", monospace',
-            fontSize: '18px',
+            fontSize: '20px',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
             color: '#6B7280',
@@ -97,7 +100,7 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
           </span>
           <h1 style={{
             fontFamily: '"Fraunces", serif',
-            fontSize: '72px',
+            fontSize: '84px',
             fontWeight: 800,
             lineHeight: 1.05,
             margin: 0,
@@ -109,7 +112,7 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
           {subtitle && (
             <span style={{
               fontFamily: '"JetBrains Mono", monospace',
-              fontSize: '18px',
+              fontSize: '21px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
               color: '#6B7280',
@@ -132,26 +135,26 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
                 key={day}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '160px 1fr',
-                  gap: '24px',
+                  gridTemplateColumns: '180px 1fr',
+                  gap: '28px',
                   alignItems: 'start',
                   paddingTop: `${sectionPadTop}px`,
                   borderTop: '1px solid #E5E7EB',
                 }}
               >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <span style={{
                     fontFamily: '"Fraunces", serif',
                     fontSize: `${dayLabelFont}px`,
                     fontWeight: 700,
                     color: '#1A3C6E',
-                    lineHeight: 1.1,
+                    lineHeight: 1.05,
                   }}>
                     {t(`days.${day}`).toUpperCase()}
                   </span>
                   <span style={{
                     fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     letterSpacing: '0.18em',
                     textTransform: 'uppercase',
                     color: '#6B7280',
@@ -166,10 +169,14 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
                   {dayBlocks.map((b, i) => (
                     <article
                       key={i}
+                      // Wider time column + bigger gap so 30px mono
+                      // "08:00–10:00" can't bleed into the subject — the
+                      // earlier 140/18 sizing was just barely tight enough
+                      // to look like the gap had collapsed.
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: '140px 1fr',
-                        gap: '18px',
+                        gridTemplateColumns: `${timeCol}px 1fr`,
+                        gap: `${timeGap}px`,
                         alignItems: 'flex-start',
                       }}
                     >
@@ -179,13 +186,13 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
                         fontWeight: 600,
                         color: '#1A3C6E',
                         whiteSpace: 'nowrap',
-                        // Match the subject's first-line baseline visually by
-                        // padding-top relative to the larger Fraunces line.
+                        // Optical alignment: nudge the mono baseline down so
+                        // it sits on the Fraunces cap line rather than above it.
                         paddingTop: '4px',
                       }}>
                         {b.timeFrom}–{b.timeTo}
                       </span>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
                         <span style={{
                           fontFamily: '"Fraunces", serif',
                           fontSize: `${subjectFont}px`,
@@ -195,7 +202,7 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
                           // clipped under html2canvas's font-fallback metrics.
                           // No overflow:hidden — without whiteSpace:nowrap it
                           // doesn't ellipsis, it just clips wrapped lines.
-                          lineHeight: 1.3,
+                          lineHeight: 1.25,
                           wordWrap: 'break-word',
                         }}>
                           {b.subject}

@@ -105,10 +105,18 @@
     "saveAsPDFDescription": "Download your schedule as a PDF file",
     "saveAsImage": "Save as image",
     "saveAsImageDescription": "Download your schedule as a PNG image",
+    "saveAsWallpaper": "9:16 phone wallpaper",
+    "saveAsWallpaperDescription": "Vertical 1080×1920 image, ready to set as a lock-screen background",
     "exportToCalendar": "Export to Google Calendar",
     "exportToCalendarDescription": "Sync your schedule with Google Calendar",
     "shareLink": "Copy link",
     "linkCopied": "Link copied to clipboard!"
+  },
+  "wallpaper": {
+    "defaultTitle": "My schedule",
+    "freeDay": "Free day",
+    "classCount_one": "{{count}} class",
+    "classCount_other": "{{count}} classes"
   },
   "calendar": {
     "title": "Add to calendar",

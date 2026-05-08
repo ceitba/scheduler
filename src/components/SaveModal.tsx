@@ -6,6 +6,7 @@ interface SaveModalProps {
   onClose: () => void
   onSaveAsPDF: () => void
   onSaveAsImage: () => void
+  onSaveAsWallpaper?: () => void
   onExportToCalendar: () => void
   onShareLink: () => void
 }
@@ -15,11 +16,12 @@ const SaveModal: React.FC<SaveModalProps> = ({
   onClose,
   onSaveAsPDF,
   onSaveAsImage,
+  onSaveAsWallpaper,
   onExportToCalendar,
 }) => {
   const { t } = useTranslation()
 
-  const options = [
+  const options: { title: string; description: string; icon: React.ReactNode; onClick: () => void }[] = [
     {
       title: t('save.saveAsPDF'),
       description: t('save.saveAsPDFDescription'),
@@ -58,6 +60,20 @@ const SaveModal: React.FC<SaveModalProps> = ({
       onClick: onExportToCalendar,
     },
   ]
+
+  if (onSaveAsWallpaper) {
+    options.splice(2, 0, {
+      title: t('save.saveAsWallpaper'),
+      description: t('save.saveAsWallpaperDescription'),
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <rect x="6" y="2" width="12" height="20" rx="2" ry="2" />
+          <line x1="11" y1="18" x2="13" y2="18" />
+        </svg>
+      ),
+      onClick: onSaveAsWallpaper,
+    })
+  }
 
   return (
     <BaseModal

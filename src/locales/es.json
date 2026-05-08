@@ -121,10 +121,18 @@
     "saveAsPDFDescription": "Descarga tu horario en formato PDF",
     "saveAsImage": "Guardar como imagen",
     "saveAsImageDescription": "Descarga tu horario como imagen PNG",
+    "saveAsWallpaper": "Fondo de pantalla 9:16",
+    "saveAsWallpaperDescription": "Imagen vertical 1080×1920 lista para usar de fondo",
     "exportToCalendar": "Exportar a Google Calendar",
     "exportToCalendarDescription": "Sincroniza tu horario con Google Calendar",
     "shareLink": "Copiar enlace",
     "linkCopied": "¡Enlace copiado al portapapeles!"
+  },
+  "wallpaper": {
+    "defaultTitle": "Mi horario",
+    "freeDay": "Día libre",
+    "classCount_one": "{{count}} clase",
+    "classCount_other": "{{count}} clases"
   },
   "calendar": {
     "title": "Agregar al calendario",

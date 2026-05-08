@@ -1,25 +1,31 @@
 import type { ShareParticipant } from '../api/share'
 import type { Subject } from '../hooks/useSubjects'
 
-// One half-hour bucket within a single day. We pre-compute a flat list of
-// buckets so the heatmap can render with a single .map().
-export interface HeatmapBucket {
+// One concrete time block contributed by a participant. The viewer renders
+// these directly (no bucketing) so overlaps can be visualized via horizontal
+// subdivision the same way ScheduleGrid handles overlapping commissions.
+export interface ParticipantBlock {
+  blockId: string
+  userId: string
+  displayName: string
+  isCreator: boolean
+  source: string
   day: string
   fromMinute: number
   toMinute: number
-  busyParticipants: { userId: string; displayName: string; sources: string[] }[]
+  // userIds of every participant whose busy time intersects [fromMinute,
+  // toMinute] (inclusive of this block's own owner). Drives the X/Z badge.
+  overlapUserIds: string[]
 }
 
 export interface HeatmapModel {
   participantCount: number
-  // Days × 28 half-hour rows. Indexed first by day, then by bucketIndex.
-  byDay: Record<string, HeatmapBucket[]>
+  byDay: Record<string, ParticipantBlock[]>
 }
 
-const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']
-const GRID_START_MIN = 8 * 60
-const GRID_END_MIN = 22 * 60
-const BUCKET_MIN = 30
+export const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']
+export const GRID_START_MIN = 8 * 60
+export const GRID_END_MIN = 22 * 60
 
 const timeToMinutes = (time: string): number => {
   const [h, m] = time.split(':').map(Number)
@@ -39,10 +45,13 @@ interface SavedSchedulePayload {
   blockedTimes?: { day: string; from: string; to: string; label?: string }[]
 }
 
-// A participant's busy time = (each subject where they pinned exactly one
-// commission → that commission's slots) ∪ (their blockedTimes). Subjects
-// with multiple commissions still selected are NOT counted because the
-// participant hasn't committed to a specific time yet.
+// Every concrete commission the participant has selected counts as a busy
+// time. Earlier we only counted subjects with exactly one pick, which
+// silently dropped courses for anyone who saved with "Add all" or kept
+// multiple options open. Now if the saved selection is 'any' or empty
+// (i.e. fully unconstrained), we fall back to every valid commission of
+// the subject — the share viewer is meant to surface "potentially busy",
+// not "definitely committed".
 const busyIntervalsFor = (
   payload: SavedSchedulePayload,
   subjectsByCode: Map<string, Subject>,
@@ -50,20 +59,24 @@ const busyIntervalsFor = (
   const out: BusyInterval[] = []
 
   for (const sc of payload.selectedCourses ?? []) {
-    if (sc.selectedCommissions.length !== 1) continue
-    const commissionName = sc.selectedCommissions[0]
-    if (commissionName === 'any') continue
-
     const subject = subjectsByCode.get(sc.subject_id)
-    const commission = subject?.commissions.find((c) => c.name === commissionName)
-    if (!commission) continue
-    for (const s of commission.schedule ?? []) {
-      out.push({
-        day: s.day,
-        from: timeToMinutes(s.time_from),
-        to: timeToMinutes(s.time_to),
-        source: subject?.subject_id ? `${subject.subject_id} · ${commissionName}` : commissionName,
-      })
+    if (!subject) continue
+
+    const picks = (sc.selectedCommissions ?? []).filter((n) => n !== 'any')
+    const commissions =
+      picks.length > 0
+        ? subject.commissions.filter((c) => picks.includes(c.name))
+        : subject.commissions
+
+    for (const commission of commissions) {
+      for (const s of commission.schedule ?? []) {
+        out.push({
+          day: s.day,
+          from: timeToMinutes(s.time_from),
+          to: timeToMinutes(s.time_to),
+          source: `${subject.subject_id} · ${commission.name}`,
+        })
+      }
     }
   }
 
@@ -83,9 +96,7 @@ export const buildHeatmap = (
   participants: ShareParticipant[],
   subjectsByPlan: Map<string, Subject[]>,
 ): HeatmapModel => {
-  // Pre-bucket participants' busy intervals.
   const intervalsByParticipant: { p: ShareParticipant; intervals: BusyInterval[] }[] = []
-
   for (const p of participants) {
     if (!p.payload) {
       intervalsByParticipant.push({ p, intervals: [] })
@@ -99,27 +110,44 @@ export const buildHeatmap = (
     })
   }
 
-  const byDay: Record<string, HeatmapBucket[]> = {}
-  for (const day of DAYS) {
-    const buckets: HeatmapBucket[] = []
-    for (let mi = GRID_START_MIN; mi < GRID_END_MIN; mi += BUCKET_MIN) {
-      const fromMinute = mi
-      const toMinute = mi + BUCKET_MIN
-      const busy: HeatmapBucket['busyParticipants'] = []
-      for (const { p, intervals } of intervalsByParticipant) {
-        const sources = intervals
-          .filter((iv) => iv.day === day && iv.from < toMinute && iv.to > fromMinute)
-          .map((iv) => iv.source)
-        if (sources.length) {
-          busy.push({ userId: p.userId, displayName: p.displayName, sources })
-        }
-      }
-      buckets.push({ day, fromMinute, toMinute, busyParticipants: busy })
+  const byDay: Record<string, ParticipantBlock[]> = {}
+  for (const day of DAYS) byDay[day] = []
+
+  // First pass: emit a block per (participant, interval).
+  for (const { p, intervals } of intervalsByParticipant) {
+    for (let i = 0; i < intervals.length; i++) {
+      const iv = intervals[i]
+      if (!DAYS.includes(iv.day)) continue
+      byDay[iv.day].push({
+        blockId: `${p.userId}-${iv.day}-${iv.from}-${iv.to}-${i}`,
+        userId: p.userId,
+        displayName: p.displayName,
+        isCreator: p.isCreator,
+        source: iv.source,
+        day: iv.day,
+        fromMinute: iv.from,
+        toMinute: iv.to,
+        overlapUserIds: [],
+      })
     }
-    byDay[day] = buckets
+  }
+
+  // Second pass: per block, count distinct participants whose intervals
+  // intersect [from, to]. Done after blocks are flat so we can answer
+  // "how many participants are busy at the same time as this block?"
+  // without re-walking the whole catalog.
+  for (const day of DAYS) {
+    for (const block of byDay[day]) {
+      const set = new Set<string>()
+      for (const { p, intervals } of intervalsByParticipant) {
+        const hit = intervals.some(
+          (iv) => iv.day === day && iv.from < block.toMinute && iv.to > block.fromMinute,
+        )
+        if (hit) set.add(p.userId)
+      }
+      block.overlapUserIds = Array.from(set)
+    }
   }
 
   return { participantCount: participants.length, byDay }
 }
-
-export { DAYS, GRID_START_MIN, GRID_END_MIN, BUCKET_MIN }

@@ -6,6 +6,7 @@ import { Scheduler } from "../services/scheduler"
 import Checkbox from "./Checkbox"
 import SaveModal from "./SaveModal"
 import EmptyState from "./EmptyState"
+import WallpaperLayout from "./WallpaperLayout"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
@@ -45,6 +46,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   )
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
   const scheduleRef = useRef<HTMLDivElement>(null)
+  const wallpaperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const currentOptionsString = JSON.stringify(scheduler.getOptions())
@@ -262,6 +264,30 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     alert(t('save.linkCopied'))
   }
 
+  // 9:16 phone wallpaper. The WallpaperLayout component is mounted
+  // offscreen at exactly 1080x1920 so html2canvas captures it 1:1 — no
+  // scaling, no font-substitution surprises.
+  const handleSaveAsWallpaper = async () => {
+    if (!wallpaperRef.current) return
+    try {
+      const canvas = await html2canvas(wallpaperRef.current, {
+        scale: 1,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#FAFAF8',
+        width: 1080,
+        height: 1920,
+      })
+      const link = document.createElement('a')
+      link.download = 'horario-wallpaper.png'
+      link.href = canvas.toDataURL('image/png', 1.0)
+      link.click()
+    } catch (error) {
+      console.error('Error generating wallpaper:', error)
+    }
+  }
+
   return (
     <div className="flex flex-col">
       <div className="bg-white dark:bg-[#27272a] rounded-card border border-border dark:border-[#3f3f46] px-4 py-4">
@@ -406,9 +432,19 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         onClose={() => setIsSaveModalOpen(false)}
         onSaveAsPDF={handleSaveAsPDF}
         onSaveAsImage={handleSaveAsImage}
+        onSaveAsWallpaper={currentSchedule ? handleSaveAsWallpaper : undefined}
         onExportToCalendar={onExportToCalendar}
         onShareLink={handleShareLink}
       />
+
+      {currentSchedule && (
+        <div
+          aria-hidden="true"
+          style={{ position: 'fixed', left: '-99999px', top: 0, pointerEvents: 'none' }}
+        >
+          <WallpaperLayout ref={wallpaperRef} slots={currentSchedule.slots} />
+        </div>
+      )}
     </div>
   )
 }

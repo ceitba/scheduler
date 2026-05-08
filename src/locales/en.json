@@ -32,7 +32,18 @@
     "openMissingContext": "This schedule has no career or plan attached.",
     "toastSavedTitle": "Schedule \"{{name}}\" saved",
     "toastViewLink": "View my saved",
-    "toastDismiss": "Dismiss"
+    "toastDismiss": "Dismiss",
+    "compareCta": "Pick 2 to compare",
+    "compareSelected_one": "Compare {{count}} schedule",
+    "compareSelected_other": "Compare {{count}} schedules",
+    "compareToggleAria": "Include {{name}} in the comparison"
+  },
+  "compare": {
+    "label": "Comparison",
+    "heading_one": "{{count}} schedule side by side",
+    "heading_other": "{{count}} schedules side by side",
+    "back": "Back",
+    "needAtLeastTwo": "Pick at least 2 schedules to compare."
   },
   "home": {
     "title": "Plan your schedule",
@@ -77,7 +88,12 @@
     "addSelected_one": "Add {{count}} commission",
     "addSelected_other": "Add {{count}} commissions",
     "commission": "Commission",
-    "virtual": "Async virtual"
+    "virtual": "Async virtual",
+    "turnFilterLabel": "Turn",
+    "turn_morning": "Morning",
+    "turn_afternoon": "Afternoon",
+    "turn_evening": "Evening",
+    "noMatchTurns": "No commissions match the selected turn."
   },
   "conflicts": {
     "status_clear": "No conflict",
@@ -143,10 +159,18 @@
     "saveAsPDFDescription": "Download your schedule as a PDF file",
     "saveAsImage": "Save as image",
     "saveAsImageDescription": "Download your schedule as a PNG image",
+    "saveAsWallpaper": "9:16 phone wallpaper",
+    "saveAsWallpaperDescription": "Vertical 1080×1920 image, ready to set as a lock-screen background",
     "exportToCalendar": "Export to Google Calendar",
     "exportToCalendarDescription": "Sync your schedule with Google Calendar",
     "shareLink": "Copy link",
     "linkCopied": "Link copied to clipboard!"
+  },
+  "wallpaper": {
+    "defaultTitle": "My schedule",
+    "freeDay": "Free day",
+    "classCount_one": "{{count}} class",
+    "classCount_other": "{{count}} classes"
   },
   "calendar": {
     "title": "Add to calendar",

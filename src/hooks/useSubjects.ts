@@ -38,6 +38,57 @@ interface SubjectsResponse {
   }
 }
 
+// Standalone fetch+flatten so callers without a route context (e.g. the
+// comparison view, which loads multiple plans at once) can reuse it.
+export async function fetchSubjectsByPlan(plan: string): Promise<Subject[]> {
+  const url = `${config.api.baseUrl}${config.api.endpoints.subjects}?plan=${encodeURIComponent(plan)}`
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    mode: 'cors',
+    credentials: 'omit',
+  })
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to fetch subjects: ${response.status} ${errorText}`)
+  }
+  const data: SubjectsResponse = await response.json()
+  const isValidSchedule = (schedule: Schedule) =>
+    schedule.day && schedule.time_from && schedule.time_to
+  const seen = new Set<string>()
+  const flattened: Subject[] = []
+  Object.entries(data).forEach(([, yearData]) => {
+    Object.entries(yearData).forEach(([year, semesterData]) => {
+      Object.entries(semesterData).forEach(([semester, subjs]) => {
+        subjs.forEach((subject) => {
+          if (seen.has(subject.subject_id)) return
+          seen.add(subject.subject_id)
+          const seenCommissions = new Set<string>()
+          const uniqueCommissions = (subject.commissions ?? [])
+            .filter((c) => {
+              if (seenCommissions.has(c.name)) return false
+              seenCommissions.add(c.name)
+              return true
+            })
+            .map((commission) => ({
+              ...commission,
+              schedule: Array.isArray(commission.schedule)
+                ? commission.schedule.filter(isValidSchedule)
+                : [],
+            }))
+          flattened.push({
+            ...subject,
+            year: parseInt(year),
+            semester: parseInt(semester),
+            commissions: uniqueCommissions,
+          })
+        })
+      })
+    })
+  })
+  return flattened
+}
+
 export function useSubjects() {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [loading, setLoading] = useState(true)

@@ -26,6 +26,7 @@ export default function SavedSchedulesPage() {
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null)
+  const [comparing, setComparing] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!profile) return
@@ -84,6 +85,21 @@ export default function SavedSchedulesPage() {
     i18n.changeLanguage(next)
   }
 
+  function toggleComparing(id: string) {
+    setComparing((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function startCompare() {
+    const ids = Array.from(comparing)
+    if (ids.length < 2) return
+    navigate(`/compare?ids=${ids.join(',')}`)
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-surface dark:bg-[#18181b]">
       <header className="border-b border-border dark:border-[#3f3f46] bg-surface/95 dark:bg-[#18181b]/95 backdrop-blur-sm sticky top-0 z-40">
@@ -105,11 +121,23 @@ export default function SavedSchedulesPage() {
       </header>
 
       <main className="flex-1 container-content py-section-mobile lg:py-section">
-        <header className="mb-6">
-          <h1 className="font-display font-bold text-h2 text-ink-primary dark:text-[#f4f4f5]">{t('saved.pageTitle')}</h1>
-          <p className="font-body text-body text-ink-secondary dark:text-[#a1a1aa] mt-1">
-            {t('saved.usage', { count: list.length, max: MAX_SAVED_SCHEDULES })}
-          </p>
+        <header className="mb-6 flex items-baseline gap-4">
+          <div className="flex-1">
+            <h1 className="font-display font-bold text-h2 text-ink-primary dark:text-[#f4f4f5]">{t('saved.pageTitle')}</h1>
+            <p className="font-body text-body text-ink-secondary dark:text-[#a1a1aa] mt-1">
+              {t('saved.usage', { count: list.length, max: MAX_SAVED_SCHEDULES })}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={startCompare}
+            disabled={comparing.size < 2}
+            className="px-3 py-1.5 rounded-sm bg-primary text-white font-mono text-label uppercase tracking-widest disabled:opacity-40"
+          >
+            {comparing.size < 2
+              ? t('saved.compareCta')
+              : t('saved.compareSelected', { count: comparing.size })}
+          </button>
         </header>
 
         {error && (
@@ -122,6 +150,15 @@ export default function SavedSchedulesPage() {
           <ul className="flex flex-col gap-3">
             {list.map((s) => (
               <li key={s.id} className="p-4 rounded-card border border-border dark:border-[#3f3f46] bg-white dark:bg-[#27272a] flex flex-col sm:flex-row sm:items-center gap-3">
+                <label className="flex items-center sm:self-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={comparing.has(s.id)}
+                    onChange={() => toggleComparing(s.id)}
+                    aria-label={t('saved.compareToggleAria', { name: s.name })}
+                    className="w-4 h-4 accent-primary"
+                  />
+                </label>
                 <div className="flex-1 min-w-0">
                   {renaming?.id === s.id ? (
                     <input

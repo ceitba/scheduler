@@ -1,8 +1,26 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import BaseModal from './BaseModal'
 import { Subject } from '../hooks/useSubjects'
-import { CommissionSchedule } from '../types/scheduler'
+import { Commission, CommissionSchedule } from '../types/scheduler'
+
+type Turn = 'morning' | 'afternoon' | 'evening'
+const ALL_TURNS: Turn[] = ['morning', 'afternoon', 'evening']
+
+// A commission can occupy multiple turns (e.g. a slot at 09:00 + a slot at
+// 14:00 belongs to morning AND afternoon). The earliest hour of each slot
+// decides which turn that slot lives in.
+const turnOf = (hour: number): Turn =>
+  hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
+
+const turnsForCommission = (c: Commission): Set<Turn> => {
+  const turns = new Set<Turn>()
+  for (const s of c.schedule ?? []) {
+    const hour = parseInt(s.time_from.slice(0, 2), 10)
+    if (!Number.isNaN(hour)) turns.add(turnOf(hour))
+  }
+  return turns
+}
 
 interface CommissionSelectionModalProps {
   isOpen: boolean
@@ -19,13 +37,41 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
 }) => {
   const { t } = useTranslation()
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([])
-  const validCommissions = subject.commissions.filter(comm => comm.schedule?.length > 0)
+  const [activeTurns, setActiveTurns] = useState<Set<Turn>>(new Set(ALL_TURNS))
+  const validCommissions = useMemo(
+    () => subject.commissions.filter((comm) => comm.schedule?.length > 0),
+    [subject.commissions],
+  )
+  const visibleCommissions = useMemo(
+    () =>
+      validCommissions.filter((c) => {
+        const turns = turnsForCommission(c)
+        for (const t of turns) if (activeTurns.has(t)) return true
+        return false
+      }),
+    [validCommissions, activeTurns],
+  )
 
   useEffect(() => {
     if (isOpen) {
       setSelectedCommissions([])
+      setActiveTurns(new Set(ALL_TURNS))
     }
   }, [isOpen, subject])
+
+  const toggleTurn = (turn: Turn) => {
+    setActiveTurns((prev) => {
+      const next = new Set(prev)
+      if (next.has(turn)) {
+        // Don't let the user disable the last filter — that would empty the list.
+        if (next.size === 1) return prev
+        next.delete(turn)
+      } else {
+        next.add(turn)
+      }
+      return next
+    })
+  }
 
   const handleCommissionToggle = (commissionName: string) => {
     setSelectedCommissions(prev =>
@@ -36,7 +82,7 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
   }
 
   const handleSelectAll = () => {
-    onAddCommissions(validCommissions.map(c => c.name))
+    onAddCommissions(visibleCommissions.map(c => c.name))
     onClose()
   }
 
@@ -69,8 +115,37 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
           <p>{t('commission.selectHint')}</p>
         </div>
 
+        <div className="flex flex-wrap gap-2 items-center" role="group" aria-label={t('commission.turnFilterLabel')}>
+          <span className="font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] mr-1">
+            {t('commission.turnFilterLabel')}
+          </span>
+          {ALL_TURNS.map((turn) => {
+            const active = activeTurns.has(turn)
+            return (
+              <button
+                key={turn}
+                type="button"
+                onClick={() => toggleTurn(turn)}
+                aria-pressed={active}
+                className={`px-2.5 py-1 rounded-sm font-mono text-label uppercase tracking-widest border transition-colors ${
+                  active
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-surface dark:bg-[#18181b] text-ink-secondary dark:text-[#a1a1aa] border-border dark:border-[#3f3f46] hover:border-primary'
+                }`}
+              >
+                {t(`commission.turn_${turn}`)}
+              </button>
+            )
+          })}
+        </div>
+
         <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
-          {validCommissions.map((commission) => (
+          {visibleCommissions.length === 0 && (
+            <p className="font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa] py-4 text-center">
+              {t('commission.noMatchTurns')}
+            </p>
+          )}
+          {visibleCommissions.map((commission) => (
             <button
               key={commission.name}
               onClick={() => handleCommissionToggle(commission.name)}

@@ -31,7 +31,18 @@
     "openMissingContext": "This schedule has no career or plan attached.",
     "toastSavedTitle": "Schedule \"{{name}}\" saved",
     "toastViewLink": "View my saved",
-    "toastDismiss": "Dismiss"
+    "toastDismiss": "Dismiss",
+    "compareCta": "Pick 2 to compare",
+    "compareSelected_one": "Compare {{count}} schedule",
+    "compareSelected_other": "Compare {{count}} schedules",
+    "compareToggleAria": "Include {{name}} in the comparison"
+  },
+  "compare": {
+    "label": "Comparison",
+    "heading_one": "{{count}} schedule side by side",
+    "heading_other": "{{count}} schedules side by side",
+    "back": "Back",
+    "needAtLeastTwo": "Pick at least 2 schedules to compare."
   },
   "home": {
     "title": "Plan your schedule",

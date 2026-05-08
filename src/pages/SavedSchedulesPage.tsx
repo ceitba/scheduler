@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
-import { useThemeContext } from '../context/ThemeContext'
 import {
   deleteSavedSchedule,
   listSavedSchedules,
@@ -11,21 +10,21 @@ import {
   type SavedSchedule,
 } from '../api/schedules'
 import { normalizePlanId } from '../utils/planUtils'
-import AuthMenu from '../components/AuthMenu'
+import SimpleHeader from '../components/SimpleHeader'
 
 // Read-only list of the user's saved schedules with rename + delete +
 // open-into-CareerPage. The actual restoration of selectedCourses /
 // scheduler options / blocked times happens on CareerPage by reading the
 // "savedSchedule" piece of router state we put here.
 export default function SavedSchedulesPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { profile, loading } = useAuth()
-  const { theme, toggle } = useThemeContext()
   const navigate = useNavigate()
   const [list, setList] = useState<SavedSchedule[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null)
+  const [comparing, setComparing] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!profile) return
@@ -79,37 +78,43 @@ export default function SavedSchedulesPage() {
     }
   }
 
-  function toggleLanguage() {
-    const next = i18n.language === 'es' ? 'en' : 'es'
-    i18n.changeLanguage(next)
+  function toggleComparing(id: string) {
+    setComparing((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function startCompare() {
+    const ids = Array.from(comparing)
+    if (ids.length < 2) return
+    navigate(`/compare?ids=${ids.join(',')}`)
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-surface dark:bg-[#18181b]">
-      <header className="border-b border-border dark:border-[#3f3f46] bg-surface/95 dark:bg-[#18181b]/95 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container-content h-16 flex items-center justify-between">
-          <a href="https://ceitba.org.ar/" className="flex flex-col justify-center hover:opacity-80 transition-opacity duration-150">
-            <span className="font-display text-h5 font-bold text-primary tracking-tight leading-tight">CEITBA</span>
-            <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] uppercase tracking-widest leading-tight">{t('nav.scheduler')}</span>
-          </a>
-          <div className="flex items-center gap-2">
-            <button onClick={toggleLanguage} aria-label={t('nav.langToggleAria')} className="min-h-[36px] px-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa] hover:text-primary">
-              {t('nav.langToggleLabel')}
-            </button>
-            <button onClick={toggle} aria-label={theme === 'dark' ? t('nav.themeToggleLight') : t('nav.themeToggleDark')} className="min-h-[36px] w-9 flex items-center justify-center text-ink-secondary dark:text-[#a1a1aa] hover:text-primary">
-              {theme === 'dark' ? '☀' : '☾'}
-            </button>
-            <AuthMenu />
-          </div>
-        </div>
-      </header>
+      <SimpleHeader />
 
       <main className="flex-1 container-content py-section-mobile lg:py-section">
-        <header className="mb-6">
-          <h1 className="font-display font-bold text-h2 text-ink-primary dark:text-[#f4f4f5]">{t('saved.pageTitle')}</h1>
-          <p className="font-body text-body text-ink-secondary dark:text-[#a1a1aa] mt-1">
-            {t('saved.usage', { count: list.length, max: MAX_SAVED_SCHEDULES })}
-          </p>
+        <header className="mb-6 flex items-baseline gap-4">
+          <div className="flex-1">
+            <h1 className="font-display font-bold text-h2 text-ink-primary dark:text-[#f4f4f5]">{t('saved.pageTitle')}</h1>
+            <p className="font-body text-body text-ink-secondary dark:text-[#a1a1aa] mt-1">
+              {t('saved.usage', { count: list.length, max: MAX_SAVED_SCHEDULES })}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={startCompare}
+            disabled={comparing.size < 2}
+            className="px-3 py-1.5 rounded-sm bg-primary text-white font-mono text-label uppercase tracking-widest disabled:opacity-40"
+          >
+            {comparing.size < 2
+              ? t('saved.compareCta')
+              : t('saved.compareSelected', { count: comparing.size })}
+          </button>
         </header>
 
         {error && (
@@ -122,6 +127,24 @@ export default function SavedSchedulesPage() {
           <ul className="flex flex-col gap-3">
             {list.map((s) => (
               <li key={s.id} className="p-4 rounded-card border border-border dark:border-[#3f3f46] bg-white dark:bg-[#27272a] flex flex-col sm:flex-row sm:items-center gap-3">
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={comparing.has(s.id)}
+                  aria-label={t('saved.compareToggleAria', { name: s.name })}
+                  onClick={() => toggleComparing(s.id)}
+                  className={`flex items-center justify-center w-5 h-5 rounded-sm border transition-colors duration-150 flex-shrink-0 ${
+                    comparing.has(s.id)
+                      ? 'bg-primary border-primary'
+                      : 'bg-white dark:bg-[#27272a] border-border dark:border-[#3f3f46] hover:border-primary'
+                  }`}
+                >
+                  {comparing.has(s.id) && (
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="2 6 5 9 10 3" />
+                    </svg>
+                  )}
+                </button>
                 <div className="flex-1 min-w-0">
                   {renaming?.id === s.id ? (
                     <input

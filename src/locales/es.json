@@ -31,7 +31,18 @@
     "openMissingContext": "Este horario no tiene carrera o plan asociados.",
     "toastSavedTitle": "Horario \"{{name}}\" guardado",
     "toastViewLink": "Ver mis guardados",
-    "toastDismiss": "Cerrar"
+    "toastDismiss": "Cerrar",
+    "compareCta": "Seleccioná 2 para comparar",
+    "compareSelected_one": "Comparar {{count}} horario",
+    "compareSelected_other": "Comparar {{count}} horarios",
+    "compareToggleAria": "Incluir {{name}} en la comparación"
+  },
+  "compare": {
+    "label": "Comparación",
+    "heading_one": "{{count}} horario lado a lado",
+    "heading_other": "{{count}} horarios lado a lado",
+    "back": "Volver",
+    "needAtLeastTwo": "Elegí al menos 2 horarios para comparar."
   },
   "home": {
     "title": "Planificá tu horario",

@@ -49,28 +49,46 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
     }
     Object.values(byDay).forEach((arr) => arr.sort((a, b) => a.timeFrom.localeCompare(b.timeFrom)))
 
+    // Density-aware scale: with many courses on a single day the layout
+    // would otherwise overflow 1920px. We tighten paddings/fonts in tiers
+    // based on the busiest day rather than the total — that's the dimension
+    // that drives vertical pressure.
+    const maxPerDay = Math.max(0, ...DAYS.map((d) => (byDay[d] ?? []).length))
+    const dense = maxPerDay >= 4
+    const subjectFont = dense ? 22 : 26
+    const timeFont = dense ? 20 : 24
+    const metaFont = dense ? 13 : 14
+    const dayLabelFont = dense ? 30 : 34
+    const courseGap = dense ? 6 : 10
+    const sectionGap = dense ? 12 : 16
+    const sectionPadTop = dense ? 10 : 14
+
     return (
       <div
         ref={ref}
         // Inline styles only — html2canvas captures computed styles, but
         // pinning the values here avoids any cascade surprises across themes.
+        // overflow:hidden + flex-column with footer:marginTop:auto pins
+        // header to top, footer to bottom; days flow naturally between them.
+        // No flex:1 with minHeight:0 (that earlier strategy caused sections
+        // to compress and content to overlap when courses got dense).
         style={{
           width: '1080px',
           height: '1920px',
-          padding: '80px 64px',
+          padding: '64px 56px',
           backgroundColor: '#FAFAF8',
           color: '#1C1C1E',
           fontFamily: '"Source Sans 3", system-ui, sans-serif',
           display: 'flex',
           flexDirection: 'column',
-          gap: '36px',
           boxSizing: 'border-box',
+          overflow: 'hidden',
         }}
       >
-        <header style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <header style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '28px' }}>
           <span style={{
             fontFamily: '"JetBrains Mono", monospace',
-            fontSize: '20px',
+            fontSize: '18px',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
             color: '#6B7280',
@@ -79,9 +97,9 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
           </span>
           <h1 style={{
             fontFamily: '"Fraunces", serif',
-            fontSize: '88px',
+            fontSize: '72px',
             fontWeight: 800,
-            lineHeight: 1.0,
+            lineHeight: 1.05,
             margin: 0,
             color: '#1A3C6E',
             letterSpacing: '-0.02em',
@@ -91,11 +109,11 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
           {subtitle && (
             <span style={{
               fontFamily: '"JetBrains Mono", monospace',
-              fontSize: '22px',
+              fontSize: '18px',
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
               color: '#6B7280',
-              marginTop: '4px',
+              marginTop: '6px',
             }}>
               {subtitle}
             </span>
@@ -103,11 +121,9 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
         </header>
 
         <div style={{
-          flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: '20px',
-          minHeight: 0,
+          gap: `${sectionGap}px`,
         }}>
           {DAYS.map((day) => {
             const dayBlocks = byDay[day] ?? []
@@ -116,26 +132,26 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
                 key={day}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '180px 1fr',
+                  gridTemplateColumns: '160px 1fr',
                   gap: '24px',
                   alignItems: 'start',
-                  paddingTop: '14px',
+                  paddingTop: `${sectionPadTop}px`,
                   borderTop: '1px solid #E5E7EB',
                 }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <span style={{
                     fontFamily: '"Fraunces", serif',
-                    fontSize: '36px',
+                    fontSize: `${dayLabelFont}px`,
                     fontWeight: 700,
                     color: '#1A3C6E',
-                    lineHeight: 1.0,
+                    lineHeight: 1.1,
                   }}>
                     {t(`days.${day}`).toUpperCase()}
                   </span>
                   <span style={{
                     fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: '14px',
+                    fontSize: '12px',
                     letterSpacing: '0.18em',
                     textTransform: 'uppercase',
                     color: '#6B7280',
@@ -146,44 +162,51 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: `${courseGap}px` }}>
                   {dayBlocks.map((b, i) => (
                     <article
                       key={i}
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: '170px 1fr',
-                        gap: '20px',
-                        alignItems: 'baseline',
+                        gridTemplateColumns: '140px 1fr',
+                        gap: '18px',
+                        alignItems: 'flex-start',
                       }}
                     >
                       <span style={{
                         fontFamily: '"JetBrains Mono", monospace',
-                        fontSize: '26px',
+                        fontSize: `${timeFont}px`,
                         fontWeight: 600,
                         color: '#1A3C6E',
                         whiteSpace: 'nowrap',
+                        // Match the subject's first-line baseline visually by
+                        // padding-top relative to the larger Fraunces line.
+                        paddingTop: '4px',
                       }}>
                         {b.timeFrom}–{b.timeTo}
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
                         <span style={{
                           fontFamily: '"Fraunces", serif',
-                          fontSize: '28px',
+                          fontSize: `${subjectFont}px`,
                           fontWeight: 700,
                           color: '#1C1C1E',
-                          lineHeight: 1.15,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
+                          // Generous line-height keeps descenders from being
+                          // clipped under html2canvas's font-fallback metrics.
+                          // No overflow:hidden — without whiteSpace:nowrap it
+                          // doesn't ellipsis, it just clips wrapped lines.
+                          lineHeight: 1.3,
+                          wordWrap: 'break-word',
                         }}>
                           {b.subject}
                         </span>
                         <span style={{
                           fontFamily: '"JetBrains Mono", monospace',
-                          fontSize: '16px',
+                          fontSize: `${metaFont}px`,
                           letterSpacing: '0.12em',
                           textTransform: 'uppercase',
                           color: '#6B7280',
+                          lineHeight: 1.4,
                         }}>
                           {b.subject_id} · {t('commission.commission')} {b.commission}
                           {b.classroom && ` · ${b.classroom}`}
@@ -199,13 +222,14 @@ const WallpaperLayout = forwardRef<HTMLDivElement, WallpaperLayoutProps>(
 
         <footer style={{
           fontFamily: '"JetBrains Mono", monospace',
-          fontSize: '14px',
+          fontSize: '13px',
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
           color: '#9CA3AF',
           textAlign: 'center',
           paddingTop: '12px',
           borderTop: '1px solid #E5E7EB',
+          marginTop: 'auto',
         }}>
           ceitba.org.ar · {new Date().toLocaleDateString()}
         </footer>

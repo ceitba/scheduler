@@ -94,6 +94,12 @@
     "turn_evening": "Noche",
     "noMatchTurns": "Ninguna comisión coincide con el turno seleccionado."
   },
+  "conflicts": {
+    "status_clear": "Sin conflicto",
+    "status_partial": "Posible conflicto",
+    "status_all": "Conflicto total",
+    "conflictsWith": "Choca con: {{names}}"
+  },
   "scheduler": {
     "title": "Vista previa de horarios",
     "option": "Opción",
@@ -113,7 +119,10 @@
     "noSubjects": "No hay materias seleccionadas",
     "noSubjectsMessage": "Seleccioná materias en la pestaña Materias y luego volvé aquí para ver las combinaciones posibles.",
     "noCombinations": "No hay combinaciones posibles para esta configuración",
-    "noCombinationsMessage": "Probá cambiando las opciones o seleccionando otras comisiones."
+    "noCombinationsMessage": "Probá cambiando las opciones o seleccionando otras comisiones.",
+    "livePreviewHint": "Vista previa en vivo · generá combinaciones para ver opciones válidas",
+    "livePreviewConflicts_one": "Vista previa en vivo · {{count}} conflicto detectado",
+    "livePreviewConflicts_other": "Vista previa en vivo · {{count}} conflictos detectados"
   },
   "save": {
     "title": "Guardar horario",

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import SearchBox from "./SearchBox"
 import { useSubjects, type Subject } from "../hooks/useSubjects"
@@ -8,6 +8,7 @@ import LoadingDots from "./LoadingDots"
 import ErrorView from "./ErrorView"
 import { useParams } from "react-router-dom"
 import BaseModal from "./BaseModal"
+import { detectConflicts } from "../services/conflicts"
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
@@ -71,6 +72,7 @@ const CourseView: React.FC<CourseViewProps> = ({
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [showNoScheduleModal, setShowNoScheduleModal] = useState(false)
   const [currentSubject, setCurrentSubject] = useState<string>("")
+  const conflictReport = useMemo(() => detectConflicts(selectedCourses), [selectedCourses])
 
   const subjectsByYear = isExchange
     ? {
@@ -181,6 +183,7 @@ const CourseView: React.FC<CourseViewProps> = ({
               courses={selectedCourses}
               onRemove={onRemoveCourse}
               onReorder={onReorderCourses}
+              conflictReport={conflictReport}
             />
           </div>
         </div>
@@ -228,6 +231,7 @@ const CourseView: React.FC<CourseViewProps> = ({
                   courses={selectedCourses}
                   onRemove={onRemoveCourse}
                   onReorder={onReorderCourses}
+                  conflictReport={conflictReport}
                 />
               </div>
             )}

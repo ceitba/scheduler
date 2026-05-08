@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { PossibleSchedule } from "../types/scheduler"
+import { PossibleSchedule, ScheduleSlot } from "../types/scheduler"
 import ScheduleGrid from "./ScheduleGrid"
 import { Scheduler } from "../services/scheduler"
 import Checkbox from "./Checkbox"
@@ -15,6 +15,8 @@ interface SchedulerPreviewProps {
   setSchedules: (schedules: PossibleSchedule[]) => void
   hasSubjects: boolean
   onExportToCalendar: () => void
+  liveSlots?: ScheduleSlot[]
+  liveConflictCount?: number
 }
 
 interface ScheduleSettings {
@@ -30,6 +32,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   setSchedules = () => {},
   hasSubjects,
   onExportToCalendar,
+  liveSlots = [],
+  liveConflictCount = 0,
 }) => {
   const { t } = useTranslation()
   const scheduler = Scheduler.getInstance()
@@ -395,11 +399,6 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
               title={t('scheduler.noSubjects')}
               message={t('scheduler.noSubjectsMessage')}
             />
-          ) : filteredSchedules.length === 0 ? (
-            <EmptyState
-              title={t('scheduler.noCombinations')}
-              message={t('scheduler.noCombinationsMessage')}
-            />
           ) : currentSchedule ? (
             <>
               <ScheduleGrid slots={currentSchedule.slots} />
@@ -407,7 +406,24 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                 {renderScheduleInfo(currentSchedule)}
               </div>
             </>
-          ) : null}
+          ) : liveSlots.length > 0 ? (
+            <>
+              <div className="mb-3 flex items-center gap-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa]">
+                <div className={`w-2 h-2 rounded-full ${liveConflictCount > 0 ? 'bg-red-500' : 'bg-amber-500'}`} />
+                <span>
+                  {liveConflictCount > 0
+                    ? t('scheduler.livePreviewConflicts', { count: liveConflictCount })
+                    : t('scheduler.livePreviewHint')}
+                </span>
+              </div>
+              <ScheduleGrid slots={liveSlots} />
+            </>
+          ) : (
+            <EmptyState
+              title={t('scheduler.noCombinations')}
+              message={t('scheduler.noCombinationsMessage')}
+            />
+          )}
         </div>
       </div>
 

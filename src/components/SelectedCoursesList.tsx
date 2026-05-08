@@ -17,6 +17,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useTranslation } from 'react-i18next'
+import type { ConflictReport, SubjectConflictStatus } from "../services/conflicts"
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
@@ -26,6 +27,7 @@ interface SelectedCourse extends Subject {
 interface SortableItemProps {
   course: SelectedCourse
   onRemove: (id: string) => void
+  status: SubjectConflictStatus
 }
 
 interface GroupedSchedule {
@@ -35,10 +37,26 @@ interface GroupedSchedule {
   classrooms: string[]
 }
 
-const SortableItem = ({ course, onRemove }: SortableItemProps) => {
+const STATUS_DOT: Record<SubjectConflictStatus["level"], string> = {
+  none: "bg-border dark:bg-[#3f3f46]",
+  clear: "bg-green-500",
+  partial: "bg-amber-500",
+  all: "bg-red-500",
+}
+
+const SortableItem = ({ course, onRemove, status }: SortableItemProps) => {
   const { t } = useTranslation()
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: course.subject_id })
+
+  const statusKey: SubjectConflictStatus["level"] =
+    status.level === "none" ? "clear" : status.level
+  const statusLabel = t(`conflicts.status_${statusKey}`)
+  const conflictTooltip = status.conflictsWith.length
+    ? t("conflicts.conflictsWith", {
+        names: status.conflictsWith.map((c) => c.subjectName).join(", "),
+      })
+    : statusLabel
 
   const orderedSelectedCommissions = course.selectedCommissions.slice().sort()
 
@@ -102,6 +120,11 @@ const SortableItem = ({ course, onRemove }: SortableItemProps) => {
               <line x1="3" y1="18" x2="3.01" y2="18" />
             </svg>
           </div>
+          <span
+            className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_DOT[statusKey]}`}
+            aria-label={statusLabel}
+            title={conflictTooltip}
+          />
           <div className="min-w-0">
             <span className="font-body text-body-sm text-ink-primary dark:text-[#f4f4f5]">
               <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa]">({course.subject_id})</span>{' '}
@@ -140,12 +163,16 @@ interface SelectedCoursesListProps {
   courses: SelectedCourse[]
   onRemove: (courseId: string) => void
   onReorder: (courses: SelectedCourse[]) => void
+  conflictReport?: ConflictReport
 }
+
+const EMPTY_STATUS: SubjectConflictStatus = { level: "none", conflictsWith: [] }
 
 const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
   courses,
   onRemove,
   onReorder,
+  conflictReport,
 }) => {
   const { t } = useTranslation()
   const sensors = useSensors(
@@ -191,6 +218,7 @@ const SelectedCoursesList: React.FC<SelectedCoursesListProps> = ({
                 key={course.subject_id}
                 course={course}
                 onRemove={onRemove}
+                status={conflictReport?.perSubject[course.subject_id] ?? EMPTY_STATUS}
               />
             ))}
           </div>

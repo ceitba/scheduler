@@ -94,6 +94,12 @@
     "turn_evening": "Evening",
     "noMatchTurns": "No commissions match the selected turn."
   },
+  "conflicts": {
+    "status_clear": "No conflict",
+    "status_partial": "Possible conflict",
+    "status_all": "Full conflict",
+    "conflictsWith": "Clashes with: {{names}}"
+  },
   "scheduler": {
     "title": "Schedule preview",
     "option": "Option",
@@ -113,7 +119,10 @@
     "noSubjects": "No subjects selected",
     "noSubjectsMessage": "Select subjects in the Courses tab then come back here to see possible combinations.",
     "noCombinations": "No possible combinations for this configuration",
-    "noCombinationsMessage": "Try changing the options or selecting different commissions."
+    "noCombinationsMessage": "Try changing the options or selecting different commissions.",
+    "livePreviewHint": "Live preview · generate combinations to see valid options",
+    "livePreviewConflicts_one": "Live preview · {{count}} conflict detected",
+    "livePreviewConflicts_other": "Live preview · {{count}} conflicts detected"
   },
   "save": {
     "title": "Save schedule",

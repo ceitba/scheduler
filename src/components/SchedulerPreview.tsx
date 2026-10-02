@@ -6,6 +6,7 @@ import Checkbox from "./Checkbox"
 import SaveModal from "./SaveModal"
 import EmptyState from "./EmptyState"
 import WallpaperLayout from "./WallpaperLayout"
+import { WEEKDAYS } from "../services/time"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
@@ -25,6 +26,54 @@ interface SchedulerPreviewProps {
   shareUrl: string
   liveSlots?: ScheduleSlot[]
   liveConflictCount?: number
+}
+
+// Renders a copy of the schedule offscreen at 1920x1080 (so the export
+// doesn't depend on the viewport) and returns the canvas. Day headers are
+// replaced with their full names from `fullDayNames`.
+async function captureSchedule(element: HTMLElement, fullDayNames: Record<string, string>): Promise<HTMLCanvasElement> {
+  const wrapper = document.createElement('div')
+  Object.assign(wrapper.style, {
+    position: 'fixed',
+    top: '-9999px',
+    left: '-9999px',
+    width: '1920px',
+    height: '1080px',
+    backgroundColor: '#FAFAF8',
+    padding: '40px',
+    overflow: 'hidden',
+  })
+
+  const clone = element.cloneNode(true) as HTMLElement
+  Object.assign(clone.style, { width: '100%', height: '100%', transform: 'scale(1)', transformOrigin: 'top left' })
+  wrapper.appendChild(clone)
+  document.body.appendChild(wrapper)
+
+  try {
+    return await html2canvas(wrapper, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: null,
+      width: 1920,
+      height: 1080,
+      onclone: (clonedDoc) => {
+        const style = clonedDoc.createElement('style')
+        style.textContent = `* { font-family: Arial, Roboto, sans-serif !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }`
+        clonedDoc.head.appendChild(style)
+
+        const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div')
+        dayHeaders.forEach((header: Element, index) => {
+          if (index === 0) return
+          const full = fullDayNames[header.textContent?.trim() ?? '']
+          if (full) header.textContent = full
+        })
+      },
+    })
+  } finally {
+    document.body.removeChild(wrapper)
+  }
 }
 
 export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
@@ -89,125 +138,34 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     )
   }
 
+  // Header labels are short day names ("Lun"); exports spell them out.
+  const fullDayNames = Object.fromEntries(
+    WEEKDAYS.map((d) => [t(`days.${d}`), t(`daysFull.${d}`)])
+  )
+
   const handleSaveAsPDF = async () => {
     if (!scheduleRef.current) return
-
-    const element = scheduleRef.current
-    const wrapper = document.createElement('div')
-    wrapper.style.position = 'fixed'
-    wrapper.style.top = '-9999px'
-    wrapper.style.left = '-9999px'
-    wrapper.style.width = '1920px'
-    wrapper.style.height = '1080px'
-    wrapper.style.backgroundColor = '#FAFAF8'
-    wrapper.style.padding = '40px'
-    wrapper.style.overflow = 'hidden'
-
-    const clone = element.cloneNode(true) as HTMLElement
-    clone.style.width = '100%'
-    clone.style.height = '100%'
-    clone.style.transform = 'scale(1)'
-    clone.style.transformOrigin = 'top left'
-
-    wrapper.appendChild(clone)
-    document.body.appendChild(wrapper)
-
     try {
-      const canvas = await html2canvas(wrapper, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: null,
-        width: 1920,
-        height: 1080,
-        onclone: (clonedDoc) => {
-          const style = clonedDoc.createElement('style')
-          style.textContent = `* { font-family: Arial, Roboto, sans-serif !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }`
-          clonedDoc.head.appendChild(style)
-
-          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div')
-          const fullDayNames: { [key: string]: string } = { 'Lun': 'Lunes', 'Mar': 'Martes', 'Mie': 'Miércoles', 'Jue': 'Jueves', 'Vie': 'Viernes' }
-          dayHeaders.forEach((header: Element, index) => {
-            if (index > 0) {
-              const text = header.textContent?.trim() || ''
-              Object.entries(fullDayNames).forEach(([short, full]) => {
-                if (text.includes(short)) header.textContent = full
-              })
-            }
-          })
-        }
-      })
-
+      const canvas = await captureSchedule(scheduleRef.current, fullDayNames)
       const imgData = canvas.toDataURL('image/png', 1.0)
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] })
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
       pdf.save('horario.pdf')
     } catch (error) {
       console.error('Error generating PDF:', error)
-    } finally {
-      document.body.removeChild(wrapper)
     }
   }
 
   const handleSaveAsImage = async () => {
     if (!scheduleRef.current) return
-
-    const element = scheduleRef.current
-    const wrapper = document.createElement('div')
-    wrapper.style.position = 'fixed'
-    wrapper.style.top = '-9999px'
-    wrapper.style.left = '-9999px'
-    wrapper.style.width = '1920px'
-    wrapper.style.height = '1080px'
-    wrapper.style.backgroundColor = '#FAFAF8'
-    wrapper.style.padding = '40px'
-    wrapper.style.overflow = 'hidden'
-
-    const clone = element.cloneNode(true) as HTMLElement
-    clone.style.width = '100%'
-    clone.style.height = '100%'
-    clone.style.transform = 'scale(1)'
-    clone.style.transformOrigin = 'top left'
-
-    wrapper.appendChild(clone)
-    document.body.appendChild(wrapper)
-
     try {
-      const canvas = await html2canvas(wrapper, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: null,
-        width: 1920,
-        height: 1080,
-        onclone: (clonedDoc) => {
-          const style = clonedDoc.createElement('style')
-          style.textContent = `* { font-family: Arial, Roboto, sans-serif !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }`
-          clonedDoc.head.appendChild(style)
-
-          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div')
-          const fullDayNames: { [key: string]: string } = { 'Lun': 'Lunes', 'Mar': 'Martes', 'Mie': 'Miércoles', 'Jue': 'Jueves', 'Vie': 'Viernes' }
-          dayHeaders.forEach((header: Element, index) => {
-            if (index > 0) {
-              const text = header.textContent?.trim() || ''
-              Object.entries(fullDayNames).forEach(([short, full]) => {
-                if (text.includes(short)) header.textContent = full
-              })
-            }
-          })
-        }
-      })
-
+      const canvas = await captureSchedule(scheduleRef.current, fullDayNames)
       const link = document.createElement('a')
       link.download = 'horario.png'
       link.href = canvas.toDataURL('image/png', 1.0)
       link.click()
     } catch (error) {
       console.error('Error generating image:', error)
-    } finally {
-      document.body.removeChild(wrapper)
     }
   }
 
@@ -305,8 +263,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                     <button
                       onClick={handlePrevSchedule}
                       className="p-2 text-ink-secondary dark:text-[#a1a1aa] hover:bg-surface dark:hover:bg-[#18181b] hover:text-primary rounded-sm transition-colors duration-150"
-                      title="Anterior horario"
-                      aria-label="Horario anterior"
+                      title={t('scheduler.prevOption')}
+                      aria-label={t('scheduler.prevOption')}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10" />
@@ -317,8 +275,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                     <button
                       onClick={handleNextSchedule}
                       className="p-2 text-ink-secondary dark:text-[#a1a1aa] hover:bg-surface dark:hover:bg-[#18181b] hover:text-primary rounded-sm transition-colors duration-150"
-                      title="Siguiente horario"
-                      aria-label="Siguiente horario"
+                      title={t('scheduler.nextOption')}
+                      aria-label={t('scheduler.nextOption')}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10" />

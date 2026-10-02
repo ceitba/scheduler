@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import useClickOutside from '../hooks/useClickOutside'
 
 interface CheckboxProps {
@@ -12,6 +13,7 @@ interface CheckboxProps {
 }
 
 export default function Checkbox({ id, checked, onChange, label, isTooltip, tooltip, disabled }: CheckboxProps) {
+  const { t } = useTranslation()
   const [showTooltip, setShowTooltip] = useState(false)
   const tooltipRef = useRef<HTMLDivElement>(null)
   useClickOutside(tooltipRef as React.RefObject<HTMLElement>, () => setShowTooltip(false))
@@ -55,7 +57,7 @@ export default function Checkbox({ id, checked, onChange, label, isTooltip, tool
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
             className="w-4 h-4 rounded-full bg-primary-50 dark:bg-[#3f3f46] text-primary dark:text-[#a1a1aa] flex items-center justify-center font-mono text-label"
-            aria-label="Más información"
+            aria-label={t('common.moreInfo')}
           >
             ?
           </button>

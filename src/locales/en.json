@@ -60,7 +60,8 @@
       "courses": "Courses",
       "settings": "Options",
       "calendar": "Calendar"
-    }
+    },
+    "tabsAria": "Scheduler sections"
   },
   "courses": {
     "selected": "Selected courses",
@@ -79,7 +80,10 @@
     "anyCommission": "Any commission",
     "commissionAbbr": "Sec.",
     "searchPlaceholder": "Search subjects by name or code...",
-    "noResults": "No subjects found"
+    "noResults": "No subjects found",
+    "removeAria": "Remove {{name}}",
+    "reorderAria": "Reorder {{name}}",
+    "or": "or"
   },
   "commission": {
     "title": "Select commission",
@@ -155,7 +159,9 @@
     "livePreviewConflicts_other": "Live preview · {{count}} conflicts detected",
     "truncatedNotice": "Showing the first {{count}} combinations found. Pick specific commissions or add blocked times to narrow the search.",
     "searchStopped": "The search stopped before finishing because there are too many possible combinations. Pick specific commissions or add blocked times to narrow it down.",
-    "rankingHint": "Sorted by least overlap, most free days and fewest idle hours between classes"
+    "rankingHint": "Sorted by least overlap, most free days and fewest idle hours between classes",
+    "prevOption": "Previous schedule",
+    "nextOption": "Next schedule"
   },
   "save": {
     "title": "Save schedule",
@@ -189,7 +195,8 @@
     "option1Step4": "Upload the downloaded file",
     "downloadFile": "Download calendar file",
     "option2Title": "Option 2: Events one by one",
-    "commission": "Commission"
+    "commission": "Commission",
+    "closePanel": "Close panel"
   },
   "settings": {
     "title": "Additional settings",
@@ -212,7 +219,8 @@
   "footer": {
     "itTeam": "IT Team CEITBA",
     "github": "GitHub",
-    "contact": "Contact"
+    "contact": "Contact",
+    "linksAria": "Footer links"
   },
   "days": {
     "MONDAY": "Mon",
@@ -236,5 +244,18 @@
     "unverified_email": "Your Google account's email isn't verified.",
     "auth_failed": "Something went wrong while signing in. Please try again.",
     "invalid_state": "The sign-in request expired or is invalid. Please try again."
+  },
+  "common": {
+    "close": "Close",
+    "moreInfo": "More information"
+  },
+  "daysFull": {
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
   }
 }

@@ -43,14 +43,14 @@ export default function Navbar({ currentPlan }: NavbarProps) {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-sm"
       >
-        Ir al contenido
+        {t('nav.skipToContent')}
       </a>
       <div className="container-content h-full flex items-center justify-between">
         {/* Logotype */}
         <a href="https://ceitba.org.ar/" className="flex-shrink-0 flex flex-col justify-center hover:opacity-80 transition-opacity duration-150">
           <span className="font-display text-h5 font-bold text-primary tracking-tight leading-tight">CEITBA</span>
           <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] uppercase tracking-widest leading-tight">
-            {careerCode && shortName ? shortName : 'Combinador de Horarios'}
+            {careerCode && shortName ? shortName : t('nav.scheduler')}
           </span>
         </a>
 

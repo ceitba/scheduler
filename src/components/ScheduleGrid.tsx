@@ -247,7 +247,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] })
                               {slot.subject}
                             </div>
                             <div className="space-y-0.5 text-[#374151] text-center text-[9px] lg:text-[11px]">
-                              <div>Com. {slot.commission}</div>
+                              <div>{t('courses.commissionAbbr')} {slot.commission}</div>
                               <div>{formatRooms(slot.rooms)}</div>
                               <div>{slot.timeFrom.slice(0, 5)} - {slot.timeTo.slice(0, 5)}</div>
                             </div>

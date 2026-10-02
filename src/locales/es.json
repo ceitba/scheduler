@@ -60,7 +60,8 @@
       "courses": "Materias",
       "settings": "Adicionales",
       "calendar": "Calendario"
-    }
+    },
+    "tabsAria": "Secciones del combinador"
   },
   "courses": {
     "selected": "Materias seleccionadas",
@@ -79,7 +80,10 @@
     "anyCommission": "Cualquier comisión",
     "commissionAbbr": "Com.",
     "searchPlaceholder": "Buscar materias por nombre o código...",
-    "noResults": "No se encontraron materias"
+    "noResults": "No se encontraron materias",
+    "removeAria": "Eliminar {{name}}",
+    "reorderAria": "Reordenar {{name}}",
+    "or": "o"
   },
   "commission": {
     "title": "Seleccionar comisión",
@@ -155,7 +159,9 @@
     "livePreviewConflicts_other": "Vista previa en vivo · {{count}} conflictos detectados",
     "truncatedNotice": "Se muestran las primeras {{count}} combinaciones encontradas. Elegí comisiones específicas o agregá horarios bloqueados para acotar la búsqueda.",
     "searchStopped": "La búsqueda se detuvo antes de terminar porque hay demasiadas combinaciones posibles. Elegí comisiones específicas o agregá horarios bloqueados para acotarla.",
-    "rankingHint": "Ordenadas por menos superposición, más días libres y menos horas libres entre clases"
+    "rankingHint": "Ordenadas por menos superposición, más días libres y menos horas libres entre clases",
+    "prevOption": "Horario anterior",
+    "nextOption": "Siguiente horario"
   },
   "save": {
     "title": "Guardar horario",
@@ -189,7 +195,8 @@
     "option1Step4": "Sube el archivo descargado",
     "downloadFile": "Descargar archivo de calendario",
     "option2Title": "Opción 2: Eventos uno por uno",
-    "commission": "Comisión"
+    "commission": "Comisión",
+    "closePanel": "Cerrar panel"
   },
   "settings": {
     "title": "Configuración adicional",
@@ -212,7 +219,8 @@
   "footer": {
     "itTeam": "IT Team CEITBA",
     "github": "GitHub",
-    "contact": "Contacto"
+    "contact": "Contacto",
+    "linksAria": "Enlaces del pie de página"
   },
   "days": {
     "MONDAY": "Lun",
@@ -236,5 +244,18 @@
     "unverified_email": "El email de tu cuenta de Google no está verificado.",
     "auth_failed": "Algo salió mal al iniciar sesión. Probá de nuevo.",
     "invalid_state": "La solicitud de inicio de sesión expiró o no es válida. Probá de nuevo."
+  },
+  "common": {
+    "close": "Cerrar",
+    "moreInfo": "Más información"
+  },
+  "daysFull": {
+    "MONDAY": "Lunes",
+    "TUESDAY": "Martes",
+    "WEDNESDAY": "Miércoles",
+    "THURSDAY": "Jueves",
+    "FRIDAY": "Viernes",
+    "SATURDAY": "Sábado",
+    "SUNDAY": "Domingo"
   }
 }

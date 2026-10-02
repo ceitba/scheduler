@@ -12,7 +12,7 @@ export default function Footer() {
     <footer className="w-full border-t border-border dark:border-[#3f3f46] bg-surface/80 dark:bg-[#18181b]/80 backdrop-blur-sm">
       <div className="container-content py-4">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <nav className="flex flex-wrap items-center justify-center sm:justify-start gap-x-5 gap-y-2" aria-label="Footer links">
+          <nav className="flex flex-wrap items-center justify-center sm:justify-start gap-x-5 gap-y-2" aria-label={t('footer.linksAria')}>
             <a
               href="https://github.com/CEITBA-git/scheduler"
               target="_blank"

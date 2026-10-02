@@ -422,7 +422,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
                 <button
                   onClick={() => setIsCalendarPanelOpen(false)}
                   className="p-2 hover:bg-surface dark:hover:bg-[#18181b] rounded-sm transition-colors duration-150"
-                  aria-label="Cerrar panel"
+                  aria-label={t('calendar.closePanel')}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                     <line x1="18" y1="6" x2="6" y2="18" />

@@ -3,7 +3,7 @@ import { Navigate, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { getSavedSchedule, type SavedSchedule } from '../api/schedules'
-import { fetchSubjectsByPlan, type Subject } from '../hooks/useSubjects'
+import { loadCatalogs, type Subject } from '../hooks/useSubjects'
 import { ScheduleSlot } from '../types/scheduler'
 import ScheduleGrid from '../components/ScheduleGrid'
 import ScheduleGridSkeleton from '../components/ScheduleGridSkeleton'
@@ -13,7 +13,7 @@ import SimpleHeader from '../components/SimpleHeader'
 
 interface SavedSchedulePayload {
   version?: number
-  selectedCourses?: { subject_id: string; selectedCommissions: string[]; isPriority?: boolean }[]
+  selectedCourses?: { subject_id: string; selectedCommissions: string[] }[]
   blockedTimes?: { day: string; from: string; to: string; label?: string }[]
 }
 
@@ -76,9 +76,14 @@ export default function ComparisonPage() {
       return
     }
     setLoading(true)
-    Promise.all(ids.map((id) => getSavedSchedule(id)))
-      .then(setItems)
-      .catch((e: Error) => setError(e.message))
+    // Show whichever saved schedules loaded; report the rest.
+    Promise.allSettled(ids.map((id) => getSavedSchedule(id)))
+      .then((results) => {
+        const ok = results.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []))
+        const failed = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
+        setItems(ok)
+        setError(failed ? (failed.reason as Error).message : null)
+      })
       .finally(() => setLoading(false))
   }, [profile, ids])
 
@@ -88,16 +93,15 @@ export default function ComparisonPage() {
     const missing = plans.filter((p) => !subjectsByPlan.has(p))
     if (missing.length === 0) return
     let cancelled = false
-    Promise.all(missing.map((p) => fetchSubjectsByPlan(p).then((subs) => [p, subs] as const)))
-      .then((pairs) => {
-        if (cancelled) return
-        setSubjectsByPlan((prev) => {
-          const next = new Map(prev)
-          pairs.forEach(([p, subs]) => next.set(p, subs))
-          return next
-        })
+    loadCatalogs(missing).then(({ loaded, failed }) => {
+      if (cancelled) return
+      setSubjectsByPlan((prev) => {
+        const next = new Map(prev)
+        loaded.forEach(([p, subs]) => next.set(p, subs))
+        return next
       })
-      .catch((e: Error) => setError(e.message))
+      if (failed.length) setError(t('share.catalogLoadFailed', { plans: failed.join(', ') }))
+    })
     return () => {
       cancelled = true
     }
@@ -159,7 +163,14 @@ export default function ComparisonPage() {
                       {s.careerId ?? '—'} · {s.plan ?? '—'}
                     </p>
                   </header>
-                  {subjectsLoaded ? <ScheduleGrid slots={slots} /> : <ScheduleGridSkeleton />}
+                  {subjectsLoaded ? (
+                    <ScheduleGrid
+                      slots={slots}
+                      blockedTimes={(s.payload as SavedSchedulePayload).blockedTimes ?? []}
+                    />
+                  ) : (
+                    <ScheduleGridSkeleton />
+                  )}
                 </section>
               )
             })}

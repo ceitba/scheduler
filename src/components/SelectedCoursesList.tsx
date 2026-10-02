@@ -21,7 +21,6 @@ import type { ConflictReport, SubjectConflictStatus } from "../services/conflict
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
-  isPriority: boolean
 }
 
 interface SortableItemProps {
@@ -94,8 +93,8 @@ const SortableItem = ({ course, onRemove, status }: SortableItemProps) => {
     if (course.selectedCommissions.length === 1)
       return `${t('courses.commissionAbbr')} ${course.selectedCommissions[0].toUpperCase()}`
     if (course.selectedCommissions.length === 2)
-      return `${t('courses.commissionAbbr')} ${orderedSelectedCommissions[0].toUpperCase()} o ${orderedSelectedCommissions[1].toUpperCase()}`
-    return `${t('courses.commissionAbbr')} ${orderedSelectedCommissions.slice(0, -1).map(c => c.toUpperCase()).join(", ")}, o ${orderedSelectedCommissions[orderedSelectedCommissions.length - 1].toUpperCase()}`
+      return `${t('courses.commissionAbbr')} ${orderedSelectedCommissions[0].toUpperCase()} ${t('courses.or')} ${orderedSelectedCommissions[1].toUpperCase()}`
+    return `${t('courses.commissionAbbr')} ${orderedSelectedCommissions.slice(0, -1).map(c => c.toUpperCase()).join(", ")}, ${t('courses.or')} ${orderedSelectedCommissions[orderedSelectedCommissions.length - 1].toUpperCase()}`
   }
 
   return (
@@ -110,6 +109,7 @@ const SortableItem = ({ course, onRemove, status }: SortableItemProps) => {
             className="cursor-grab active:cursor-grabbing flex-shrink-0"
             {...attributes}
             {...listeners}
+            aria-label={t('courses.reorderAria', { name: course.name })}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ink-secondary dark:text-[#a1a1aa]" aria-hidden="true">
               <line x1="8" y1="6" x2="21" y2="6" />
@@ -146,7 +146,7 @@ const SortableItem = ({ course, onRemove, status }: SortableItemProps) => {
           <button
             onClick={() => onRemove(course.subject_id)}
             className="text-ink-secondary dark:text-[#a1a1aa] hover:text-red-500 transition-colors duration-150"
-            aria-label={`Eliminar ${course.name}`}
+            aria-label={t('courses.removeAria', { name: course.name })}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <polyline points="3 6 5 6 21 6" />

@@ -1,115 +1,117 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { PossibleSchedule, ScheduleSlot } from "../types/scheduler"
+import { PossibleSchedule, ScheduleSlot, SchedulerOptions, TimeBlock } from "../types/scheduler"
 import ScheduleGrid from "./ScheduleGrid"
-import { Scheduler } from "../services/scheduler"
 import Checkbox from "./Checkbox"
 import SaveModal from "./SaveModal"
 import EmptyState from "./EmptyState"
 import WallpaperLayout from "./WallpaperLayout"
+import { WEEKDAYS } from "../services/time"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
 interface SchedulerPreviewProps {
+  // Generated combinations, already filtered by `options` and ranked.
   schedules: PossibleSchedule[]
-  setSchedules: (schedules: PossibleSchedule[]) => void
+  truncated: boolean
+  generated: boolean
+  currentIndex: number
+  onIndexChange: (index: number) => void
+  options: SchedulerOptions
+  onOptionsChange: (options: SchedulerOptions) => void
+  blockedTimes: TimeBlock[]
   hasSubjects: boolean
   onExportToCalendar: () => void
+  // Link that reopens this career/plan with the selected subjects (?code=).
+  shareUrl: string
   liveSlots?: ScheduleSlot[]
   liveConflictCount?: number
 }
 
-interface ScheduleSettings {
-  allowTimeOverlap: boolean
-  allowUnlimitedOverlap: boolean
-  avoidLocationChanges: boolean
-  haveFreeDay: boolean
-  timeFormat: "12h" | "24h"
+// Renders a copy of the schedule offscreen at 1920x1080 (so the export
+// doesn't depend on the viewport) and returns the canvas. Day headers are
+// replaced with their full names from `fullDayNames`.
+async function captureSchedule(element: HTMLElement, fullDayNames: Record<string, string>): Promise<HTMLCanvasElement> {
+  const wrapper = document.createElement('div')
+  Object.assign(wrapper.style, {
+    position: 'fixed',
+    top: '-9999px',
+    left: '-9999px',
+    width: '1920px',
+    height: '1080px',
+    backgroundColor: '#FAFAF8',
+    padding: '40px',
+    overflow: 'hidden',
+  })
+
+  const clone = element.cloneNode(true) as HTMLElement
+  Object.assign(clone.style, { width: '100%', height: '100%', transform: 'scale(1)', transformOrigin: 'top left' })
+  wrapper.appendChild(clone)
+  document.body.appendChild(wrapper)
+
+  try {
+    return await html2canvas(wrapper, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: null,
+      width: 1920,
+      height: 1080,
+      onclone: (clonedDoc) => {
+        const style = clonedDoc.createElement('style')
+        style.textContent = `* { font-family: Arial, Roboto, sans-serif !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }`
+        clonedDoc.head.appendChild(style)
+
+        const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div')
+        dayHeaders.forEach((header: Element, index) => {
+          if (index === 0) return
+          const full = fullDayNames[header.textContent?.trim() ?? '']
+          if (full) header.textContent = full
+        })
+      },
+    })
+  } finally {
+    document.body.removeChild(wrapper)
+  }
 }
 
 export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
-  schedules = [],
-  setSchedules = () => {},
+  schedules,
+  truncated,
+  generated,
+  currentIndex,
+  onIndexChange,
+  options,
+  onOptionsChange,
+  blockedTimes,
   hasSubjects,
   onExportToCalendar,
+  shareUrl,
   liveSlots = [],
   liveConflictCount = 0,
 }) => {
   const { t } = useTranslation()
-  const scheduler = Scheduler.getInstance()
-  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0)
-  const [lastOptionsString, setLastOptionsString] = useState(
-    JSON.stringify(scheduler.getOptions())
-  )
-  const [lastSubjectsString, setLastSubjectsString] = useState(
-    JSON.stringify(scheduler.getSubjects())
-  )
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
+  const [toast, setToast] = useState<{ kind: "success" | "error"; message: string } | null>(null)
   const scheduleRef = useRef<HTMLDivElement>(null)
   const wallpaperRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const currentOptionsString = JSON.stringify(scheduler.getOptions())
-    const currentSubjectsString = JSON.stringify(scheduler.getSubjects())
-
-    if (
-      currentOptionsString !== lastOptionsString ||
-      currentSubjectsString !== lastSubjectsString
-    ) {
-      setLastOptionsString(currentOptionsString)
-      setLastSubjectsString(currentSubjectsString)
-      setCurrentScheduleIndex(0)
-    }
-  }, [scheduler, lastOptionsString, lastSubjectsString])
-
-  useEffect(() => {
-    if (schedules.length > 0) {
-      setCurrentScheduleIndex(0)
-    }
-  }, [schedules])
-
-  const filteredSchedules = schedules.filter((schedule) => {
-    const options = scheduler.getOptions()
-    const hasValidOverlap = options.allowUnlimitedOverlap ||
-      (options.allowOverlap && schedule.maxOverlap <= 30) ||
-      schedule.maxOverlap === 0
-    const hasValidFreeDay = !options.allowFreeDay || schedule.hasFreeDay
-    return hasValidOverlap && hasValidFreeDay
-  })
-
-  useEffect(() => {
-    if (currentScheduleIndex >= filteredSchedules.length) {
-      setCurrentScheduleIndex(0)
-    }
-  }, [filteredSchedules.length, currentScheduleIndex])
-
-  const currentSchedule = filteredSchedules[currentScheduleIndex]
+  const currentSchedule: PossibleSchedule | undefined = schedules[currentIndex]
 
   const handlePrevSchedule = () => {
-    if (filteredSchedules.length > 0) {
-      setCurrentScheduleIndex((prev) =>
-        prev > 0 ? prev - 1 : filteredSchedules.length - 1
-      )
+    if (schedules.length > 0) {
+      onIndexChange(currentIndex > 0 ? currentIndex - 1 : schedules.length - 1)
     }
   }
 
   const handleNextSchedule = () => {
-    if (filteredSchedules.length > 0) {
-      setCurrentScheduleIndex((prev) =>
-        prev < filteredSchedules.length - 1 ? prev + 1 : 0
-      )
+    if (schedules.length > 0) {
+      onIndexChange(currentIndex < schedules.length - 1 ? currentIndex + 1 : 0)
     }
   }
 
-  const [settings, setSettings] = useState<ScheduleSettings>({
-    allowTimeOverlap: scheduler.getOptions().allowOverlap,
-    allowUnlimitedOverlap: scheduler.getOptions().allowUnlimitedOverlap,
-    avoidLocationChanges: scheduler.getOptions().avoidBuildingChange,
-    haveFreeDay: scheduler.getOptions().allowFreeDay,
-    timeFormat: "24h",
-  })
-
-  const hasSchedules = Array.isArray(filteredSchedules) && filteredSchedules.length > 0
+  const hasSchedules = schedules.length > 0
 
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
@@ -136,132 +138,50 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     )
   }
 
+  // Header labels are short day names ("Lun"); exports spell them out.
+  const fullDayNames = Object.fromEntries(
+    WEEKDAYS.map((d) => [t(`days.${d}`), t(`daysFull.${d}`)])
+  )
+
   const handleSaveAsPDF = async () => {
     if (!scheduleRef.current) return
-
-    const element = scheduleRef.current
-    const wrapper = document.createElement('div')
-    wrapper.style.position = 'fixed'
-    wrapper.style.top = '-9999px'
-    wrapper.style.left = '-9999px'
-    wrapper.style.width = '1920px'
-    wrapper.style.height = '1080px'
-    wrapper.style.backgroundColor = '#FAFAF8'
-    wrapper.style.padding = '40px'
-    wrapper.style.overflow = 'hidden'
-
-    const clone = element.cloneNode(true) as HTMLElement
-    clone.style.width = '100%'
-    clone.style.height = '100%'
-    clone.style.transform = 'scale(1)'
-    clone.style.transformOrigin = 'top left'
-
-    wrapper.appendChild(clone)
-    document.body.appendChild(wrapper)
-
     try {
-      const canvas = await html2canvas(wrapper, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: null,
-        width: 1920,
-        height: 1080,
-        onclone: (clonedDoc) => {
-          const style = clonedDoc.createElement('style')
-          style.textContent = `* { font-family: Arial, Roboto, sans-serif !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }`
-          clonedDoc.head.appendChild(style)
-
-          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div')
-          const fullDayNames: { [key: string]: string } = { 'Lun': 'Lunes', 'Mar': 'Martes', 'Mie': 'Miércoles', 'Jue': 'Jueves', 'Vie': 'Viernes' }
-          dayHeaders.forEach((header: Element, index) => {
-            if (index > 0) {
-              const text = header.textContent?.trim() || ''
-              Object.entries(fullDayNames).forEach(([short, full]) => {
-                if (text.includes(short)) header.textContent = full
-              })
-            }
-          })
-        }
-      })
-
+      const canvas = await captureSchedule(scheduleRef.current, fullDayNames)
       const imgData = canvas.toDataURL('image/png', 1.0)
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] })
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
       pdf.save('horario.pdf')
     } catch (error) {
       console.error('Error generating PDF:', error)
-    } finally {
-      document.body.removeChild(wrapper)
     }
   }
 
   const handleSaveAsImage = async () => {
     if (!scheduleRef.current) return
-
-    const element = scheduleRef.current
-    const wrapper = document.createElement('div')
-    wrapper.style.position = 'fixed'
-    wrapper.style.top = '-9999px'
-    wrapper.style.left = '-9999px'
-    wrapper.style.width = '1920px'
-    wrapper.style.height = '1080px'
-    wrapper.style.backgroundColor = '#FAFAF8'
-    wrapper.style.padding = '40px'
-    wrapper.style.overflow = 'hidden'
-
-    const clone = element.cloneNode(true) as HTMLElement
-    clone.style.width = '100%'
-    clone.style.height = '100%'
-    clone.style.transform = 'scale(1)'
-    clone.style.transformOrigin = 'top left'
-
-    wrapper.appendChild(clone)
-    document.body.appendChild(wrapper)
-
     try {
-      const canvas = await html2canvas(wrapper, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: null,
-        width: 1920,
-        height: 1080,
-        onclone: (clonedDoc) => {
-          const style = clonedDoc.createElement('style')
-          style.textContent = `* { font-family: Arial, Roboto, sans-serif !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }`
-          clonedDoc.head.appendChild(style)
-
-          const dayHeaders = clonedDoc.querySelectorAll('.grid-cols-\\[auto_1fr_1fr_1fr_1fr_1fr\\] > div')
-          const fullDayNames: { [key: string]: string } = { 'Lun': 'Lunes', 'Mar': 'Martes', 'Mie': 'Miércoles', 'Jue': 'Jueves', 'Vie': 'Viernes' }
-          dayHeaders.forEach((header: Element, index) => {
-            if (index > 0) {
-              const text = header.textContent?.trim() || ''
-              Object.entries(fullDayNames).forEach(([short, full]) => {
-                if (text.includes(short)) header.textContent = full
-              })
-            }
-          })
-        }
-      })
-
+      const canvas = await captureSchedule(scheduleRef.current, fullDayNames)
       const link = document.createElement('a')
       link.download = 'horario.png'
       link.href = canvas.toDataURL('image/png', 1.0)
       link.click()
     } catch (error) {
       console.error('Error generating image:', error)
-    } finally {
-      document.body.removeChild(wrapper)
     }
   }
 
-  const handleShareLink = () => {
-    const url = window.location.href
-    navigator.clipboard.writeText(url)
-    alert(t('save.linkCopied'))
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), toast.kind === "error" ? 8000 : 3500)
+    return () => clearTimeout(timer)
+  }, [toast])
+
+  const handleShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setToast({ kind: "success", message: t('save.linkCopied') })
+    } catch {
+      setToast({ kind: "error", message: t('save.linkCopyFailed', { url: shareUrl }) })
+    }
   }
 
   // 9:16 phone wallpaper. The WallpaperLayout component is mounted
@@ -294,43 +214,28 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end mb-4">
           <Checkbox
             id="allowOverlap"
-            checked={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
-            onChange={(checked) => {
-              const newSettings = { ...settings, allowTimeOverlap: checked, allowUnlimitedOverlap: false }
-              setSettings(newSettings)
-              scheduler.setOptions({ ...scheduler.getOptions(), allowOverlap: checked, allowUnlimitedOverlap: false })
-              setSchedules(scheduler.generateSchedules())
-            }}
+            checked={options.allowOverlap && !options.allowUnlimitedOverlap}
+            onChange={(checked) => onOptionsChange({ ...options, allowOverlap: checked, allowUnlimitedOverlap: false })}
             label={t('scheduler.allowOverlap')}
             isTooltip={true}
             tooltip={t('scheduler.allowOverlapTooltip')}
-            disabled={settings.allowUnlimitedOverlap}
+            disabled={options.allowUnlimitedOverlap}
           />
 
           <Checkbox
             id="allowUnlimitedOverlap"
-            checked={settings.allowUnlimitedOverlap}
-            onChange={(checked) => {
-              const newSettings = { ...settings, allowUnlimitedOverlap: checked, allowTimeOverlap: checked }
-              setSettings(newSettings)
-              scheduler.setOptions({ ...scheduler.getOptions(), allowUnlimitedOverlap: checked, allowOverlap: checked })
-              setSchedules(scheduler.generateSchedules())
-            }}
+            checked={options.allowUnlimitedOverlap}
+            onChange={(checked) => onOptionsChange({ ...options, allowUnlimitedOverlap: checked, allowOverlap: checked })}
             label={t('scheduler.allowUnlimitedOverlap')}
             isTooltip={true}
             tooltip={t('scheduler.allowUnlimitedOverlapTooltip')}
-            disabled={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
+            disabled={options.allowOverlap && !options.allowUnlimitedOverlap}
           />
 
           <Checkbox
             id="freeDay"
-            checked={settings.haveFreeDay}
-            onChange={(checked) => {
-              const newSettings = { ...settings, haveFreeDay: checked }
-              setSettings(newSettings)
-              scheduler.setOptions({ ...scheduler.getOptions(), allowFreeDay: checked })
-              setSchedules(scheduler.generateSchedules())
-            }}
+            checked={options.allowFreeDay}
+            onChange={(checked) => onOptionsChange({ ...options, allowFreeDay: checked })}
             label={t('scheduler.freeDay')}
           />
         </div>
@@ -340,7 +245,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             <h2 className="font-body font-semibold text-body text-ink-primary">{t('scheduler.title')}</h2>
             {hasSubjects && hasSchedules && (
               <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] whitespace-nowrap flex-shrink-0">
-                {t('scheduler.option')} {currentScheduleIndex + 1} {t('scheduler.of')} {filteredSchedules.length}
+                {t('scheduler.option')} {currentIndex + 1} {t('scheduler.of')} {schedules.length}
+              </span>
+            )}
+            {hasSubjects && schedules.length > 1 && (
+              <span className="hidden lg:inline font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa]">
+                {t('scheduler.rankingHint')}
               </span>
             )}
           </div>
@@ -348,13 +258,13 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           <div className="flex gap-1">
             {hasSubjects && hasSchedules && (
               <>
-                {filteredSchedules.length > 1 && (
+                {schedules.length > 1 && (
                   <>
                     <button
                       onClick={handlePrevSchedule}
                       className="p-2 text-ink-secondary dark:text-[#a1a1aa] hover:bg-surface dark:hover:bg-[#18181b] hover:text-primary rounded-sm transition-colors duration-150"
-                      title="Anterior horario"
-                      aria-label="Horario anterior"
+                      title={t('scheduler.prevOption')}
+                      aria-label={t('scheduler.prevOption')}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10" />
@@ -365,8 +275,8 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                     <button
                       onClick={handleNextSchedule}
                       className="p-2 text-ink-secondary dark:text-[#a1a1aa] hover:bg-surface dark:hover:bg-[#18181b] hover:text-primary rounded-sm transition-colors duration-150"
-                      title="Siguiente horario"
-                      aria-label="Siguiente horario"
+                      title={t('scheduler.nextOption')}
+                      aria-label={t('scheduler.nextOption')}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10" />
@@ -393,6 +303,17 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           </div>
         </div>
 
+        {hasSubjects && truncated && (
+          <p
+            role="status"
+            className="mb-3 px-3 py-2 rounded-sm border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 font-body text-body-sm text-amber-800 dark:text-amber-200"
+          >
+            {hasSchedules
+              ? t('scheduler.truncatedNotice', { count: schedules.length })
+              : t('scheduler.searchStopped')}
+          </p>
+        )}
+
         <div ref={scheduleRef}>
           {!hasSubjects ? (
             <EmptyState
@@ -401,12 +322,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             />
           ) : currentSchedule ? (
             <>
-              <ScheduleGrid slots={currentSchedule.slots} />
+              <ScheduleGrid slots={currentSchedule.slots} blockedTimes={blockedTimes} />
               <div className="mt-4">
                 {renderScheduleInfo(currentSchedule)}
               </div>
             </>
-          ) : liveSlots.length > 0 ? (
+          ) : !generated && liveSlots.length > 0 ? (
             <>
               <div className="mb-3 flex items-center gap-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa]">
                 <div className={`w-2 h-2 rounded-full ${liveConflictCount > 0 ? 'bg-red-500' : 'bg-amber-500'}`} />
@@ -416,7 +337,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                     : t('scheduler.livePreviewHint')}
                 </span>
               </div>
-              <ScheduleGrid slots={liveSlots} />
+              <ScheduleGrid slots={liveSlots} blockedTimes={blockedTimes} />
             </>
           ) : (
             <EmptyState
@@ -436,6 +357,30 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         onExportToCalendar={onExportToCalendar}
         onShareLink={handleShareLink}
       />
+
+      {toast && (
+        <div
+          role={toast.kind === "error" ? "alert" : "status"}
+          aria-live="polite"
+          className={`fixed bottom-4 right-4 z-50 max-w-sm bg-white dark:bg-[#27272a] border rounded-card shadow-card-hover p-4 flex items-start gap-3 animate-slide-up ${
+            toast.kind === "error" ? "border-red-300 dark:border-red-800" : "border-border dark:border-[#3f3f46]"
+          }`}
+        >
+          <p className={`flex-1 min-w-0 break-words font-body text-body-sm ${
+            toast.kind === "error" ? "text-red-700 dark:text-red-300" : "text-ink-primary dark:text-[#f4f4f5]"
+          }`}>
+            {toast.message}
+          </p>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            aria-label={t('save.toastDismiss')}
+            className="text-ink-secondary dark:text-[#a1a1aa] hover:text-ink-primary"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {currentSchedule && (
         <div

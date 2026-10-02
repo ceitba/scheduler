@@ -41,7 +41,7 @@ interface BusyInterval {
 
 interface SavedSchedulePayload {
   version?: number
-  selectedCourses?: { subject_id: string; selectedCommissions: string[]; isPriority?: boolean }[]
+  selectedCourses?: { subject_id: string; selectedCommissions: string[] }[]
   blockedTimes?: { day: string; from: string; to: string; label?: string }[]
 }
 

@@ -7,222 +7,220 @@ import {
   CommissionSchedule,
   Commission
 } from "../types/scheduler";
+import { DayInterval, WEEKDAYS, overlapMinutes, timeToMinutes } from "./time";
 
-export class Scheduler {
-  private static instance: Scheduler;
-  private subjects: SchedulerSubject[] = [];
-  private options: SchedulerOptions = {
-    allowOverlap: false,
-    allowUnlimitedOverlap: false,
-    avoidBuildingChange: false,
-    allowFreeDay: false
-  };
-  private blockedTimes: TimeBlock[] = [];
-  private possibleSchedules: PossibleSchedule[] = [];
+// Hard cap on how many combinations one generation returns. Beyond this the
+// UI shows a "showing the first N" notice instead of freezing the tab.
+export const MAX_GENERATED_SCHEDULES = 500;
+// Upper bound on search nodes visited, so a large selection with
+// constraints that reject almost everything can't stall the main thread.
+export const MAX_SEARCH_STEPS = 1_000_000;
+// "Limited overlap": two classes may share at most this many minutes.
+export const LIMITED_OVERLAP_MINUTES = 30;
 
-  private constructor() {}
+export const DEFAULT_SCHEDULER_OPTIONS: SchedulerOptions = {
+  allowOverlap: false,
+  allowUnlimitedOverlap: false,
+  allowFreeDay: false
+};
 
-  public static getInstance(): Scheduler {
-    if (!Scheduler.instance) {
-      Scheduler.instance = new Scheduler();
+export interface GenerationResult {
+  schedules: PossibleSchedule[];
+  // True when the result cap or the search budget cut the search short.
+  truncated: boolean;
+}
+
+interface GenerationLimits {
+  maxResults?: number;
+  maxSteps?: number;
+}
+
+const slotInterval = (slot: ScheduleSlot): DayInterval => ({
+  day: slot.day,
+  from: timeToMinutes(slot.timeFrom),
+  to: timeToMinutes(slot.timeTo)
+});
+
+const blockInterval = (block: TimeBlock): DayInterval => ({
+  day: block.day,
+  from: timeToMinutes(block.from),
+  to: timeToMinutes(block.to)
+});
+
+export const intersectsBlockedTime = (slot: ScheduleSlot, blockedTimes: TimeBlock[]): boolean => {
+  const s = slotInterval(slot);
+  return blockedTimes.some(block => overlapMinutes(s, blockInterval(block)) > 0);
+};
+
+const getAvailableCommissions = (subject: SchedulerSubject): Commission[] => {
+  if (!subject.selectedCommissions || subject.selectedCommissions.includes('any')) {
+    return subject.commissions;
+  }
+  const selected = subject.commissions.filter(c => subject.selectedCommissions.includes(c.name));
+  return selected.length > 0 ? selected : subject.commissions;
+};
+
+const createSlotsFromCommission = (subject: SchedulerSubject, commission: Commission): ScheduleSlot[] =>
+  commission.schedule.map((slot: CommissionSchedule) => ({
+    day: slot.day,
+    timeFrom: slot.time_from,
+    timeTo: slot.time_to,
+    subject: subject.name,
+    dateFrom: subject.course_start,
+    dateTo: subject.course_end,
+    subject_id: subject.subject_id,
+    commission: commission.name,
+    building: slot.building,
+    classroom: slot.classroom
+  }));
+
+// Largest number of minutes any two classes of different subjects share on
+// the same day. Compares every pair (not just neighbours after sorting), so
+// A 08-13, B 09-09:30, C 10-13 reports 180 (A vs C), not 30.
+export const getMaxTimeOverlap = (slots: ScheduleSlot[]): number => {
+  let max = 0;
+  const intervals = slots.map(slotInterval);
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      if (slots[i].subject_id === slots[j].subject_id) continue;
+      max = Math.max(max, overlapMinutes(intervals[i], intervals[j]));
     }
-    return Scheduler.instance;
   }
+  return max;
+};
 
-  public setSubjects(subjects: SchedulerSubject[]): void {
-    this.subjects = subjects;
-  }
+export const countFreeWeekdays = (slots: ScheduleSlot[]): number =>
+  WEEKDAYS.filter(day => !slots.some(slot => slot.day === day)).length;
 
-  public getSubjects(): SchedulerSubject[] {
-    return this.subjects;
-  }
-
-  public setOptions(options: SchedulerOptions): void {
-    this.options = options;
-  }
-
-  public getOptions(): SchedulerOptions {
-    return this.options;
-  }
-
-  public setBlockedTimes(blockedTimes: TimeBlock[]): void {
-    this.blockedTimes = blockedTimes;
-  }
-
-  public getBlockedTimes(): TimeBlock[] {
-    return this.blockedTimes;
-  }
-
-  public getSchedules(): PossibleSchedule[] {
-    return this.possibleSchedules;
-  }
-
-  public generateSchedules(): PossibleSchedule[] {
-    this.possibleSchedules = [];
-    this.backtrack([], 0);
-
-    if (this.options.allowOverlap && !this.options.allowUnlimitedOverlap) {
-      this.possibleSchedules = this.possibleSchedules.filter(schedule =>
-        schedule.maxOverlap <= 30
-      );
+// Idle minutes between classes on the same day, summed over the week.
+export const getGapMinutes = (slots: ScheduleSlot[]): number => {
+  const byDay = new Map<string, DayInterval[]>();
+  slots.forEach(slot => {
+    const list = byDay.get(slot.day) ?? [];
+    list.push(slotInterval(slot));
+    byDay.set(slot.day, list);
+  });
+  let gaps = 0;
+  byDay.forEach(intervals => {
+    intervals.sort((a, b) => a.from - b.from);
+    let end = intervals[0].to;
+    for (let i = 1; i < intervals.length; i++) {
+      if (intervals[i].from > end) gaps += intervals[i].from - end;
+      end = Math.max(end, intervals[i].to);
     }
+  });
+  return gaps;
+};
 
-    return this.possibleSchedules;
-  }
-
-  private backtrack(currentSchedule: ScheduleSlot[], subjectIndex: number) {
-    if (subjectIndex === this.subjects.length) {
-      if (this.isValidSchedule(currentSchedule)) {
-        this.possibleSchedules.push(this.createSchedule(currentSchedule));
+// False when, on some day, a class in one building is followed by a class
+// in another building with less than an hour in between.
+export const checkBuildingChanges = (slots: ScheduleSlot[]): boolean => {
+  const byDay = new Map<string, ScheduleSlot[]>();
+  slots.forEach(slot => byDay.set(slot.day, [...(byDay.get(slot.day) ?? []), slot]));
+  return Array.from(byDay.values()).every(daySlots => {
+    const sorted = [...daySlots].sort((a, b) => timeToMinutes(a.timeFrom) - timeToMinutes(b.timeFrom));
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i - 1].building !== sorted[i].building &&
+        timeToMinutes(sorted[i].timeFrom) - timeToMinutes(sorted[i - 1].timeTo) < 60) {
+        return false;
       }
+    }
+    return true;
+  });
+};
+
+export const createSchedule = (slots: ScheduleSlot[]): PossibleSchedule => {
+  const freeDays = countFreeWeekdays(slots);
+  return {
+    slots,
+    maxOverlap: getMaxTimeOverlap(slots),
+    hasBuildingConflict: !checkBuildingChanges(slots),
+    hasFreeDay: freeDays > 0,
+    freeDays,
+    gapMinutes: getGapMinutes(slots)
+  };
+};
+
+// Best first: least overlap, then most free weekdays, then fewest idle
+// minutes between classes. Ties keep generation order (stable sort).
+export const rankSchedules = (schedules: PossibleSchedule[]): PossibleSchedule[] =>
+  schedules
+    .map((schedule, index) => ({ schedule, index }))
+    .sort((a, b) =>
+      a.schedule.maxOverlap - b.schedule.maxOverlap ||
+      b.schedule.freeDays - a.schedule.freeDays ||
+      a.schedule.gapMinutes - b.schedule.gapMinutes ||
+      a.index - b.index
+    )
+    .map(({ schedule }) => schedule);
+
+// Builds every combination of one commission per subject that satisfies the
+// options and avoids the blocked times. Constraints are applied while
+// backtracking (not after), so rejected branches are never expanded.
+export function generateSchedules(
+  subjects: SchedulerSubject[],
+  options: SchedulerOptions,
+  blockedTimes: TimeBlock[],
+  limits: GenerationLimits = {}
+): GenerationResult {
+  const maxResults = limits.maxResults ?? MAX_GENERATED_SCHEDULES;
+  const maxSteps = limits.maxSteps ?? MAX_SEARCH_STEPS;
+  if (subjects.length === 0) return { schedules: [], truncated: false };
+
+  const maxPairOverlap = options.allowUnlimitedOverlap
+    ? Infinity
+    : options.allowOverlap ? LIMITED_OVERLAP_MINUTES : 0;
+
+  // Commissions that hit a blocked time can never be part of a result.
+  const candidates = subjects.map(subject =>
+    getAvailableCommissions(subject)
+      .map(commission => createSlotsFromCommission(subject, commission))
+      .filter(slots => !slots.some(slot => intersectsBlockedTime(slot, blockedTimes)))
+      .map(slots => ({ slots, intervals: slots.map(slotInterval) }))
+  );
+  if (candidates.some(list => list.length === 0)) return { schedules: [], truncated: false };
+
+  const found: PossibleSchedule[] = [];
+  const chosen: { slots: ScheduleSlot[]; intervals: DayInterval[] }[] = [];
+  let steps = 0;
+  let truncated = false;
+
+  const fits = (option: { intervals: DayInterval[] }): boolean => {
+    if (maxPairOverlap !== Infinity) {
+      for (const previous of chosen) {
+        for (const a of option.intervals) {
+          for (const b of previous.intervals) {
+            if (overlapMinutes(a, b) > maxPairOverlap) return false;
+          }
+        }
+      }
+    }
+    if (options.allowFreeDay) {
+      const used = new Set<string>();
+      chosen.forEach(c => c.intervals.forEach(i => used.add(i.day)));
+      option.intervals.forEach(i => used.add(i.day));
+      if (WEEKDAYS.every(day => used.has(day))) return false;
+    }
+    return true;
+  };
+
+  const backtrack = (index: number): void => {
+    if (truncated) return;
+    if (++steps > maxSteps) { truncated = true; return; }
+    if (index === candidates.length) {
+      found.push(createSchedule(chosen.flatMap(c => c.slots)));
+      if (found.length >= maxResults) truncated = true;
       return;
     }
-
-    const subject = this.subjects[subjectIndex];
-    const commissions = this.getAvailableCommissions(subject);
-
-    for (const commission of commissions) {
-      const slots = this.createSlotsFromCommission(subject, commission);
-      if (this.canAddSlots(currentSchedule, slots)) {
-        this.backtrack([...currentSchedule, ...slots], subjectIndex + 1);
-      }
+    for (const option of candidates[index]) {
+      if (truncated) return;
+      if (!fits(option)) continue;
+      chosen.push(option);
+      backtrack(index + 1);
+      chosen.pop();
     }
-  }
+  };
 
-  private getAvailableCommissions(subject: SchedulerSubject) {
-    if (!subject.selectedCommissions || subject.selectedCommissions.includes('any')) {
-      return subject.commissions;
-    }
-
-    const selectedCommissions = subject.commissions.filter(c =>
-      subject.selectedCommissions.includes(c.name)
-    );
-
-    return selectedCommissions.length > 0 ? selectedCommissions : subject.commissions;
-  }
-
-  private createSlotsFromCommission(subject: SchedulerSubject, commission: Commission): ScheduleSlot[] {
-    return commission.schedule.map((slot: CommissionSchedule) => ({
-      day: slot.day,
-      timeFrom: slot.time_from,
-      timeTo: slot.time_to,
-      subject: subject.name,
-      dateFrom: subject.course_start,
-      dateTo: subject.course_end,
-      subject_id: subject.subject_id,
-      commission: commission.name,
-      building: slot.building,
-      classroom: slot.classroom
-    }));
-  }
-
-  private canAddSlots(schedule: ScheduleSlot[], newSlots: ScheduleSlot[]): boolean {
-    if (this.options.allowUnlimitedOverlap) return true;
-    if (this.options.allowOverlap) return true;
-
-    return newSlots.every(newSlot =>
-      schedule.every(existingSlot => {
-        if (existingSlot.day !== newSlot.day) return true;
-
-        const newStart = this.timeToMinutes(newSlot.timeFrom);
-        const newEnd = this.timeToMinutes(newSlot.timeTo);
-        const existingStart = this.timeToMinutes(existingSlot.timeFrom);
-        const existingEnd = this.timeToMinutes(existingSlot.timeTo);
-
-        return newEnd <= existingStart || newStart >= existingEnd;
-      })
-    );
-  }
-
-  private timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  }
-
-  private isValidSchedule(schedule: ScheduleSlot[]): boolean {
-    if (this.options.avoidBuildingChange && !this.checkBuildingChanges(schedule)) return false;
-    if (this.options.allowFreeDay && !this.hasFreeDayOption(schedule)) return false;
-    return true;
-  }
-
-  private checkBuildingChanges(schedule: ScheduleSlot[]): boolean {
-    const daySchedules = schedule.reduce((acc, slot) => {
-      if (!acc[slot.day]) acc[slot.day] = [];
-      acc[slot.day].push(slot);
-      return acc;
-    }, {} as Record<string, ScheduleSlot[]>);
-
-    return Object.values(daySchedules).every(daySlots => {
-      daySlots.sort((a, b) => this.timeToMinutes(a.timeFrom) - this.timeToMinutes(b.timeFrom));
-
-      for (let i = 1; i < daySlots.length; i++) {
-        const prevSlot = daySlots[i - 1];
-        const currSlot = daySlots[i];
-
-        if (prevSlot.building !== currSlot.building) {
-          const prevEnd = this.timeToMinutes(prevSlot.timeTo);
-          const currStart = this.timeToMinutes(currSlot.timeFrom);
-          if (currStart - prevEnd < 60) return false;
-        }
-      }
-      return true;
-    });
-  }
-
-  private hasFreeDayOption(schedule: ScheduleSlot[]): boolean {
-    const workDays: string[] = [];
-    schedule.forEach(slot => {
-      if (!workDays.includes(slot.day)) {
-        workDays.push(slot.day);
-      }
-    });
-    return !(
-      workDays.includes('MONDAY') &&
-      workDays.includes('TUESDAY') &&
-      workDays.includes('WEDNESDAY') &&
-      workDays.includes('THURSDAY') &&
-      workDays.includes('FRIDAY')
-    );
-  }
-
-  private createSchedule(slots: ScheduleSlot[]): PossibleSchedule {
-    return {
-      slots,
-      maxOverlap: this.getMaxTimeOverlap(slots),
-      hasBuildingConflict: !this.checkBuildingChanges(slots),
-      hasFreeDay: this.hasFreeDayOption(slots)
-    };
-  }
-
-  private getMaxTimeOverlap(slots: ScheduleSlot[]): number {
-    let maxOverlap = 0;
-    const slotsByDay = slots.reduce((acc, slot) => {
-      if (!acc[slot.day]) {
-        acc[slot.day] = [];
-      }
-      acc[slot.day].push(slot);
-      return acc;
-    }, {} as Record<string, ScheduleSlot[]>);
-
-    for (const daySlots of Object.values(slotsByDay)) {
-      daySlots.sort((a, b) => a.timeFrom.localeCompare(b.timeFrom));
-
-      for (let i = 0; i < daySlots.length - 1; i++) {
-        const currentSlot = daySlots[i];
-        const nextSlot = daySlots[i + 1];
-
-        if (currentSlot.timeTo > nextSlot.timeFrom && currentSlot.subject_id !== nextSlot.subject_id) {
-          const overlap = this.calculateOverlap(currentSlot, nextSlot);
-          maxOverlap = Math.max(maxOverlap, overlap);
-        }
-      }
-    }
-    return maxOverlap;
-  }
-
-  private calculateOverlap(slot1: ScheduleSlot, slot2: ScheduleSlot): number {
-    const end = new Date(`1970-01-01T${slot1.timeTo}Z`).getTime();
-    const start = new Date(`1970-01-01T${slot2.timeFrom}Z`).getTime();
-    return (end - start) / 60000;
-  }
+  backtrack(0);
+  return { schedules: rankSchedules(found), truncated };
 }

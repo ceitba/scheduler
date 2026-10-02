@@ -1,12 +1,15 @@
+import { useTranslation } from 'react-i18next'
+
 interface LoadingDotsProps {
   size?: 'sm' | 'md' | 'lg'
   color?: string
 }
 
 export default function LoadingDots({ size = 'md' }: LoadingDotsProps) {
+  const { t } = useTranslation()
   const dotSize = size === 'sm' ? 'w-1.5 h-1.5' : size === 'lg' ? 'w-3 h-3' : 'w-2 h-2'
   return (
-    <div className="flex items-center gap-1.5" aria-label="Cargando" role="status">
+    <div className="flex items-center gap-1.5" aria-label={t('errors.loading')} role="status">
       {[0, 1, 2].map(i => (
         <div
           key={i}

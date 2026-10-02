@@ -13,30 +13,19 @@ import { useAuth } from '../hooks/useAuth'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { detectConflicts, liveSlotsFromCourses } from '../services/conflicts'
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils'
-import { Scheduler } from '../services/scheduler'
+import { DEFAULT_SCHEDULER_OPTIONS, generateSchedules } from '../services/scheduler'
 import { PossibleSchedule, SchedulerOptions, TimeBlock } from '../types/scheduler'
 import { AVAILABLE_PLANS } from '../types/careers'
+import { buildIcs, eventsFromSlots, googleCalendarUrl, type CalendarEvent } from '../utils/ics'
 import { createSavedSchedule, listSavedSchedules, MAX_SAVED_SCHEDULES, type SavedSchedule } from '../api/schedules'
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
-  isPriority: boolean
 }
 
-interface CalendarEvent {
+interface CalendarLink {
   url: string
   title: string
-  commission?: string
-}
-
-interface GroupedEvent {
-  title: string
-  day: string
-  startDate: Date
-  endDate: Date
-  startTime: string
-  endTime: string
-  location?: string
   commission?: string
 }
 
@@ -44,25 +33,53 @@ const VALID_CAREERS = Object.keys(AVAILABLE_PLANS)
 
 // Payload shape we round-trip through the saved_schedules.payload JSONB
 // column. Bump `version` if the shape ever changes; restore() should refuse
-// unknown versions instead of silently mis-restoring.
+// unknown versions instead of silently mis-restoring. (Older payloads also
+// carry an unused `isPriority` per course and `avoidBuildingChange` in
+// options; both are ignored on restore.)
 interface SavedSchedulePayload {
   version: 1
-  selectedCourses: { subject_id: string; selectedCommissions: string[]; isPriority: boolean }[]
+  selectedCourses: { subject_id: string; selectedCommissions: string[] }[]
   options: SchedulerOptions
   blockedTimes: TimeBlock[]
 }
 
+const restoreOptions = (raw: Partial<SchedulerOptions> | undefined): SchedulerOptions => ({
+  allowOverlap: !!raw?.allowOverlap,
+  allowUnlimitedOverlap: !!raw?.allowUnlimitedOverlap,
+  allowFreeDay: !!raw?.allowFreeDay,
+})
+
+// Validates the route, then mounts the workspace keyed by career + plan so
+// switching plan starts from a clean slate (no courses or schedules from
+// the previous plan's catalog leak across).
 export default function CareerPage() {
-  const { t } = useTranslation()
   const { career } = useParams<{ career: string }>()
+  const [searchParams] = useSearchParams()
+  const normalizedPlan = searchParams.get('plan')
+
+  if (!career || !VALID_CAREERS.includes(career)) {
+    return <Navigate to="/" replace />
+  }
+
+  const validPlans = AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS].map(p => normalizePlanId(p.id))
+
+  if (!normalizedPlan || !validPlans.includes(normalizedPlan)) {
+    const defaultPlan = normalizePlanId(AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS][0].id)
+    return <Navigate to={`/${career}?plan=${defaultPlan}`} replace />
+  }
+
+  return <CareerWorkspace key={`${career}|${normalizedPlan}`} career={career} normalizedPlan={normalizedPlan} />
+}
+
+function CareerWorkspace({ career, normalizedPlan }: { career: string; normalizedPlan: string }) {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const location = useLocation()
   const { profile } = useAuth()
-  const { subjects } = useSubjects()
-  const normalizedPlan = searchParams.get('plan')
   const preselectedSubjectsIds = useRef(searchParams.getAll('code'))
-  const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null
+  const plan = denormalizePlanId(normalizedPlan)
+  const { subjects, loading: subjectsLoading, error: subjectsError } = useSubjects(plan)
 
   // ALL useState / useRef declarations come first, so the useEffect dep
   // arrays that follow can reference them without hitting TDZ during render.
@@ -76,14 +93,33 @@ export default function CareerPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<Subject | null>(null)
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([])
+  // Generator inputs live here (single source of truth) and flow down as
+  // props, so a restored saved schedule reaches every mounted tab.
+  const [options, setOptions] = useState<SchedulerOptions>(DEFAULT_SCHEDULER_OPTIONS)
+  const [blockedTimes, setBlockedTimes] = useState<TimeBlock[]>([])
   const [schedules, setSchedules] = useState<PossibleSchedule[]>([])
+  const [schedulesTruncated, setSchedulesTruncated] = useState(false)
+  const [hasGenerated, setHasGenerated] = useState(false)
+  // Index into `schedules` of the option the preview shows; exports use it.
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false)
-  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarEvent[]>([])
-  const [currentSchedule, setCurrentSchedule] = useState<PossibleSchedule | null>(null)
-  const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([])
+  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarLink[]>([])
+  const [scheduleEvents, setScheduleEvents] = useState<CalendarEvent[]>([])
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const restoredId = useRef<string | null>(null)
-  const scheduler = Scheduler.getInstance()
+  const preselectApplied = useRef(false)
+  const currentSchedule: PossibleSchedule | null = schedules[currentIndex] ?? null
+
+  // Same URL shape the ?code= preselect flow reads: /<career>?plan=<plan>&code=<id>...
+  // (commissions aren't part of it; preselected subjects get all commissions).
+  const shareUrl = useMemo(() => {
+    const url = new URL(window.location.href)
+    url.search = ''
+    url.hash = ''
+    url.searchParams.set('plan', normalizedPlan)
+    selectedCourses.forEach((c) => url.searchParams.append('code', c.subject_id))
+    return url.toString()
+  }, [normalizedPlan, selectedCourses])
 
   const liveSlots = useMemo(() => liveSlotsFromCourses(selectedCourses), [selectedCourses])
   const liveConflictCount = useMemo(() => detectConflicts(selectedCourses).totalConflicts, [selectedCourses])
@@ -100,12 +136,6 @@ export default function CareerPage() {
     return () => clearTimeout(t)
   }, [saveSuccess])
 
-  // Sync currentSchedule to the first generated schedule.
-  useEffect(() => {
-    if (schedules.length > 0) setCurrentSchedule(schedules[0])
-    else setCurrentSchedule(null)
-  }, [schedules])
-
   // Outside-click closes the calendar export panel.
   useEffect(() => {
     if (!isCalendarPanelOpen) return
@@ -118,23 +148,22 @@ export default function CareerPage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [isCalendarPanelOpen])
 
+  // Add preselected subjects from ?code= URL params, once per mount (the
+  // workspace remounts on plan change), skipping ones already selected.
   useEffect(() => {
-    scheduler.setSubjects(selectedCourses)
-  }, [selectedCourses, scheduler])
-
-  useEffect(() => {
-    setSchedules(scheduler.getSchedules())
-  }, [scheduler])
-
-  // Add preselected subjects from ?code= URL params (existing flow).
-  useEffect(() => {
-    if (preselectedSubjectsIds.current.length && subjects.length) {
-      const preselected = subjects.filter(s => preselectedSubjectsIds.current.includes(s.subject_id))
-      setSelectedCourses(prev => [
+    if (preselectApplied.current) return
+    if (!preselectedSubjectsIds.current.length || !subjects.length) return
+    preselectApplied.current = true
+    const preselected = subjects.filter(s => preselectedSubjectsIds.current.includes(s.subject_id))
+    setSelectedCourses(prev => {
+      const have = new Set(prev.map(c => c.subject_id))
+      return [
         ...prev,
-        ...preselected.map(s => ({ ...s, selectedCommissions: s.commissions.map(c => c.name), isPriority: false })),
-      ])
-    }
+        ...preselected
+          .filter(s => !have.has(s.subject_id))
+          .map(s => ({ ...s, selectedCommissions: s.commissions.map(c => c.name) })),
+      ]
+    })
   }, [subjects])
 
   // Restore from a saved schedule once the subject catalog is loaded.
@@ -155,54 +184,56 @@ export default function CareerPage() {
       .map((sc) => {
         const subject = byId.get(sc.subject_id)
         if (!subject) return null
-        return { ...subject, selectedCommissions: sc.selectedCommissions, isPriority: sc.isPriority }
+        return { ...subject, selectedCommissions: sc.selectedCommissions }
       })
       .filter((x): x is SelectedCourse => x !== null)
     setSelectedCourses(restoredCourses)
-    scheduler.setSubjects(restoredCourses)
-    if (payload.options) scheduler.setOptions(payload.options)
-    if (payload.blockedTimes) scheduler.setBlockedTimes(payload.blockedTimes)
+    setOptions(restoreOptions(payload.options))
+    setBlockedTimes((payload.blockedTimes ?? []).map((b) => ({ ...b, id: b.id ?? crypto.randomUUID() })))
+    clearSchedules()
     restoredId.current = saved.id
     navigate(location.pathname + location.search, { replace: true, state: null })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjects, location.state])
 
-  // Redirect logic — kept AFTER all hooks so hook order is stable.
-  if (!career || !VALID_CAREERS.includes(career)) {
-    return <Navigate to="/" replace />
+  // Any change to the generator inputs invalidates the current results; the
+  // next visit to the calendar tab regenerates them.
+  function clearSchedules() {
+    setSchedules([])
+    setSchedulesTruncated(false)
+    setHasGenerated(false)
+    setCurrentIndex(0)
   }
 
-  const validPlans = AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS].map(p => normalizePlanId(p.id))
+  function runGenerator(nextOptions: SchedulerOptions = options) {
+    const result = generateSchedules(selectedCourses, nextOptions, blockedTimes)
+    setSchedules(result.schedules)
+    setSchedulesTruncated(result.truncated)
+    setHasGenerated(true)
+    setCurrentIndex(0)
+  }
 
-  if (!normalizedPlan || !validPlans.includes(normalizedPlan)) {
-    const defaultPlan = normalizePlanId(AVAILABLE_PLANS[career as keyof typeof AVAILABLE_PLANS][0].id)
-    return <Navigate to={`/${career}?plan=${defaultPlan}`} replace />
+  const updateSelectedCourses = (updated: SelectedCourse[]) => {
+    setSelectedCourses(updated)
+    clearSchedules()
   }
 
   const handleCommissionSelect = (commissions: string[]) => {
     if (selectedCourseForModal) {
-      const updated = [...selectedCourses, { ...selectedCourseForModal, selectedCommissions: commissions, isPriority: false }]
-      setSelectedCourses(updated)
-      scheduler.setSubjects(updated)
+      updateSelectedCourses([...selectedCourses, { ...selectedCourseForModal, selectedCommissions: commissions }])
       setSelectedCourseForModal(null)
       setModalOpen(false)
     }
   }
 
-  const handleReorderCourses = (reordered: SelectedCourse[]) => {
-    setSelectedCourses(reordered)
-    scheduler.setSubjects(reordered)
+  const handleOptionsChange = (next: SchedulerOptions) => {
+    setOptions(next)
+    runGenerator(next)
   }
 
-  const handleGenerateSchedules = () => {
-    console.log("Generating schedules with the following configuration:")
-    console.log("Selected Courses:", selectedCourses.map(course => ({ name: course.name, selectedCommissions: course.selectedCommissions })))
-    console.log("Scheduler Options:", scheduler.getOptions())
-    console.log("Blocked Times:", scheduler.getBlockedTimes())
-
-    const generated = scheduler.generateSchedules()
-    console.log("Generated Schedules:", generated)
-    setSchedules(generated)
+  const handleBlockedTimesChange = (blocks: TimeBlock[]) => {
+    setBlockedTimes(blocks)
+    clearSchedules()
   }
 
   async function handleSave(name: string) {
@@ -213,10 +244,9 @@ export default function CareerPage() {
         selectedCourses: selectedCourses.map((c) => ({
           subject_id: c.subject_id,
           selectedCommissions: c.selectedCommissions,
-          isPriority: c.isPriority,
         })),
-        options: scheduler.getOptions(),
-        blockedTimes: scheduler.getBlockedTimes(),
+        options,
+        blockedTimes,
       }
       const saved = await createSavedSchedule({
         name,
@@ -234,128 +264,68 @@ export default function CareerPage() {
     }
   }
 
-  const generateIcsContent = (events: GroupedEvent[]) => {
-    let ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Combinador de Horarios//EN', 'CALSCALE:GREGORIAN']
-    events.forEach(event => {
-      const eventDate = getNextDayDate(event.day, event.startDate)
-      const startTime = timeStringToDate(event.startTime, eventDate)
-      const endTime = timeStringToDate(event.endTime, eventDate)
-      const diff = new Date(event.endDate).getTime() - new Date(event.startDate).getTime()
-      const repetitions = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
-      const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-      ics = ics.concat([
-        'BEGIN:VEVENT',
-        `SUMMARY:${event.title}`,
-        `DTSTART:${fmt(startTime)}`,
-        `DTEND:${fmt(endTime)}`,
-        `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
-        `LOCATION:${event.location}`,
-        'END:VEVENT'
-      ])
-    })
-    ics.push('END:VCALENDAR')
-    return ics.join('\r\n')
-  }
-
-  const getNextDayDate = (dayName: string, startDate: Date | null = null): Date => {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-    const firstDay = new Date(startDate ?? new Date())
-    const dayIndex = days.indexOf(dayName.toLowerCase())
-    let daysUntil = dayIndex - firstDay.getDay()
-    console.log("Days until target: ", daysUntil)
-    if (daysUntil <= 0) daysUntil += 7
-    firstDay.setDate(firstDay.getDate() + daysUntil)
-    return firstDay
-  }
-
-  const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
-    const [hours, minutes] = timeStr.split(':').map(Number)
-    const d = new Date(baseDate)
-    d.setHours(hours, minutes, 0, 0)
-    return d
-  }
-
   const handleExportToCalendar = () => {
     if (!currentSchedule) return
     setIsCalendarPanelOpen(true)
-    const grouped = currentSchedule.slots.reduce<Record<string, GroupedEvent>>((acc, slot) => {
-      const key = `${slot.subject_id}-${slot.day}-${slot.timeFrom}-${slot.timeTo}`
-      if (!acc[key]) {
-        acc[key] = {
-          title: `${slot.subject_id} - ${slot.subject}`,
-          day: slot.day.toLowerCase(),
-          startDate: slot.dateFrom,
-          endDate: slot.dateTo,
-          startTime: slot.timeFrom,
-          endTime: slot.timeTo,
-          location: slot.classroom || '',
-          commission: slot.commission,
-        }
-      } else if (slot.classroom && !acc[key].location?.includes(slot.classroom)) {
-        acc[key].location = `${acc[key].location}, ${slot.classroom}`
-      }
-      return acc
-    }, {})
-    const events = Object.values(grouped)
+    const events = eventsFromSlots(
+      currentSchedule.slots,
+      (slot) => `${t('calendar.commission')} ${slot.commission}`,
+    )
     setScheduleEvents(events)
-    setRemainingCalendarUrls(events.map(e => ({ url: createGoogleCalendarUrl(e), title: e.title, commission: e.commission })))
+    setRemainingCalendarUrls(
+      events.flatMap((e) => {
+        const url = googleCalendarUrl(e)
+        return url ? [{ url, title: e.title, commission: e.commission }] : []
+      }),
+    )
   }
-
-  const createGoogleCalendarUrl = (event: GroupedEvent): string => {
-    const eventDate = getNextDayDate(event.day, event.startDate)
-    const startTime = timeStringToDate(event.startTime, eventDate)
-    const endTime = timeStringToDate(event.endTime, eventDate)
-    const diff = new Date(event.endDate).getTime() - new Date(event.startDate).getTime()
-    const repetitions = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
-    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-    const params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: event.title,
-      dates: `${fmt(startTime)}/${fmt(endTime)}`,
-      recur: `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
-      location: event.location || ''
-    })
-    return `https://calendar.google.com/calendar/render?${params}`
-  }
-
-  // Suppress unused variable warning for navigate
-  void navigate
 
   const tabs = [
     {
       label: t('career.tabs.courses'),
       content: (
         <CourseView
+          subjects={subjects}
+          loading={subjectsLoading}
+          error={subjectsError}
           selectedCourses={selectedCourses}
           onCommissionSelect={course => {
             if (!modalOpen) { setSelectedCourseForModal(course); setModalOpen(true) }
           }}
           onAddCourse={(course, commissions) => {
-            const updated = [...selectedCourses, { ...course, selectedCommissions: commissions, isPriority: false }]
-            setSelectedCourses(updated); scheduler.setSubjects(updated); setSchedules([])
+            updateSelectedCourses([...selectedCourses, { ...course, selectedCommissions: commissions }])
           }}
           onRemoveCourse={courseId => {
-            const updated = selectedCourses.filter(c => c.subject_id !== courseId)
-            setSelectedCourses(updated); scheduler.setSubjects(updated); setSchedules([])
+            updateSelectedCourses(selectedCourses.filter(c => c.subject_id !== courseId))
           }}
-          onReorderCourses={handleReorderCourses}
+          onReorderCourses={updateSelectedCourses}
         />
       ),
     },
-    { label: t('career.tabs.settings'), content: <SettingsView /> },
+    {
+      label: t('career.tabs.settings'),
+      content: <SettingsView blockedTimes={blockedTimes} onChange={handleBlockedTimesChange} />,
+    },
     {
       label: t('career.tabs.calendar'),
       content: (
         <SchedulerPreview
           schedules={schedules}
-          setSchedules={setSchedules}
+          truncated={schedulesTruncated}
+          generated={hasGenerated}
+          currentIndex={currentIndex}
+          onIndexChange={setCurrentIndex}
+          options={options}
+          onOptionsChange={handleOptionsChange}
+          blockedTimes={blockedTimes}
           hasSubjects={selectedCourses.length > 0}
           onExportToCalendar={handleExportToCalendar}
+          shareUrl={shareUrl}
           liveSlots={liveSlots}
           liveConflictCount={liveConflictCount}
         />
       ),
-      onClick: handleGenerateSchedules,
+      onClick: () => runGenerator(),
     },
   ]
 
@@ -452,7 +422,7 @@ export default function CareerPage() {
                 <button
                   onClick={() => setIsCalendarPanelOpen(false)}
                   className="p-2 hover:bg-surface dark:hover:bg-[#18181b] rounded-sm transition-colors duration-150"
-                  aria-label="Cerrar panel"
+                  aria-label={t('calendar.closePanel')}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -474,11 +444,12 @@ export default function CareerPage() {
                 </ol>
                 <button
                   onClick={() => {
-                    const blob = new Blob([generateIcsContent(scheduleEvents)], { type: 'text/calendar' })
+                    const blob = new Blob([buildIcs(scheduleEvents)], { type: 'text/calendar;charset=utf-8' })
                     const link = document.createElement('a')
                     link.href = URL.createObjectURL(blob)
                     link.download = 'horario.ics'
                     link.click()
+                    setTimeout(() => URL.revokeObjectURL(link.href), 0)
                   }}
                   className="w-full flex items-center justify-center gap-2 min-h-[44px] px-4 bg-primary text-surface font-body font-semibold rounded-sm hover:bg-primary-600 transition-colors duration-150"
                 >

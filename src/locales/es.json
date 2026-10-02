@@ -60,7 +60,8 @@
       "courses": "Materias",
       "settings": "Adicionales",
       "calendar": "Calendario"
-    }
+    },
+    "tabsAria": "Secciones del combinador"
   },
   "courses": {
     "selected": "Materias seleccionadas",
@@ -79,7 +80,10 @@
     "anyCommission": "Cualquier comisión",
     "commissionAbbr": "Com.",
     "searchPlaceholder": "Buscar materias por nombre o código...",
-    "noResults": "No se encontraron materias"
+    "noResults": "No se encontraron materias",
+    "removeAria": "Eliminar {{name}}",
+    "reorderAria": "Reordenar {{name}}",
+    "or": "o"
   },
   "commission": {
     "title": "Seleccionar comisión",
@@ -127,7 +131,8 @@
       "noneBusy": "Nadie ocupado en este intervalo",
       "busy_one": "{{count}} de {{total}} ocupados: {{names}}",
       "busy_other": "{{count}} de {{total}} ocupados: {{names}}"
-    }
+    },
+    "catalogLoadFailed": "No se pudieron cargar las materias de: {{plans}}. Esos horarios se muestran sin clases."
   },
   "scheduler": {
     "title": "Vista previa de horarios",
@@ -151,7 +156,12 @@
     "noCombinationsMessage": "Probá cambiando las opciones o seleccionando otras comisiones.",
     "livePreviewHint": "Vista previa en vivo · generá combinaciones para ver opciones válidas",
     "livePreviewConflicts_one": "Vista previa en vivo · {{count}} conflicto detectado",
-    "livePreviewConflicts_other": "Vista previa en vivo · {{count}} conflictos detectados"
+    "livePreviewConflicts_other": "Vista previa en vivo · {{count}} conflictos detectados",
+    "truncatedNotice": "Se muestran las primeras {{count}} combinaciones encontradas. Elegí comisiones específicas o agregá horarios bloqueados para acotar la búsqueda.",
+    "searchStopped": "La búsqueda se detuvo antes de terminar porque hay demasiadas combinaciones posibles. Elegí comisiones específicas o agregá horarios bloqueados para acotarla.",
+    "rankingHint": "Ordenadas por menos superposición, más días libres y menos horas libres entre clases",
+    "prevOption": "Horario anterior",
+    "nextOption": "Siguiente horario"
   },
   "save": {
     "title": "Guardar horario",
@@ -164,7 +174,10 @@
     "exportToCalendar": "Exportar a Google Calendar",
     "exportToCalendarDescription": "Sincroniza tu horario con Google Calendar",
     "shareLink": "Copiar enlace",
-    "linkCopied": "¡Enlace copiado al portapapeles!"
+    "linkCopied": "¡Enlace copiado al portapapeles!",
+    "shareLinkDescription": "Copiá un enlace que abre el combinador con estas materias ya seleccionadas",
+    "linkCopyFailed": "No se pudo copiar el enlace. Copialo manualmente: {{url}}",
+    "toastDismiss": "Cerrar aviso"
   },
   "wallpaper": {
     "defaultTitle": "Mi horario",
@@ -182,7 +195,8 @@
     "option1Step4": "Sube el archivo descargado",
     "downloadFile": "Descargar archivo de calendario",
     "option2Title": "Opción 2: Eventos uno por uno",
-    "commission": "Comisión"
+    "commission": "Comisión",
+    "closePanel": "Cerrar panel"
   },
   "settings": {
     "title": "Configuración adicional",
@@ -205,7 +219,8 @@
   "footer": {
     "itTeam": "IT Team CEITBA",
     "github": "GitHub",
-    "contact": "Contacto"
+    "contact": "Contacto",
+    "linksAria": "Enlaces del pie de página"
   },
   "days": {
     "MONDAY": "Lun",
@@ -220,5 +235,27 @@
     "somethingWrong": "Algo salió mal",
     "retry": "Reintentar",
     "loading": "Cargando"
+  },
+  "authErrors": {
+    "title": "No pudimos iniciar tu sesión",
+    "dismiss": "Cerrar aviso",
+    "unauthorized": "Tu email no está habilitado para ingresar. Usá tu cuenta @itba.edu.ar.",
+    "unauthorized_workspace": "El dominio de tu cuenta de Google no está habilitado. Usá tu cuenta @itba.edu.ar.",
+    "unverified_email": "El email de tu cuenta de Google no está verificado.",
+    "auth_failed": "Algo salió mal al iniciar sesión. Probá de nuevo.",
+    "invalid_state": "La solicitud de inicio de sesión expiró o no es válida. Probá de nuevo."
+  },
+  "common": {
+    "close": "Cerrar",
+    "moreInfo": "Más información"
+  },
+  "daysFull": {
+    "MONDAY": "Lunes",
+    "TUESDAY": "Martes",
+    "WEDNESDAY": "Miércoles",
+    "THURSDAY": "Jueves",
+    "FRIDAY": "Viernes",
+    "SATURDAY": "Sábado",
+    "SUNDAY": "Domingo"
   }
 }

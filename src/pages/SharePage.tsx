@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -9,7 +9,8 @@ import {
   deleteShareSession,
 } from '../api/share'
 import { listSavedSchedules, type SavedSchedule } from '../api/schedules'
-import { fetchSubjectsByPlan, type Subject } from '../hooks/useSubjects'
+import { ApiError } from '../api/client'
+import { loadCatalogs, type Subject } from '../hooks/useSubjects'
 import { useAuth } from '../hooks/useAuth'
 import { startGoogleSignIn } from '../store/authStore'
 import HeatmapGrid from '../components/HeatmapGrid'
@@ -17,6 +18,10 @@ import LoadingDots from '../components/LoadingDots'
 import ErrorView from '../components/ErrorView'
 import SimpleHeader from '../components/SimpleHeader'
 import { buildHeatmap } from '../services/heatmap'
+
+// How often an open share page refetches the session so new participants
+// show up without a reload. Paused while the tab is hidden.
+const SHARE_POLL_INTERVAL_MS = 20_000
 
 export default function SharePage() {
   const { t } = useTranslation()
@@ -32,17 +37,57 @@ export default function SharePage() {
   const [savedList, setSavedList] = useState<SavedSchedule[]>([])
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  // Bumped by every fetch and by join/leave, so a slower, older response
+  // never overwrites a newer session.
+  const sessionSeq = useRef(0)
 
+  // Initial load plus polling while the page is visible. Background
+  // refreshes don't touch `loading`, and an unchanged session keeps its
+  // identity so nothing re-renders.
   useEffect(() => {
     if (!token) return
+    let cancelled = false
+    let interval: number | undefined
+
+    const refresh = async (initial: boolean) => {
+      const seq = ++sessionSeq.current
+      try {
+        const next = await getShareSession(token)
+        if (cancelled || seq !== sessionSeq.current) return
+        setSession((prev) => (prev && JSON.stringify(prev) === JSON.stringify(next) ? prev : next))
+        if (initial) setError(null)
+      } catch (e) {
+        if (cancelled || seq !== sessionSeq.current) return
+        // Background failures are transient unless the session is gone.
+        if (initial || (e instanceof ApiError && e.status === 404)) {
+          if (!initial) setSession(null)
+          setError((e as Error).message)
+        }
+      } finally {
+        if (initial && !cancelled) setLoading(false)
+      }
+    }
+
+    const start = () => {
+      if (interval === undefined) interval = window.setInterval(() => void refresh(false), SHARE_POLL_INTERVAL_MS)
+    }
+    const stop = () => {
+      if (interval !== undefined) { window.clearInterval(interval); interval = undefined }
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') { void refresh(false); start() }
+      else stop()
+    }
+
     setLoading(true)
-    getShareSession(token)
-      .then((s) => {
-        setSession(s)
-        setError(null)
-      })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
+    void refresh(true)
+    if (document.visibilityState === 'visible') start()
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      cancelled = true
+      stop()
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
   }, [token])
 
   // Fetch the subject catalog for every distinct plan present in the
@@ -56,16 +101,15 @@ export default function SharePage() {
     const missing = plans.filter((p) => !subjectsByPlan.has(p))
     if (missing.length === 0) return
     let cancelled = false
-    Promise.all(missing.map((p) => fetchSubjectsByPlan(p).then((subs) => [p, subs] as const)))
-      .then((pairs) => {
-        if (cancelled) return
-        setSubjectsByPlan((prev) => {
-          const next = new Map(prev)
-          pairs.forEach(([p, subs]) => next.set(p, subs))
-          return next
-        })
+    loadCatalogs(missing).then(({ loaded, failed }) => {
+      if (cancelled) return
+      setSubjectsByPlan((prev) => {
+        const next = new Map(prev)
+        loaded.forEach(([p, subs]) => next.set(p, subs))
+        return next
       })
-      .catch((e: Error) => setError(e.message))
+      if (failed.length) setError(t('share.catalogLoadFailed', { plans: failed.join(', ') }))
+    })
     return () => {
       cancelled = true
     }
@@ -90,6 +134,7 @@ export default function SharePage() {
     setError(null)
     try {
       const updated = await joinShareSession(token, { savedScheduleId })
+      sessionSeq.current++
       setSession(updated)
       setShowJoin(false)
     } catch (e) {
@@ -107,6 +152,7 @@ export default function SharePage() {
     try {
       await leaveShareSession(token)
       const refreshed = await getShareSession(token)
+      sessionSeq.current++
       setSession(refreshed)
     } catch (e) {
       setError((e as Error).message)
@@ -129,10 +175,15 @@ export default function SharePage() {
     }
   }
 
-  function copyLink() {
-    navigator.clipboard.writeText(window.location.href)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  async function copyLink() {
+    const url = window.location.href
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setError(t('save.linkCopyFailed', { url }))
+    }
   }
 
   return (

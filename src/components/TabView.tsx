@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface Tab {
   label: string
@@ -11,6 +12,7 @@ interface TabViewProps {
 }
 
 export default function TabView({ tabs }: TabViewProps) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState(0)
 
   return (
@@ -18,7 +20,7 @@ export default function TabView({ tabs }: TabViewProps) {
       <div
         className="flex gap-0 border-b border-border dark:border-[#3f3f46]"
         role="tablist"
-        aria-label="Secciones del combinador"
+        aria-label={t('career.tabsAria')}
       >
         {tabs.map((tab, index) => (
           <button

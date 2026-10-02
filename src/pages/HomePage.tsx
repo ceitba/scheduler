@@ -1,10 +1,16 @@
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useLanguageToggle } from '../hooks/useLanguageToggle'
 import { CAREERS, CAREER_METADATA, EXCHANGE_CAREER, getLatestPlan } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
 import Footer from '../components/Footer'
 import AuthMenu from '../components/AuthMenu'
 import { useThemeContext } from '../context/ThemeContext'
+
+// Reasons CEITBA-API puts in ?error= when sign-in fails (AuthController /
+// LoginRejectedException). AuthCallback forwards them here as ?authError=.
+const AUTH_ERROR_CODES = ['unauthorized', 'unauthorized_workspace', 'unverified_email', 'auth_failed', 'invalid_state']
 
 function CareerCard({ id, name }: { id: string; name: string }) {
   const { t } = useTranslation()
@@ -35,13 +41,24 @@ function CareerCard({ id, name }: { id: string; name: string }) {
 }
 
 export default function HomePage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const toggleLanguage = useLanguageToggle()
   const { theme, toggle } = useThemeContext()
-  const toggleLanguage = () => {
-    const next = i18n.language === 'es' ? 'en' : 'es'
-    i18n.changeLanguage(next)
-    localStorage.setItem('prefs.lang', next)
-  }
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [authError, setAuthError] = useState<string | null>(() => {
+    const code = searchParams.get('authError')
+    if (!code) return null
+    return AUTH_ERROR_CODES.includes(code) ? code : 'auth_failed'
+  })
+
+  // Strip ?authError= so a reload or shared URL doesn't show it again.
+  useEffect(() => {
+    if (!searchParams.has('authError')) return
+    const next = new URLSearchParams(searchParams)
+    next.delete('authError')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, setSearchParams])
+
   const careersList = Object.entries(CAREERS).map(([id, name]) => ({ id, name }))
 
   return (
@@ -94,6 +111,25 @@ export default function HomePage() {
 
       <main id="main-content" className="flex-1">
         <section className="container-content py-section-mobile lg:py-section">
+          {authError && (
+            <div
+              role="alert"
+              className="mb-8 flex items-start gap-3 px-4 py-3 rounded-card border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="font-body font-semibold text-body-sm text-red-800 dark:text-red-200">{t('authErrors.title')}</p>
+                <p className="font-body text-body-sm text-red-700 dark:text-red-300">{t(`authErrors.${authError}`)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAuthError(null)}
+                aria-label={t('authErrors.dismiss')}
+                className="text-red-700 dark:text-red-300 hover:text-red-900 dark:hover:text-red-100"
+              >
+                ×
+              </button>
+            </div>
+          )}
           <div className="mb-10">
             <h1 className="font-display text-h1 lg:text-display font-bold text-ink-primary dark:text-[#f4f4f5] leading-tight mb-3">
               {t('home.title')}

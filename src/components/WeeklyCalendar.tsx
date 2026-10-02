@@ -3,21 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { TimeBlock } from '../types/scheduler'
 import BaseModal from './BaseModal'
 
-interface LabeledTimeBlock extends TimeBlock {
-  id: string
-  label?: string
-  from: string
-  to: string
+// Controlled: the blocks live in the parent (CareerPage) so a restored
+// saved schedule shows up here and edits never drop blocks the parent has.
+interface WeeklyCalendarProps {
+  blocks: TimeBlock[]
+  onChange: (blocks: TimeBlock[]) => void
 }
 
-interface WeeklyCalendarProps {
-  onChange?: (blocks: LabeledTimeBlock[]) => void
-  initialBlocks?: LabeledTimeBlock[]
-}
+// Blocks on the same day never overlap, so day+range identifies one even
+// when an old saved payload has no id.
+const blockKey = (block: TimeBlock) => block.id ?? `${block.day}-${block.from}-${block.to}`
 
 interface EditModalProps {
-  block: LabeledTimeBlock
-  onSave: (block: LabeledTimeBlock) => void
+  block: TimeBlock
+  onSave: (block: TimeBlock) => void
   onClose: () => void
   onDelete: () => void
 }
@@ -67,12 +66,9 @@ const EditModal: React.FC<EditModalProps> = ({ block, onSave, onClose, onDelete 
   )
 }
 
-const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks = [] }) => {
+const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ blocks: selectedBlocks, onChange }) => {
   const { t } = useTranslation()
-  const [selectedBlocks, setSelectedBlocks] = useState<LabeledTimeBlock[]>(
-    initialBlocks.map(block => ({ ...block, id: block.id || crypto.randomUUID() }))
-  )
-  const [editingBlock, setEditingBlock] = useState<LabeledTimeBlock | null>(null)
+  const [editingBlock, setEditingBlock] = useState<TimeBlock | null>(null)
   const [selection, setSelection] = useState<SelectionState | null>(null)
   const [isSelecting, setIsSelecting] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
@@ -88,7 +84,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     return `${hour.toString().padStart(2, '0')}:00`
   })
 
-  const getBlocksForDay = (day: string): LabeledTimeBlock[] => {
+  const getBlocksForDay = (day: string): TimeBlock[] => {
     return selectedBlocks.filter(block => block.day === day)
       .sort((a, b) => parseInt(a.from) - parseInt(b.from))
   }
@@ -143,7 +139,7 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     if (selection) {
       const { day, startHour, endHour } = selection
 
-      const hasOverlap = (newBlock: LabeledTimeBlock): boolean => {
+      const hasOverlap = (newBlock: TimeBlock): boolean => {
         return selectedBlocks.some(block => {
           if (block.day !== newBlock.day) return false
           const newStart = parseInt(newBlock.from)
@@ -155,27 +151,25 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
       }
 
       if (endHour && (Math.abs(endHour - startHour) <= 1)) {
-        const newBlock: LabeledTimeBlock = {
+        const newBlock: TimeBlock = {
           id: crypto.randomUUID(),
           day,
           from: `${startHour.toString().padStart(2, '0')}:00`,
           to: `${(startHour + 1).toString().padStart(2, '0')}:00`
         }
         if (!hasOverlap(newBlock)) {
-          setSelectedBlocks(prev => [...prev, newBlock])
-          onChange?.([...selectedBlocks, newBlock])
+          onChange([...selectedBlocks, newBlock])
         }
       } else if (endHour && Math.abs(endHour - startHour) > 1) {
         const [start, end] = [Math.min(startHour, endHour), Math.max(startHour, endHour)]
-        const newBlock: LabeledTimeBlock = {
+        const newBlock: TimeBlock = {
           id: crypto.randomUUID(),
           day,
           from: `${start.toString().padStart(2, '0')}:00`,
           to: `${end.toString().padStart(2, '0')}:00`
         }
         if (!hasOverlap(newBlock)) {
-          setSelectedBlocks(prev => [...prev, newBlock])
-          onChange?.([...selectedBlocks, newBlock])
+          onChange([...selectedBlocks, newBlock])
         }
       }
     }
@@ -188,20 +182,18 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
     return () => window.removeEventListener('mouseup', handleMouseUp)
   }, [handleMouseUp])
 
-  const handleSaveBlock = (updatedBlock: LabeledTimeBlock) => {
+  const handleSaveBlock = (updatedBlock: TimeBlock) => {
     const newBlocks = selectedBlocks.map(block =>
-      block.id === updatedBlock.id ? updatedBlock : block
+      blockKey(block) === blockKey(updatedBlock) ? updatedBlock : block
     )
-    setSelectedBlocks(newBlocks)
-    onChange?.(newBlocks)
+    onChange(newBlocks)
     setEditingBlock(null)
   }
 
   const handleDeleteBlock = () => {
     if (editingBlock) {
-      const newBlocks = selectedBlocks.filter(block => block.id !== editingBlock.id)
-      setSelectedBlocks(newBlocks)
-      onChange?.(newBlocks)
+      const newBlocks = selectedBlocks.filter(block => blockKey(block) !== blockKey(editingBlock))
+      onChange(newBlocks)
       setEditingBlock(null)
     }
   }
@@ -243,8 +235,8 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
 
   const handleTouchEnd = () => { handleMouseUp() }
 
-  const getBlockColor = (blockId: string) => {
-    const index = (selectedBlocks.findIndex(b => b.id === blockId) % 10) + 1
+  const getBlockColor = (key: string) => {
+    const index = (selectedBlocks.findIndex(b => blockKey(b) === key) % 10) + 1
     return `bg-subject_color_${index}`
   }
 
@@ -342,11 +334,11 @@ const WeeklyCalendar: React.FC<WeeklyCalendarProps> = ({ onChange, initialBlocks
                 {getBlocksForDay(day).map((block) => {
                   const height = getBlockHeight(block.from, block.to)
                   const top = getBlockTop(block.from)
-                  const colorClass = getBlockColor(block.id)
+                  const colorClass = getBlockColor(blockKey(block))
 
                   return (
                     <button
-                      key={block.id}
+                      key={blockKey(block)}
                       onClick={() => setEditingBlock(block)}
                       className={`absolute inset-x-0 flex flex-col items-center justify-center hover:brightness-90 text-[#1c1c1e] cursor-pointer group/block transition-all px-2 z-10 select-none ${colorClass}`}
                       style={{

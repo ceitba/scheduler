@@ -151,7 +151,10 @@
     "noCombinationsMessage": "Probá cambiando las opciones o seleccionando otras comisiones.",
     "livePreviewHint": "Vista previa en vivo · generá combinaciones para ver opciones válidas",
     "livePreviewConflicts_one": "Vista previa en vivo · {{count}} conflicto detectado",
-    "livePreviewConflicts_other": "Vista previa en vivo · {{count}} conflictos detectados"
+    "livePreviewConflicts_other": "Vista previa en vivo · {{count}} conflictos detectados",
+    "truncatedNotice": "Se muestran las primeras {{count}} combinaciones encontradas. Elegí comisiones específicas o agregá horarios bloqueados para acotar la búsqueda.",
+    "searchStopped": "La búsqueda se detuvo antes de terminar porque hay demasiadas combinaciones posibles. Elegí comisiones específicas o agregá horarios bloqueados para acotarla.",
+    "rankingHint": "Ordenadas por menos superposición, más días libres y menos horas libres entre clases"
   },
   "save": {
     "title": "Guardar horario",

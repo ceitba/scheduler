@@ -1,5 +1,6 @@
 import { Subject } from "../hooks/useSubjects"
 import { Commission, CommissionSchedule, ScheduleSlot } from "../types/scheduler"
+import { overlapMinutes, timeToMinutes } from "./time"
 
 export type ConflictLevel = "none" | "clear" | "partial" | "all"
 
@@ -28,21 +29,6 @@ export interface ConflictReport {
 
 interface CourseInput extends Subject {
   selectedCommissions: string[]
-}
-
-const timeToMinutes = (time: string): number => {
-  const [h, m] = time.split(":").map(Number)
-  return h * 60 + (m || 0)
-}
-
-const overlapMinutes = (
-  a: { day: string; from: number; to: number },
-  b: { day: string; from: number; to: number },
-): number => {
-  if (a.day !== b.day) return 0
-  const start = Math.max(a.from, b.from)
-  const end = Math.min(a.to, b.to)
-  return Math.max(0, end - start)
 }
 
 const intervalsForCommission = (c: Commission) =>

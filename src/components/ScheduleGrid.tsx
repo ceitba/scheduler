@@ -1,10 +1,12 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { ScheduleSlot } from "../types/scheduler"
-import { Scheduler } from "../services/scheduler"
+import { ScheduleSlot, TimeBlock } from "../types/scheduler"
 
 interface ScheduleGridProps {
   slots: ScheduleSlot[]
+  // Blocked periods to shade behind the classes. Passed explicitly so each
+  // grid (e.g. every column of the comparison view) shows its own.
+  blockedTimes?: TimeBlock[]
 }
 
 interface GroupedSlot {
@@ -16,10 +18,8 @@ interface GroupedSlot {
   timeTo: string
 }
 
-const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots }) => {
+const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] }) => {
   const { t } = useTranslation()
-  const scheduler = Scheduler.getInstance()
-  const blockedTimes = scheduler.getBlockedTimes()
 
   const timeSlots = Array.from({ length: 14 }, (_, i) => {
     const hour = i + 8

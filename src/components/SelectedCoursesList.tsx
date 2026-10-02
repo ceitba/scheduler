@@ -21,7 +21,6 @@ import type { ConflictReport, SubjectConflictStatus } from "../services/conflict
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
-  isPriority: boolean
 }
 
 interface SortableItemProps {

@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { PossibleSchedule, ScheduleSlot } from "../types/scheduler"
+import { PossibleSchedule, ScheduleSlot, SchedulerOptions, TimeBlock } from "../types/scheduler"
 import ScheduleGrid from "./ScheduleGrid"
-import { Scheduler } from "../services/scheduler"
 import Checkbox from "./Checkbox"
 import SaveModal from "./SaveModal"
 import EmptyState from "./EmptyState"
@@ -11,105 +10,55 @@ import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
 interface SchedulerPreviewProps {
+  // Generated combinations, already filtered by `options` and ranked.
   schedules: PossibleSchedule[]
-  setSchedules: (schedules: PossibleSchedule[]) => void
+  truncated: boolean
+  generated: boolean
+  currentIndex: number
+  onIndexChange: (index: number) => void
+  options: SchedulerOptions
+  onOptionsChange: (options: SchedulerOptions) => void
+  blockedTimes: TimeBlock[]
   hasSubjects: boolean
   onExportToCalendar: () => void
   liveSlots?: ScheduleSlot[]
   liveConflictCount?: number
 }
 
-interface ScheduleSettings {
-  allowTimeOverlap: boolean
-  allowUnlimitedOverlap: boolean
-  avoidLocationChanges: boolean
-  haveFreeDay: boolean
-  timeFormat: "12h" | "24h"
-}
-
 export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
-  schedules = [],
-  setSchedules = () => {},
+  schedules,
+  truncated,
+  generated,
+  currentIndex,
+  onIndexChange,
+  options,
+  onOptionsChange,
+  blockedTimes,
   hasSubjects,
   onExportToCalendar,
   liveSlots = [],
   liveConflictCount = 0,
 }) => {
   const { t } = useTranslation()
-  const scheduler = Scheduler.getInstance()
-  const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0)
-  const [lastOptionsString, setLastOptionsString] = useState(
-    JSON.stringify(scheduler.getOptions())
-  )
-  const [lastSubjectsString, setLastSubjectsString] = useState(
-    JSON.stringify(scheduler.getSubjects())
-  )
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
   const scheduleRef = useRef<HTMLDivElement>(null)
   const wallpaperRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const currentOptionsString = JSON.stringify(scheduler.getOptions())
-    const currentSubjectsString = JSON.stringify(scheduler.getSubjects())
-
-    if (
-      currentOptionsString !== lastOptionsString ||
-      currentSubjectsString !== lastSubjectsString
-    ) {
-      setLastOptionsString(currentOptionsString)
-      setLastSubjectsString(currentSubjectsString)
-      setCurrentScheduleIndex(0)
-    }
-  }, [scheduler, lastOptionsString, lastSubjectsString])
-
-  useEffect(() => {
-    if (schedules.length > 0) {
-      setCurrentScheduleIndex(0)
-    }
-  }, [schedules])
-
-  const filteredSchedules = schedules.filter((schedule) => {
-    const options = scheduler.getOptions()
-    const hasValidOverlap = options.allowUnlimitedOverlap ||
-      (options.allowOverlap && schedule.maxOverlap <= 30) ||
-      schedule.maxOverlap === 0
-    const hasValidFreeDay = !options.allowFreeDay || schedule.hasFreeDay
-    return hasValidOverlap && hasValidFreeDay
-  })
-
-  useEffect(() => {
-    if (currentScheduleIndex >= filteredSchedules.length) {
-      setCurrentScheduleIndex(0)
-    }
-  }, [filteredSchedules.length, currentScheduleIndex])
-
-  const currentSchedule = filteredSchedules[currentScheduleIndex]
+  const currentSchedule: PossibleSchedule | undefined = schedules[currentIndex]
 
   const handlePrevSchedule = () => {
-    if (filteredSchedules.length > 0) {
-      setCurrentScheduleIndex((prev) =>
-        prev > 0 ? prev - 1 : filteredSchedules.length - 1
-      )
+    if (schedules.length > 0) {
+      onIndexChange(currentIndex > 0 ? currentIndex - 1 : schedules.length - 1)
     }
   }
 
   const handleNextSchedule = () => {
-    if (filteredSchedules.length > 0) {
-      setCurrentScheduleIndex((prev) =>
-        prev < filteredSchedules.length - 1 ? prev + 1 : 0
-      )
+    if (schedules.length > 0) {
+      onIndexChange(currentIndex < schedules.length - 1 ? currentIndex + 1 : 0)
     }
   }
 
-  const [settings, setSettings] = useState<ScheduleSettings>({
-    allowTimeOverlap: scheduler.getOptions().allowOverlap,
-    allowUnlimitedOverlap: scheduler.getOptions().allowUnlimitedOverlap,
-    avoidLocationChanges: scheduler.getOptions().avoidBuildingChange,
-    haveFreeDay: scheduler.getOptions().allowFreeDay,
-    timeFormat: "24h",
-  })
-
-  const hasSchedules = Array.isArray(filteredSchedules) && filteredSchedules.length > 0
+  const hasSchedules = schedules.length > 0
 
   const renderScheduleInfo = (schedule: PossibleSchedule) => {
     return (
@@ -294,43 +243,28 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         <div className="flex flex-col md:flex-row md:flex-wrap gap-4 justify-end mb-4">
           <Checkbox
             id="allowOverlap"
-            checked={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
-            onChange={(checked) => {
-              const newSettings = { ...settings, allowTimeOverlap: checked, allowUnlimitedOverlap: false }
-              setSettings(newSettings)
-              scheduler.setOptions({ ...scheduler.getOptions(), allowOverlap: checked, allowUnlimitedOverlap: false })
-              setSchedules(scheduler.generateSchedules())
-            }}
+            checked={options.allowOverlap && !options.allowUnlimitedOverlap}
+            onChange={(checked) => onOptionsChange({ ...options, allowOverlap: checked, allowUnlimitedOverlap: false })}
             label={t('scheduler.allowOverlap')}
             isTooltip={true}
             tooltip={t('scheduler.allowOverlapTooltip')}
-            disabled={settings.allowUnlimitedOverlap}
+            disabled={options.allowUnlimitedOverlap}
           />
 
           <Checkbox
             id="allowUnlimitedOverlap"
-            checked={settings.allowUnlimitedOverlap}
-            onChange={(checked) => {
-              const newSettings = { ...settings, allowUnlimitedOverlap: checked, allowTimeOverlap: checked }
-              setSettings(newSettings)
-              scheduler.setOptions({ ...scheduler.getOptions(), allowUnlimitedOverlap: checked, allowOverlap: checked })
-              setSchedules(scheduler.generateSchedules())
-            }}
+            checked={options.allowUnlimitedOverlap}
+            onChange={(checked) => onOptionsChange({ ...options, allowUnlimitedOverlap: checked, allowOverlap: checked })}
             label={t('scheduler.allowUnlimitedOverlap')}
             isTooltip={true}
             tooltip={t('scheduler.allowUnlimitedOverlapTooltip')}
-            disabled={settings.allowTimeOverlap && !settings.allowUnlimitedOverlap}
+            disabled={options.allowOverlap && !options.allowUnlimitedOverlap}
           />
 
           <Checkbox
             id="freeDay"
-            checked={settings.haveFreeDay}
-            onChange={(checked) => {
-              const newSettings = { ...settings, haveFreeDay: checked }
-              setSettings(newSettings)
-              scheduler.setOptions({ ...scheduler.getOptions(), allowFreeDay: checked })
-              setSchedules(scheduler.generateSchedules())
-            }}
+            checked={options.allowFreeDay}
+            onChange={(checked) => onOptionsChange({ ...options, allowFreeDay: checked })}
             label={t('scheduler.freeDay')}
           />
         </div>
@@ -340,7 +274,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             <h2 className="font-body font-semibold text-body text-ink-primary">{t('scheduler.title')}</h2>
             {hasSubjects && hasSchedules && (
               <span className="font-mono text-label text-ink-secondary dark:text-[#a1a1aa] whitespace-nowrap flex-shrink-0">
-                {t('scheduler.option')} {currentScheduleIndex + 1} {t('scheduler.of')} {filteredSchedules.length}
+                {t('scheduler.option')} {currentIndex + 1} {t('scheduler.of')} {schedules.length}
+              </span>
+            )}
+            {hasSubjects && schedules.length > 1 && (
+              <span className="hidden lg:inline font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa]">
+                {t('scheduler.rankingHint')}
               </span>
             )}
           </div>
@@ -348,7 +287,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           <div className="flex gap-1">
             {hasSubjects && hasSchedules && (
               <>
-                {filteredSchedules.length > 1 && (
+                {schedules.length > 1 && (
                   <>
                     <button
                       onClick={handlePrevSchedule}
@@ -393,6 +332,17 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           </div>
         </div>
 
+        {hasSubjects && truncated && (
+          <p
+            role="status"
+            className="mb-3 px-3 py-2 rounded-sm border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 font-body text-body-sm text-amber-800 dark:text-amber-200"
+          >
+            {hasSchedules
+              ? t('scheduler.truncatedNotice', { count: schedules.length })
+              : t('scheduler.searchStopped')}
+          </p>
+        )}
+
         <div ref={scheduleRef}>
           {!hasSubjects ? (
             <EmptyState
@@ -401,12 +351,12 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
             />
           ) : currentSchedule ? (
             <>
-              <ScheduleGrid slots={currentSchedule.slots} />
+              <ScheduleGrid slots={currentSchedule.slots} blockedTimes={blockedTimes} />
               <div className="mt-4">
                 {renderScheduleInfo(currentSchedule)}
               </div>
             </>
-          ) : liveSlots.length > 0 ? (
+          ) : !generated && liveSlots.length > 0 ? (
             <>
               <div className="mb-3 flex items-center gap-2 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa]">
                 <div className={`w-2 h-2 rounded-full ${liveConflictCount > 0 ? 'bg-red-500' : 'bg-amber-500'}`} />
@@ -416,7 +366,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
                     : t('scheduler.livePreviewHint')}
                 </span>
               </div>
-              <ScheduleGrid slots={liveSlots} />
+              <ScheduleGrid slots={liveSlots} blockedTimes={blockedTimes} />
             </>
           ) : (
             <EmptyState

@@ -3,11 +3,13 @@ import { Subject } from "../hooks/useSubjects";
 export interface SchedulerOptions {
   allowOverlap: boolean;
   allowUnlimitedOverlap: boolean;
-  avoidBuildingChange: boolean;
   allowFreeDay: boolean;
 }
 
+// A period the user doesn't want classes in, drawn in the settings tab.
+// day is MONDAY..FRIDAY; from/to are "HH:mm".
 export interface TimeBlock {
+  id?: string;
   day: string;
   from: string;
   to: string;
@@ -32,6 +34,8 @@ export interface PossibleSchedule {
   maxOverlap: number;
   hasBuildingConflict: boolean;
   hasFreeDay: boolean;
+  freeDays: number;
+  gapMinutes: number;
 }
 
 export interface SchedulerSubject extends Subject {

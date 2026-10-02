@@ -13,7 +13,7 @@ import SimpleHeader from '../components/SimpleHeader'
 
 interface SavedSchedulePayload {
   version?: number
-  selectedCourses?: { subject_id: string; selectedCommissions: string[]; isPriority?: boolean }[]
+  selectedCourses?: { subject_id: string; selectedCommissions: string[] }[]
   blockedTimes?: { day: string; from: string; to: string; label?: string }[]
 }
 
@@ -159,7 +159,14 @@ export default function ComparisonPage() {
                       {s.careerId ?? '—'} · {s.plan ?? '—'}
                     </p>
                   </header>
-                  {subjectsLoaded ? <ScheduleGrid slots={slots} /> : <ScheduleGridSkeleton />}
+                  {subjectsLoaded ? (
+                    <ScheduleGrid
+                      slots={slots}
+                      blockedTimes={(s.payload as SavedSchedulePayload).blockedTimes ?? []}
+                    />
+                  ) : (
+                    <ScheduleGridSkeleton />
+                  )}
                 </section>
               )
             })}

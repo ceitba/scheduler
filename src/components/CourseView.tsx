@@ -12,7 +12,6 @@ import { detectConflicts } from "../services/conflicts"
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
-  isPriority: boolean
 }
 
 interface CourseViewProps {

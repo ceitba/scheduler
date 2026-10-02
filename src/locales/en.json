@@ -151,7 +151,10 @@
     "noCombinationsMessage": "Try changing the options or selecting different commissions.",
     "livePreviewHint": "Live preview · generate combinations to see valid options",
     "livePreviewConflicts_one": "Live preview · {{count}} conflict detected",
-    "livePreviewConflicts_other": "Live preview · {{count}} conflicts detected"
+    "livePreviewConflicts_other": "Live preview · {{count}} conflicts detected",
+    "truncatedNotice": "Showing the first {{count}} combinations found. Pick specific commissions or add blocked times to narrow the search.",
+    "searchStopped": "The search stopped before finishing because there are too many possible combinations. Pick specific commissions or add blocked times to narrow it down.",
+    "rankingHint": "Sorted by least overlap, most free days and fewest idle hours between classes"
   },
   "save": {
     "title": "Save schedule",

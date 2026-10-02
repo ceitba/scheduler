@@ -239,7 +239,14 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   // sessionStorage before the redirect to Google and restored on return
   // (effect below).
   const beginSignIn = () => {
-    savePendingWorkspace({ career, plan: normalizedPlan, savedAt: Date.now(), activeTab, payload: currentPayload() })
+    savePendingWorkspace({
+      career,
+      plan: normalizedPlan,
+      codes: preselectedSubjectsIds.current,
+      savedAt: Date.now(),
+      activeTab,
+      payload: currentPayload(),
+    })
     startGoogleSignIn(location.pathname + location.search)
   }
 
@@ -248,23 +255,22 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   // Precedence:
   //  1. A saved schedule opened from /saved (router state) wins; the
   //     snapshot is discarded.
-  //  2. Otherwise the snapshot wins over the ?code= preselect: it was taken
-  //     on this same URL, so it already holds the preselect plus the
-  //     student's edits since.
+  //  2. Otherwise the snapshot wins over the ?code= preselect: it only
+  //     applies on a URL with the same preselect it was taken on, so it
+  //     already holds the preselect plus the student's edits since.
   //  3. It never replaces courses already picked on this page.
-  // Stale (> 30 min), other career/plan, unknown version or malformed
+  // Stale (> 30 min), other career/plan/preselect, unknown version or malformed
   // snapshots are ignored (see takePendingWorkspace).
   useEffect(() => {
     if (pendingWorkspaceChecked.current || !subjects.length) return
     pendingWorkspaceChecked.current = true
-    const pending = takePendingWorkspace(career, normalizedPlan)
+    const pending = takePendingWorkspace(career, normalizedPlan, preselectedSubjectsIds.current)
     if (!pending) return
     const navState = location.state as { savedSchedule?: SavedSchedule } | null
     if (navState?.savedSchedule || selectedCourses.length > 0) return
     preselectApplied.current = true
     // Applying a one-off snapshot handed over through sessionStorage (an
     // external system) once the catalog it refers to has loaded.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
     applyPayload(pending.payload)
     const tab = pending.activeTab < TAB_COUNT ? pending.activeTab : 0
     setActiveTab(tab)

@@ -25,6 +25,11 @@ export interface PendingWorkspace {
   career: string
   // Normalized plan id, as it appears in the ?plan= query param.
   plan: string
+  // The ?code= preselect of the URL it was taken on. It only applies on a
+  // URL with the same preselect: a snapshot left behind by a sign-in that
+  // never came back here (error, cancel) must not override a shared
+  // ?code= link opened later.
+  codes: string[]
   savedAt: number
   activeTab: number
   payload: SavedSchedulePayload
@@ -32,6 +37,11 @@ export interface PendingWorkspace {
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string')
+const sameCodes = (a: string[], b: string[]) => {
+  const sa = [...a].sort()
+  const sb = [...b].sort()
+  return sa.length === sb.length && sa.every((x, i) => x === sb[i])
+}
 
 export const restoreOptions = (raw: Partial<SchedulerOptions> | undefined): SchedulerOptions => ({
   allowOverlap: !!raw?.allowOverlap,
@@ -73,13 +83,14 @@ export function serializePendingWorkspace(snapshot: Omit<PendingWorkspace, 'vers
 // than the max age; null otherwise. Never throws.
 export function parsePendingWorkspace(
   raw: string | null,
-  expected: { career: string; plan: string; now: number },
+  expected: { career: string; plan: string; codes: string[]; now: number },
 ): PendingWorkspace | null {
   if (!raw) return null
   let data: unknown
   try { data = JSON.parse(raw) } catch { return null }
   if (!isObject(data) || data.version !== 1) return null
   if (data.career !== expected.career || data.plan !== expected.plan) return null
+  if (!isStringArray(data.codes) || !sameCodes(data.codes, expected.codes)) return null
   const savedAt = data.savedAt
   if (typeof savedAt !== 'number' || !Number.isFinite(savedAt)) return null
   const age = expected.now - savedAt
@@ -88,7 +99,7 @@ export function parsePendingWorkspace(
   const payload = parsePayload(data.payload)
   if (!payload) return null
   const activeTab = typeof data.activeTab === 'number' && Number.isInteger(data.activeTab) && data.activeTab >= 0 ? data.activeTab : 0
-  return { version: 1, career: expected.career, plan: expected.plan, savedAt, activeTab, payload }
+  return { version: 1, career: expected.career, plan: expected.plan, codes: data.codes, savedAt, activeTab, payload }
 }
 
 // Writes the snapshot, or removes any previous one when the workspace is
@@ -103,13 +114,14 @@ export function savePendingWorkspace(snapshot: Omit<PendingWorkspace, 'version'>
 }
 
 // Reads and always deletes the stored snapshot (a mismatched, stale or
-// malformed one is discarded too); returns it only when it applies here.
-export function takePendingWorkspace(career: string, plan: string): PendingWorkspace | null {
+// malformed one is discarded too); returns it only when it applies here
+// (same career, plan and ?code= preselect).
+export function takePendingWorkspace(career: string, plan: string, codes: string[]): PendingWorkspace | null {
   try {
     const raw = sessionStorage.getItem(PENDING_WORKSPACE_KEY)
     if (raw === null) return null
     sessionStorage.removeItem(PENDING_WORKSPACE_KEY)
-    return parsePendingWorkspace(raw, { career, plan, now: Date.now() })
+    return parsePendingWorkspace(raw, { career, plan, codes, now: Date.now() })
   } catch {
     return null
   }

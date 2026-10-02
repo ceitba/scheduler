@@ -1,6 +1,8 @@
-import React from "react"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ScheduleSlot, TimeBlock } from "../types/scheduler"
+import { useCorrections } from "../context/correctionsContext"
+import ClassDetailModal from "./corrections/ClassDetailModal"
 
 interface ScheduleGridProps {
   slots: ScheduleSlot[]
@@ -20,6 +22,10 @@ interface GroupedSlot {
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] }) => {
   const { t } = useTranslation()
+  // Inside a career workspace a class block opens its detail (rooms,
+  // student corrections, "¿Horario incorrecto?"); elsewhere it's static.
+  const corrections = useCorrections()
+  const [detail, setDetail] = useState<{ subjectId: string; commission: string } | null>(null)
 
   const timeSlots = Array.from({ length: 14 }, (_, i) => {
     const hour = i + 8
@@ -93,6 +99,35 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] })
     usedColors.set(subjectId, colorClass)
     nextColorIndex = nextColorIndex === 10 ? 1 : nextColorIndex + 1
     return colorClass
+  }
+
+  const renderBlock = (slot: GroupedSlot) => {
+    const content = (
+      <>
+        <div className="font-body font-semibold text-[#1c1c1e] text-center truncate sm:overflow-visible sm:whitespace-normal mb-1">
+          {slot.subject}
+        </div>
+        <div className="space-y-0.5 text-[#374151] text-center text-[9px] lg:text-[11px]">
+          <div>{t('courses.commissionAbbr')} {slot.commission}</div>
+          <div>{formatRooms(slot.rooms)}</div>
+          <div>{slot.timeFrom.slice(0, 5)} - {slot.timeTo.slice(0, 5)}</div>
+        </div>
+      </>
+    )
+    const layout = "w-full h-full justify-center flex flex-col gap-0.5 text-[10px] lg:text-xs"
+    if (!corrections?.findCommission(slot.subject_id, slot.commission)) {
+      return <div className={layout}>{content}</div>
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => setDetail({ subjectId: slot.subject_id, commission: slot.commission })}
+        aria-label={t('corrections.viewDetailAria', { subject: slot.subject, commission: slot.commission })}
+        className={`${layout} items-stretch rounded-sm hover:ring-2 hover:ring-primary/40`}
+      >
+        {content}
+      </button>
+    )
   }
 
   return (
@@ -242,16 +277,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] })
                           }`}
                           style={{ top: `${top}px`, height: `${height}px`, width, left, zIndex: 2 }}
                         >
-                          <div className="w-full h-full justify-center flex flex-col gap-0.5 text-[10px] lg:text-xs">
-                            <div className="font-body font-semibold text-[#1c1c1e] text-center truncate sm:overflow-visible sm:whitespace-normal mb-1">
-                              {slot.subject}
-                            </div>
-                            <div className="space-y-0.5 text-[#374151] text-center text-[9px] lg:text-[11px]">
-                              <div>{t('courses.commissionAbbr')} {slot.commission}</div>
-                              <div>{formatRooms(slot.rooms)}</div>
-                              <div>{slot.timeFrom.slice(0, 5)} - {slot.timeTo.slice(0, 5)}</div>
-                            </div>
-                          </div>
+                          {renderBlock(slot)}
                         </div>
                       )
                     })}
@@ -262,6 +288,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] })
           })}
         </div>
       </div>
+      {detail && (
+        <ClassDetailModal
+          subjectId={detail.subjectId}
+          commissionName={detail.commission}
+          onClose={() => setDetail(null)}
+        />
+      )}
     </div>
   )
 }

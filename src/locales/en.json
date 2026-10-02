@@ -127,7 +127,8 @@
       "noneBusy": "Nobody busy in this slot",
       "busy_one": "{{count}} of {{total}} busy: {{names}}",
       "busy_other": "{{count}} of {{total}} busy: {{names}}"
-    }
+    },
+    "catalogLoadFailed": "Couldn't load the subjects for: {{plans}}. Those schedules are shown without classes."
   },
   "scheduler": {
     "title": "Schedule preview",

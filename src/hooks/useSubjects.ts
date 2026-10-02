@@ -78,6 +78,19 @@ export async function fetchSubjectsByPlan(plan: string): Promise<Subject[]> {
   return flattened
 }
 
+// Subject catalogs for several plans at once. Failed plans map to an empty
+// list (their participants just show no classes) and are reported.
+export async function loadCatalogs(plans: string[]): Promise<{ loaded: [string, Subject[]][]; failed: string[] }> {
+  const results = await Promise.allSettled(plans.map((p) => fetchSubjectsByPlan(p)))
+  const loaded: [string, Subject[]][] = []
+  const failed: string[] = []
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') loaded.push([plans[i], r.value])
+    else { loaded.push([plans[i], []]); failed.push(plans[i]) }
+  })
+  return { loaded, failed }
+}
+
 // Loads the subject catalog for one plan. Call it once per page and pass
 // the result down: every call fires its own request.
 export function useSubjects(plan: string | null) {

@@ -127,7 +127,8 @@
       "noneBusy": "Nadie ocupado en este intervalo",
       "busy_one": "{{count}} de {{total}} ocupados: {{names}}",
       "busy_other": "{{count}} de {{total}} ocupados: {{names}}"
-    }
+    },
+    "catalogLoadFailed": "No se pudieron cargar las materias de: {{plans}}. Esos horarios se muestran sin clases."
   },
   "scheduler": {
     "title": "Vista previa de horarios",

@@ -91,30 +91,33 @@ export async function loadCatalogs(plans: string[]): Promise<{ loaded: [string, 
   return { loaded, failed }
 }
 
+// Shared empty catalog so callers' effects keyed on `subjects` don't rerun
+// on every render while loading.
+const NO_SUBJECTS: Subject[] = []
+
 // Loads the subject catalog for one plan. Call it once per page and pass
 // the result down: every call fires its own request.
 export function useSubjects(plan: string | null) {
-  const [subjects, setSubjects] = useState<Subject[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Outcome of the last request, tagged with its plan: until the current
+  // plan's request settles we report loading and an empty catalog, so a
+  // previous plan's subjects are never shown for the new one.
+  const [state, setState] = useState<{ plan: string; subjects: Subject[]; error: string | null } | null>(null)
 
   useEffect(() => {
     if (!plan) return
     // Responses for a plan the user already navigated away from must not
     // overwrite the current plan's catalog.
     let ignore = false
-    setLoading(true)
-    setError(null)
-    setSubjects([])
     fetchSubjectsByPlan(plan)
-      .then((result) => { if (!ignore) setSubjects(result) })
+      .then((subjects) => { if (!ignore) setState({ plan, subjects, error: null }) })
       .catch((err) => {
         if (ignore) return
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching subjects')
+        const error = err instanceof Error ? err.message : 'An error occurred while fetching subjects'
+        setState({ plan, subjects: [], error })
       })
-      .finally(() => { if (!ignore) setLoading(false) })
     return () => { ignore = true }
   }, [plan])
 
-  return { subjects, loading, error }
+  const current = state && state.plan === plan ? state : null
+  return { subjects: current?.subjects ?? NO_SUBJECTS, loading: current === null, error: current?.error ?? null }
 }

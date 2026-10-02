@@ -139,9 +139,13 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   const liveSlots = useMemo(() => liveSlotsFromCourses(selectedCourses), [selectedCourses])
   const liveConflictCount = useMemo(() => detectConflicts(selectedCourses).totalConflicts, [selectedCourses])
 
+  // savedCount is only shown to a signed-in user (the save button is hidden
+  // otherwise), so there's nothing to reset on sign-out.
   useEffect(() => {
-    if (!profile) { setSavedCount(0); return }
-    listSavedSchedules().then((l) => setSavedCount(l.length)).catch(() => { /* ignore */ })
+    if (!profile) return
+    let ignore = false
+    listSavedSchedules().then((l) => { if (!ignore) setSavedCount(l.length) }).catch(() => { /* ignore */ })
+    return () => { ignore = true }
   }, [profile])
 
   // Auto-dismiss the save toast a few seconds after it appears.
@@ -202,14 +206,17 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
         return { ...subject, selectedCommissions: sc.selectedCommissions }
       })
       .filter((x): x is SelectedCourse => x !== null)
+    // Applying a one-off snapshot handed over through router history state
+    // (an external system) and then consuming it with navigate(), which is
+    // a side effect and can't run during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
     setSelectedCourses(restoredCourses)
     setOptions(restoreOptions(payload.options))
     setBlockedTimes((payload.blockedTimes ?? []).map((b) => ({ ...b, id: b.id ?? crypto.randomUUID() })))
-    clearSchedules()
+    setGenerationRequested(false)
     restoredId.current = saved.id
     navigate(location.pathname + location.search, { replace: true, state: null })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjects, location.state])
+  }, [subjects, location.state, location.pathname, location.search, navigate])
 
   // Any change to the course/blocked-time inputs invalidates the current
   // results; the next visit to the calendar tab regenerates them.
@@ -407,6 +414,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
 
       {modalOpen && selectedCourseForModal && (
         <CommissionSelectionModal
+          key={selectedCourseForModal.subject_id}
           isOpen={modalOpen}
           onClose={() => { setModalOpen(false); setSelectedCourseForModal(null) }}
           subject={selectedCourseForModal}

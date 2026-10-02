@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import BaseModal from './BaseModal'
 import { Subject } from '../hooks/useSubjects'
@@ -22,6 +22,8 @@ const turnsForCommission = (c: Commission): Set<Turn> => {
   return turns
 }
 
+// Selection and turn filters start fresh on mount: render it only while
+// open and key it by subject so each subject gets a clean modal.
 interface CommissionSelectionModalProps {
   isOpen: boolean
   onClose: () => void
@@ -51,13 +53,6 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
       }),
     [validCommissions, activeTurns],
   )
-
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedCommissions([])
-      setActiveTurns(new Set(ALL_TURNS))
-    }
-  }, [isOpen, subject])
 
   const toggleTurn = (turn: Turn) => {
     setActiveTurns((prev) => {

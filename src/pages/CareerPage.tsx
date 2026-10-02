@@ -23,7 +23,7 @@ import { buildIcs, eventsFromSlots, googleCalendarUrl, type CalendarEvent } from
 import { createSavedSchedule, listSavedSchedules, MAX_SAVED_SCHEDULES, type SavedSchedule } from '../api/schedules'
 import { CorrectionsContext, type CorrectionsContextValue } from '../context/correctionsContext'
 import { mergeCorrection, sameSlotSet } from '../services/corrections'
-import { parsePayload, savePendingWorkspace, takePendingWorkspace, type SavedSchedulePayload } from '../services/workspaceSnapshot'
+import { discardPendingWorkspace, parsePayload, savePendingWorkspace, takePendingWorkspace, type SavedSchedulePayload } from '../services/workspaceSnapshot'
 import { SignInContext } from '../context/signInContext'
 import { startGoogleSignIn } from '../store/authStore'
 import type { CommissionCorrection } from '../types/scheduler'
@@ -277,6 +277,16 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
     // The calendar tab generates on open; reopening it must too.
     if (tab === CALENDAR_TAB) setGenerationRequested(true)
   }, [subjects, career, normalizedPlan, location.state, selectedCourses.length, applyPayload])
+
+  // Backing out of Google (browser back) can bring this page back from the
+  // back/forward cache with its workspace still in memory: nothing needs
+  // restoring, and the snapshot left behind would otherwise resurface over
+  // a fresh visit to this page later.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => { if (e.persisted) discardPendingWorkspace() }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [])
 
   // Add preselected subjects from ?code= URL params, once per mount (the
   // workspace remounts on plan change), skipping ones already selected.

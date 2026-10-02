@@ -126,3 +126,8 @@ export function takePendingWorkspace(career: string, plan: string, codes: string
     return null
   }
 }
+
+// Drops any stored snapshot without reading it.
+export function discardPendingWorkspace(): void {
+  try { sessionStorage.removeItem(PENDING_WORKSPACE_KEY) } catch { /* storage unavailable */ }
+}

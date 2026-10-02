@@ -276,7 +276,10 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
 
   const handleCommissionSelect = (commissions: string[]) => {
     if (selectedCourseForModal) {
-      updateSelectedCourses([...selectedCourses, { ...selectedCourseForModal, selectedCommissions: commissions }])
+      // The live catalog entry, not the copy captured when the dialog opened:
+      // a correction applied inside the dialog must reach the generator.
+      const subject = subjectsById.get(selectedCourseForModal.subject_id) ?? selectedCourseForModal
+      updateSelectedCourses([...selectedCourses, { ...subject, selectedCommissions: commissions }])
       setSelectedCourseForModal(null)
       setModalOpen(false)
     }

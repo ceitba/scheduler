@@ -110,6 +110,17 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   const preselectApplied = useRef(false)
   const currentSchedule: PossibleSchedule | null = schedules[currentIndex] ?? null
 
+  // Same URL shape the ?code= preselect flow reads: /<career>?plan=<plan>&code=<id>...
+  // (commissions aren't part of it; preselected subjects get all commissions).
+  const shareUrl = useMemo(() => {
+    const url = new URL(window.location.href)
+    url.search = ''
+    url.hash = ''
+    url.searchParams.set('plan', normalizedPlan)
+    selectedCourses.forEach((c) => url.searchParams.append('code', c.subject_id))
+    return url.toString()
+  }, [normalizedPlan, selectedCourses])
+
   const liveSlots = useMemo(() => liveSlotsFromCourses(selectedCourses), [selectedCourses])
   const liveConflictCount = useMemo(() => detectConflicts(selectedCourses).totalConflicts, [selectedCourses])
 
@@ -309,6 +320,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
           blockedTimes={blockedTimes}
           hasSubjects={selectedCourses.length > 0}
           onExportToCalendar={handleExportToCalendar}
+          shareUrl={shareUrl}
           liveSlots={liveSlots}
           liveConflictCount={liveConflictCount}
         />

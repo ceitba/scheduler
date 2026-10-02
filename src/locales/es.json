@@ -167,7 +167,10 @@
     "exportToCalendar": "Exportar a Google Calendar",
     "exportToCalendarDescription": "Sincroniza tu horario con Google Calendar",
     "shareLink": "Copiar enlace",
-    "linkCopied": "¡Enlace copiado al portapapeles!"
+    "linkCopied": "¡Enlace copiado al portapapeles!",
+    "shareLinkDescription": "Copiá un enlace que abre el combinador con estas materias ya seleccionadas",
+    "linkCopyFailed": "No se pudo copiar el enlace. Copialo manualmente: {{url}}",
+    "toastDismiss": "Cerrar aviso"
   },
   "wallpaper": {
     "defaultTitle": "Mi horario",

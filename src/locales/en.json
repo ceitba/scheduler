@@ -167,7 +167,10 @@
     "exportToCalendar": "Export to Google Calendar",
     "exportToCalendarDescription": "Sync your schedule with Google Calendar",
     "shareLink": "Copy link",
-    "linkCopied": "Link copied to clipboard!"
+    "linkCopied": "Link copied to clipboard!",
+    "shareLinkDescription": "Copy a link that opens the scheduler with these subjects already selected",
+    "linkCopyFailed": "Couldn't copy the link. Copy it manually: {{url}}",
+    "toastDismiss": "Dismiss notice"
   },
   "wallpaper": {
     "defaultTitle": "My schedule",

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { PossibleSchedule, ScheduleSlot, SchedulerOptions, TimeBlock } from "../types/scheduler"
 import ScheduleGrid from "./ScheduleGrid"
@@ -21,6 +21,8 @@ interface SchedulerPreviewProps {
   blockedTimes: TimeBlock[]
   hasSubjects: boolean
   onExportToCalendar: () => void
+  // Link that reopens this career/plan with the selected subjects (?code=).
+  shareUrl: string
   liveSlots?: ScheduleSlot[]
   liveConflictCount?: number
 }
@@ -36,11 +38,13 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   blockedTimes,
   hasSubjects,
   onExportToCalendar,
+  shareUrl,
   liveSlots = [],
   liveConflictCount = 0,
 }) => {
   const { t } = useTranslation()
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false)
+  const [toast, setToast] = useState<{ kind: "success" | "error"; message: string } | null>(null)
   const scheduleRef = useRef<HTMLDivElement>(null)
   const wallpaperRef = useRef<HTMLDivElement>(null)
 
@@ -207,10 +211,19 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
     }
   }
 
-  const handleShareLink = () => {
-    const url = window.location.href
-    navigator.clipboard.writeText(url)
-    alert(t('save.linkCopied'))
+  useEffect(() => {
+    if (!toast) return
+    const timer = setTimeout(() => setToast(null), toast.kind === "error" ? 8000 : 3500)
+    return () => clearTimeout(timer)
+  }, [toast])
+
+  const handleShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setToast({ kind: "success", message: t('save.linkCopied') })
+    } catch {
+      setToast({ kind: "error", message: t('save.linkCopyFailed', { url: shareUrl }) })
+    }
   }
 
   // 9:16 phone wallpaper. The WallpaperLayout component is mounted
@@ -386,6 +399,30 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
         onExportToCalendar={onExportToCalendar}
         onShareLink={handleShareLink}
       />
+
+      {toast && (
+        <div
+          role={toast.kind === "error" ? "alert" : "status"}
+          aria-live="polite"
+          className={`fixed bottom-4 right-4 z-50 max-w-sm bg-white dark:bg-[#27272a] border rounded-card shadow-card-hover p-4 flex items-start gap-3 animate-slide-up ${
+            toast.kind === "error" ? "border-red-300 dark:border-red-800" : "border-border dark:border-[#3f3f46]"
+          }`}
+        >
+          <p className={`flex-1 min-w-0 break-words font-body text-body-sm ${
+            toast.kind === "error" ? "text-red-700 dark:text-red-300" : "text-ink-primary dark:text-[#f4f4f5]"
+          }`}>
+            {toast.message}
+          </p>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            aria-label={t('save.toastDismiss')}
+            className="text-ink-secondary dark:text-[#a1a1aa] hover:text-ink-primary"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {currentSchedule && (
         <div

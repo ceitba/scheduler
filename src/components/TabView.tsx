@@ -9,11 +9,19 @@ interface Tab {
 
 interface TabViewProps {
   tabs: Tab[]
+  // Optional control of the active tab (index); uncontrolled otherwise.
+  activeTab?: number
+  onActiveTabChange?: (index: number) => void
 }
 
-export default function TabView({ tabs }: TabViewProps) {
+export default function TabView({ tabs, activeTab: controlledTab, onActiveTabChange }: TabViewProps) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState(0)
+  const [uncontrolledTab, setUncontrolledTab] = useState(0)
+  const activeTab = controlledTab ?? uncontrolledTab
+  const setActiveTab = (index: number) => {
+    setUncontrolledTab(index)
+    onActiveTabChange?.(index)
+  }
 
   return (
     <div className="w-full">

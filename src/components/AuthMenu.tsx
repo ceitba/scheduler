@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
-import { signOut, startGoogleSignIn } from '../store/authStore'
+import { signOut } from '../store/authStore'
+import { useBeginSignIn } from '../context/signInContext'
 
 // Same shape as CeitbaPage and ItbaNews — sign-in button when anonymous,
 // avatar dropdown when authed. Profile + sign out only; the scheduler has
@@ -11,7 +12,7 @@ export default function AuthMenu() {
   const { t } = useTranslation()
   const { profile, loading } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
+  const beginSignIn = useBeginSignIn()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -35,7 +36,7 @@ export default function AuthMenu() {
     return (
       <button
         type="button"
-        onClick={() => startGoogleSignIn(location.pathname + location.search)}
+        onClick={beginSignIn}
         className="min-h-[36px] px-3 font-mono text-label uppercase tracking-widest text-primary border border-primary rounded-sm hover:bg-primary hover:text-white transition-colors duration-150"
       >
         {t('auth.signIn')}

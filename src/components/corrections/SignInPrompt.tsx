@@ -1,18 +1,18 @@
-import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { startGoogleSignIn } from '../../store/authStore'
+import { useBeginSignIn } from '../../context/signInContext'
 
 // Short explanation + Google sign-in that comes back to this same page
-// (career and plan included, they live in the path and query).
+// (career and plan included, they live in the path and query; inside the
+// career workspace the unsaved workspace comes back too).
 export default function SignInPrompt({ message, compact = false }: { message: string; compact?: boolean }) {
   const { t } = useTranslation()
-  const location = useLocation()
+  const beginSignIn = useBeginSignIn()
   return (
     <div className={`flex ${compact ? 'flex-wrap items-center gap-x-3 gap-y-1' : 'flex-col gap-3'}`}>
       <p className="font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa]">{message}</p>
       <button
         type="button"
-        onClick={() => startGoogleSignIn(location.pathname + location.search)}
+        onClick={beginSignIn}
         className={
           compact
             ? 'font-body text-body-sm font-semibold text-primary dark:text-primary-300 hover:underline underline-offset-2'

@@ -1,5 +1,6 @@
-// Auth + preferences client. Reuses the existing VITE_CEITBA_API_URL (origin
-// only) and appends /api/v1 — matches config.ts's existing endpoint shape.
+// Single client for every CEITBA-API call (subjects, auth, preferences,
+// saved schedules, share sessions). VITE_CEITBA_API_URL is the origin only;
+// /api/v1 is appended here.
 const ORIGIN = (import.meta.env.VITE_CEITBA_API_URL as string | undefined) ?? 'http://localhost:8080'
 export const BASE_URL = `${ORIGIN}/api/v1`
 

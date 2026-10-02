@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import SearchBox from "./SearchBox"
-import { useSubjects, type Subject } from "../hooks/useSubjects"
+import { type Subject } from "../hooks/useSubjects"
 import SelectedCoursesList from "./SelectedCoursesList"
 import AvailableCoursesList from "./AvailableCoursesList"
 import LoadingDots from "./LoadingDots"
@@ -16,6 +16,9 @@ interface SelectedCourse extends Subject {
 }
 
 interface CourseViewProps {
+  subjects: Subject[]
+  loading: boolean
+  error: string | null
   selectedCourses: SelectedCourse[]
   onCommissionSelect: (course: Subject) => void
   onAddCourse: (course: Subject, commissions: string[]) => void
@@ -55,6 +58,9 @@ const NoScheduleModal: React.FC<NoScheduleModalProps> = ({
 }
 
 const CourseView: React.FC<CourseViewProps> = ({
+  subjects,
+  loading,
+  error,
   selectedCourses,
   onCommissionSelect,
   onAddCourse,
@@ -62,7 +68,6 @@ const CourseView: React.FC<CourseViewProps> = ({
   onReorderCourses,
 }) => {
   const { t } = useTranslation()
-  const { subjects, loading, error } = useSubjects()
   const { career } = useParams()
   const isExchange = career === "X"
   const totalCredits = selectedCourses.reduce(

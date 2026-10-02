@@ -32,8 +32,8 @@ interface CalendarEvent {
 interface GroupedEvent {
   title: string
   day: string
-  startDate: Date
-  endDate: Date
+  startDate: string
+  endDate: string
   startTime: string
   endTime: string
   location?: string
@@ -59,10 +59,10 @@ export default function CareerPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { profile } = useAuth()
-  const { subjects } = useSubjects()
   const normalizedPlan = searchParams.get('plan')
   const preselectedSubjectsIds = useRef(searchParams.getAll('code'))
   const plan = normalizedPlan ? denormalizePlanId(normalizedPlan) : null
+  const { subjects, loading: subjectsLoading, error: subjectsError } = useSubjects(plan)
 
   // ALL useState / useRef declarations come first, so the useEffect dep
   // arrays that follow can reference them without hitting TDZ during render.
@@ -237,7 +237,7 @@ export default function CareerPage() {
   const generateIcsContent = (events: GroupedEvent[]) => {
     let ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Combinador de Horarios//EN', 'CALSCALE:GREGORIAN']
     events.forEach(event => {
-      const eventDate = getNextDayDate(event.day, event.startDate)
+      const eventDate = getNextDayDate(event.day, new Date(event.startDate))
       const startTime = timeStringToDate(event.startTime, eventDate)
       const endTime = timeStringToDate(event.endTime, eventDate)
       const diff = new Date(event.endDate).getTime() - new Date(event.startDate).getTime()
@@ -302,7 +302,7 @@ export default function CareerPage() {
   }
 
   const createGoogleCalendarUrl = (event: GroupedEvent): string => {
-    const eventDate = getNextDayDate(event.day, event.startDate)
+    const eventDate = getNextDayDate(event.day, new Date(event.startDate))
     const startTime = timeStringToDate(event.startTime, eventDate)
     const endTime = timeStringToDate(event.endTime, eventDate)
     const diff = new Date(event.endDate).getTime() - new Date(event.startDate).getTime()
@@ -326,6 +326,9 @@ export default function CareerPage() {
       label: t('career.tabs.courses'),
       content: (
         <CourseView
+          subjects={subjects}
+          loading={subjectsLoading}
+          error={subjectsError}
           selectedCourses={selectedCourses}
           onCommissionSelect={course => {
             if (!modalOpen) { setSelectedCourseForModal(course); setModalOpen(true) }

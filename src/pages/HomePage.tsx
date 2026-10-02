@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useLanguageToggle } from '../hooks/useLanguageToggle'
 import { CAREERS, CAREER_METADATA, EXCHANGE_CAREER, getLatestPlan } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
 import Footer from '../components/Footer'
@@ -35,13 +36,9 @@ function CareerCard({ id, name }: { id: string; name: string }) {
 }
 
 export default function HomePage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const toggleLanguage = useLanguageToggle()
   const { theme, toggle } = useThemeContext()
-  const toggleLanguage = () => {
-    const next = i18n.language === 'es' ? 'en' : 'es'
-    i18n.changeLanguage(next)
-    localStorage.setItem('prefs.lang', next)
-  }
   const careersList = Object.entries(CAREERS).map(([id, name]) => ({ id, name }))
 
   return (

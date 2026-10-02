@@ -24,8 +24,8 @@ i18n
     interpolation: { escapeValue: false },
   })
 
-// Mirror language toggles to localStorage. Server PATCH for signed-in
-// users is fired by prefsStore.setLang from elsewhere (Navbar/HomePage).
+// Mirror every language change to localStorage. The server PATCH happens
+// only for explicit toggles (hooks/useLanguageToggle → prefsStore).
 i18n.on('languageChanged', (lang) => {
   if (lang === 'es' || lang === 'en') localStorage.setItem('prefs.lang', lang)
 })

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useLanguageToggle } from '../hooks/useLanguageToggle'
 import { useThemeContext } from '../context/ThemeContext'
 import AuthMenu from './AuthMenu'
 
@@ -7,13 +8,9 @@ import AuthMenu from './AuthMenu'
 // same SVG sun/moon, same size, same hover treatment — so the topbar
 // feels identical across pages instead of swapping unicode glyphs.
 export default function SimpleHeader() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const toggleLanguage = useLanguageToggle()
   const { theme, toggle } = useThemeContext()
-
-  const toggleLanguage = () => {
-    const next = i18n.language === 'es' ? 'en' : 'es'
-    i18n.changeLanguage(next)
-  }
 
   return (
     <header className="border-b border-border dark:border-[#3f3f46] bg-surface/95 dark:bg-[#18181b]/95 backdrop-blur-sm sticky top-0 z-40">

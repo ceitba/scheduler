@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useLanguageToggle } from '../hooks/useLanguageToggle'
 import useClickOutside from '../hooks/useClickOutside'
 import { CAREERS, AVAILABLE_PLANS } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
@@ -14,12 +15,8 @@ interface NavbarProps {
 export default function Navbar({ currentPlan }: NavbarProps) {
   const params = useParams()
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation()
-  const toggleLanguage = () => {
-    const next = i18n.language === 'es' ? 'en' : 'es'
-    // i18n.on('languageChanged') in src/i18n.ts handles persistence + server sync.
-    i18n.changeLanguage(next)
-  }
+  const { t } = useTranslation()
+  const toggleLanguage = useLanguageToggle()
   const careerCode = (params?.career as string) || ''
   const careerName = careerCode ? (CAREERS[careerCode] || '') : ''
   const plans = careerCode ? (AVAILABLE_PLANS[careerCode] || []) : []

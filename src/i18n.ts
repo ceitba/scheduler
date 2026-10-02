@@ -24,9 +24,13 @@ i18n
     interpolation: { escapeValue: false },
   })
 
-// Mirror every language change to localStorage. The server PATCH happens
-// only for explicit toggles (hooks/useLanguageToggle → prefsStore).
+// Mirror every language change to localStorage and to <html lang> (index.html
+// hardcodes "es"; screen readers and the browser's translate prompt read it).
+// The server PATCH happens only for explicit toggles
+// (hooks/useLanguageToggle → prefsStore).
+document.documentElement.lang = i18n.language || savedLang
 i18n.on('languageChanged', (lang) => {
+  document.documentElement.lang = lang
   if (lang === 'es' || lang === 'en') localStorage.setItem('prefs.lang', lang)
 })
 

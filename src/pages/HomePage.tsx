@@ -9,8 +9,9 @@ import AuthMenu from '../components/AuthMenu'
 import { useThemeContext } from '../context/ThemeContext'
 
 // Reasons CEITBA-API puts in ?error= when sign-in fails (AuthController /
-// LoginRejectedException). AuthCallback forwards them here as ?authError=.
-const AUTH_ERROR_CODES = ['unauthorized', 'unauthorized_workspace', 'unverified_email', 'auth_failed', 'invalid_state']
+// LoginRejectedException; access_denied = the user cancelled Google consent).
+// AuthCallback forwards them here as ?authError=.
+const AUTH_ERROR_CODES = ['unauthorized', 'unauthorized_workspace', 'unverified_email', 'auth_failed', 'invalid_state', 'access_denied']
 
 function CareerCard({ id, name }: { id: string; name: string }) {
   const { t } = useTranslation()

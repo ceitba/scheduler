@@ -6,6 +6,8 @@ import Checkbox from "./Checkbox"
 import SaveModal from "./SaveModal"
 import EmptyState from "./EmptyState"
 import WallpaperLayout from "./WallpaperLayout"
+import ScheduleGridSkeleton from "./ScheduleGridSkeleton"
+import LoadingDots from "./LoadingDots"
 import { WEEKDAYS } from "../services/time"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
@@ -15,6 +17,8 @@ interface SchedulerPreviewProps {
   schedules: PossibleSchedule[]
   truncated: boolean
   generated: boolean
+  // A generation for the current inputs is running (in a Web Worker).
+  generating?: boolean
   currentIndex: number
   onIndexChange: (index: number) => void
   options: SchedulerOptions
@@ -80,6 +84,7 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
   schedules,
   truncated,
   generated,
+  generating = false,
   currentIndex,
   onIndexChange,
   options,
@@ -314,12 +319,20 @@ export const SchedulerPreview: React.FC<SchedulerPreviewProps> = ({
           </p>
         )}
 
-        <div ref={scheduleRef}>
+        <div ref={scheduleRef} aria-busy={hasSubjects && generating}>
           {!hasSubjects ? (
             <EmptyState
               title={t('scheduler.noSubjects')}
               message={t('scheduler.noSubjectsMessage')}
             />
+          ) : generating ? (
+            <>
+              <div className="mb-3 flex items-center gap-3 font-mono text-label uppercase tracking-widest text-ink-secondary dark:text-[#a1a1aa]">
+                <LoadingDots size="sm" />
+                <span>{t('scheduler.generating')}</span>
+              </div>
+              <ScheduleGridSkeleton />
+            </>
           ) : currentSchedule ? (
             <>
               <ScheduleGrid slots={currentSchedule.slots} blockedTimes={blockedTimes} />

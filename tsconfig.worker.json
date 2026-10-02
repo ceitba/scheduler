@@ -1,0 +1,11 @@
+{
+  // Type-checks Web Worker entry points (src/workers/*.worker.ts) against the
+  // WebWorker lib. Modules they import (services, types) are checked here
+  // too, which keeps the worker graph free of DOM-only APIs.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "lib": ["ES2020", "WebWorker"]
+  },
+  "include": ["src/vite-env.d.ts", "src/workers/*.worker.ts"],
+  "exclude": []
+}

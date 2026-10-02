@@ -40,7 +40,7 @@ export async function apiSend<T>(method: string, path: string, body?: unknown): 
 }
 
 async function toError(res: Response): Promise<ApiError> {
-  let body: { code?: string; message?: string } = {}
+  let body: { error?: string; code?: string; message?: string } = {}
   try { body = await res.json() } catch { /* non-JSON */ }
-  return new ApiError(body.message ?? `Request failed (${res.status})`, res.status, body.code ?? 'HTTP_' + res.status)
+  return new ApiError(body.message ?? `Request failed (${res.status})`, res.status, body.error ?? body.code ?? 'HTTP_' + res.status)
 }

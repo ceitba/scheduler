@@ -10,7 +10,7 @@ import {
 } from '../api/share'
 import { listSavedSchedules, type SavedSchedule } from '../api/schedules'
 import { ApiError } from '../api/client'
-import { loadCatalogs, type Subject } from '../hooks/useSubjects'
+import { usePlanCatalogs } from '../hooks/usePlanCatalogs'
 import { useAuth } from '../hooks/useAuth'
 import { startGoogleSignIn } from '../store/authStore'
 import HeatmapGrid from '../components/HeatmapGrid'
@@ -30,9 +30,11 @@ export default function SharePage() {
   const { profile } = useAuth()
 
   const [session, setSession] = useState<ShareSession | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Token whose initial load has finished; while it differs from `token`
+  // the page shows its loading state.
+  const [loadedToken, setLoadedToken] = useState<string | null>(null)
+  const loading = loadedToken !== token
   const [error, setError] = useState<string | null>(null)
-  const [subjectsByPlan, setSubjectsByPlan] = useState<Map<string, Subject[]>>(new Map())
   const [showJoin, setShowJoin] = useState(false)
   const [savedList, setSavedList] = useState<SavedSchedule[]>([])
   const [busy, setBusy] = useState(false)
@@ -64,7 +66,7 @@ export default function SharePage() {
           setError((e as Error).message)
         }
       } finally {
-        if (initial && !cancelled) setLoading(false)
+        if (initial && !cancelled) setLoadedToken(token)
       }
     }
 
@@ -79,7 +81,6 @@ export default function SharePage() {
       else stop()
     }
 
-    setLoading(true)
     void refresh(true)
     if (document.visibilityState === 'visible') start()
     document.addEventListener('visibilitychange', onVisibilityChange)
@@ -90,30 +91,15 @@ export default function SharePage() {
     }
   }, [token])
 
-  // Fetch the subject catalog for every distinct plan present in the
-  // session so the heatmap can resolve commission times. Plans missing
-  // from this map degrade gracefully (no course slots, just blocked time).
-  useEffect(() => {
-    if (!session) return
-    const plans = Array.from(
-      new Set(session.participants.map((p) => p.plan).filter((p): p is string => !!p)),
-    )
-    const missing = plans.filter((p) => !subjectsByPlan.has(p))
-    if (missing.length === 0) return
-    let cancelled = false
-    loadCatalogs(missing).then(({ loaded, failed }) => {
-      if (cancelled) return
-      setSubjectsByPlan((prev) => {
-        const next = new Map(prev)
-        loaded.forEach(([p, subs]) => next.set(p, subs))
-        return next
-      })
-      if (failed.length) setError(t('share.catalogLoadFailed', { plans: failed.join(', ') }))
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [session, subjectsByPlan])
+  // Subject catalog for every distinct plan present in the session so the
+  // heatmap can resolve commission times. Plans missing from the map
+  // degrade gracefully (no course slots, just blocked time).
+  const sessionPlans = useMemo(
+    () => (session?.participants ?? []).map((p) => p.plan).filter((p): p is string => !!p),
+    [session],
+  )
+  const { subjectsByPlan, failedPlans } = usePlanCatalogs(sessionPlans)
+  const catalogError = failedPlans.length > 0 ? t('share.catalogLoadFailed', { plans: failedPlans.join(', ') }) : null
 
   useEffect(() => {
     if (!profile) return
@@ -212,11 +198,11 @@ export default function SharePage() {
               </p>
             </header>
 
-            {error && (
-              <p className="mb-4 px-3 py-2 rounded-sm bg-red-50 text-red-700 font-body text-body-sm border border-red-200">
-                {error}
+            {[error, catalogError].map((message) => message && (
+              <p key={message} className="mb-4 px-3 py-2 rounded-sm bg-red-50 text-red-700 font-body text-body-sm border border-red-200">
+                {message}
               </p>
-            )}
+            ))}
 
             <div className="flex flex-wrap gap-2 mb-6">
               <button

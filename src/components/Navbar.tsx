@@ -5,7 +5,7 @@ import { useLanguageToggle } from '../hooks/useLanguageToggle'
 import useClickOutside from '../hooks/useClickOutside'
 import { CAREERS, AVAILABLE_PLANS } from '../types/careers'
 import { normalizePlanId } from '../utils/planUtils'
-import { useThemeContext } from '../context/ThemeContext'
+import { useThemeContext } from '../context/themeContextValue'
 import AuthMenu from './AuthMenu'
 
 interface NavbarProps {

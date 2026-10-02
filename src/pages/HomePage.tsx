@@ -6,7 +6,7 @@ import { CAREERS, CAREER_METADATA, EXCHANGE_CAREER, getLatestPlan } from '../typ
 import { normalizePlanId } from '../utils/planUtils'
 import Footer from '../components/Footer'
 import AuthMenu from '../components/AuthMenu'
-import { useThemeContext } from '../context/ThemeContext'
+import { useThemeContext } from '../context/themeContextValue'
 
 // Reasons CEITBA-API puts in ?error= when sign-in fails (AuthController /
 // LoginRejectedException; access_denied = the user cancelled Google consent).

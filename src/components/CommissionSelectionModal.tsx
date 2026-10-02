@@ -1,6 +1,8 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import BaseModal from './BaseModal'
+import CorrectionStatus from './corrections/CorrectionStatus'
+import SuggestCorrectionModal from './corrections/SuggestCorrectionModal'
 import { Subject } from '../hooks/useSubjects'
 import { Commission, CommissionSchedule } from '../types/scheduler'
 
@@ -22,6 +24,8 @@ const turnsForCommission = (c: Commission): Set<Turn> => {
   return turns
 }
 
+// Selection and turn filters start fresh on mount: render it only while
+// open and key it by subject so each subject gets a clean modal.
 interface CommissionSelectionModalProps {
   isOpen: boolean
   onClose: () => void
@@ -38,6 +42,9 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
   const { t } = useTranslation()
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([])
   const [activeTurns, setActiveTurns] = useState<Set<Turn>>(new Set(ALL_TURNS))
+  // Commission whose schedule the student is correcting; the suggestion
+  // form takes this dialog's place until it closes (no stacked modals).
+  const [suggestFor, setSuggestFor] = useState<string | null>(null)
   const validCommissions = useMemo(
     () => subject.commissions.filter((comm) => comm.schedule?.length > 0),
     [subject.commissions],
@@ -51,13 +58,6 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
       }),
     [validCommissions, activeTurns],
   )
-
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedCommissions([])
-      setActiveTurns(new Set(ALL_TURNS))
-    }
-  }, [isOpen, subject])
 
   const toggleTurn = (turn: Turn) => {
     setActiveTurns((prev) => {
@@ -100,6 +100,17 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
     }).join('\n')
   }
 
+  const suggestCommission = suggestFor ? subject.commissions.find((c) => c.name === suggestFor) : undefined
+  if (isOpen && suggestCommission) {
+    return (
+      <SuggestCorrectionModal
+        subject={subject}
+        commission={suggestCommission}
+        onClose={() => setSuggestFor(null)}
+      />
+    )
+  }
+
   return (
     <BaseModal
       isOpen={isOpen}
@@ -139,39 +150,54 @@ const CommissionSelectionModal: React.FC<CommissionSelectionModalProps> = ({
           })}
         </div>
 
-        <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
+        <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
           {visibleCommissions.length === 0 && (
             <p className="font-body text-body-sm text-ink-secondary dark:text-[#a1a1aa] py-4 text-center">
               {t('commission.noMatchTurns')}
             </p>
           )}
-          {visibleCommissions.map((commission) => (
-            <button
-              key={commission.name}
-              onClick={() => handleCommissionToggle(commission.name)}
-              className={`w-full px-4 py-3 rounded-card text-left transition-colors duration-150 flex flex-col border ${
-                selectedCommissions.includes(commission.name)
-                  ? "bg-primary border-primary text-white"
-                  : "bg-surface dark:bg-[#18181b] border-border dark:border-[#3f3f46] hover:bg-primary-50 dark:hover:bg-primary-900 hover:border-primary"
-              }`}
-            >
-              <div className="flex items-center justify-between w-full">
-                <span className="font-body font-semibold text-body-sm">{t('commission.commission')} {commission.name}</span>
-                {selectedCommissions.includes(commission.name) && (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
+          {visibleCommissions.map((commission) => {
+            const selected = selectedCommissions.includes(commission.name)
+            return (
+              <div
+                key={commission.name}
+                className={`rounded-card border overflow-hidden transition-colors duration-150 ${
+                  selected ? "border-primary" : "border-border dark:border-[#3f3f46]"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleCommissionToggle(commission.name)}
+                  aria-pressed={selected}
+                  className={`w-full px-4 py-3 text-left transition-colors duration-150 flex flex-col ${
+                    selected
+                      ? "bg-primary text-white"
+                      : "bg-surface dark:bg-[#18181b] hover:bg-primary-50 dark:hover:bg-primary-900"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-body font-semibold text-body-sm">{t('commission.commission')} {commission.name}</span>
+                    {selected && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className={`font-mono text-label mt-1 whitespace-pre-line ${
+                    selected ? "text-white/80" : "text-ink-secondary"
+                  }`}>
+                    {formatSchedule(commission.schedule)}
+                  </div>
+                </button>
+                <CorrectionStatus
+                  className="px-4 py-2.5 bg-white dark:bg-[#27272a] border-t border-border dark:border-[#3f3f46]"
+                  subject={subject}
+                  commission={commission}
+                  onSuggest={() => setSuggestFor(commission.name)}
+                />
               </div>
-              <div className={`font-mono text-label mt-1 whitespace-pre-line ${
-                selectedCommissions.includes(commission.name)
-                  ? "text-white/80"
-                  : "text-ink-secondary"
-              }`}>
-                {formatSchedule(commission.schedule)}
-              </div>
-            </button>
-          ))}
+            )
+          })}
         </div>
 
         <div className="flex justify-between items-center gap-3 pt-4 border-t border-border dark:border-[#3f3f46]">

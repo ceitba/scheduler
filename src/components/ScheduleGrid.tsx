@@ -1,8 +1,7 @@
-import React, { useState } from "react"
+import React from "react"
 import { useTranslation } from "react-i18next"
 import { ScheduleSlot, TimeBlock } from "../types/scheduler"
 import { useCorrections } from "../context/correctionsContext"
-import ClassDetailModal from "./corrections/ClassDetailModal"
 
 interface ScheduleGridProps {
   slots: ScheduleSlot[]
@@ -24,8 +23,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] })
   const { t } = useTranslation()
   // Inside a career workspace a class block opens its detail (rooms,
   // student corrections, "¿Horario incorrecto?"); elsewhere it's static.
+  // The workspace owns that dialog: this grid unmounts while the schedules
+  // regenerate (e.g. after a vote applies a correction).
   const corrections = useCorrections()
-  const [detail, setDetail] = useState<{ subjectId: string; commission: string } | null>(null)
 
   const timeSlots = Array.from({ length: 14 }, (_, i) => {
     const hour = i + 8
@@ -121,7 +121,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] })
     return (
       <button
         type="button"
-        onClick={() => setDetail({ subjectId: slot.subject_id, commission: slot.commission })}
+        onClick={() => corrections.openClassDetail(slot.subject_id, slot.commission)}
         aria-label={t('corrections.viewDetailAria', { subject: slot.subject, commission: slot.commission })}
         className={`${layout} items-stretch rounded-sm hover:ring-2 hover:ring-primary/40`}
       >
@@ -288,13 +288,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ slots, blockedTimes = [] })
           })}
         </div>
       </div>
-      {detail && (
-        <ClassDetailModal
-          subjectId={detail.subjectId}
-          commissionName={detail.commission}
-          onClose={() => setDetail(null)}
-        />
-      )}
     </div>
   )
 }

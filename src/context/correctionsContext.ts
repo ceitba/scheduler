@@ -10,6 +10,9 @@ import type { Commission, CommissionCorrection } from '../types/scheduler'
 export interface CorrectionsContextValue {
   findCommission(subjectId: string, commissionName: string): { subject: Subject; commission: Commission } | null
   onCorrectionChange(subjectId: string, commissionName: string, correction: CommissionCorrection): void
+  // Opens the class detail dialog (rendered by the workspace, so it
+  // survives the calendar grid unmounting while schedules regenerate).
+  openClassDetail(subjectId: string, commissionName: string): void
 }
 
 export const CorrectionsContext = createContext<CorrectionsContextValue | null>(null)

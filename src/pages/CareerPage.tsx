@@ -8,6 +8,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import CommissionSelectionModal from '../components/CommissionSelectionModal'
 import SaveScheduleDialog from '../components/SaveScheduleDialog'
+import ClassDetailModal from '../components/corrections/ClassDetailModal'
 import { Subject, useSubjects } from '../hooks/useSubjects'
 import { useAuth } from '../hooks/useAuth'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
@@ -112,6 +113,8 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false)
   const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarLink[]>([])
   const [scheduleEvents, setScheduleEvents] = useState<CalendarEvent[]>([])
+  // Class block whose detail dialog is open (opened from the calendar grid).
+  const [classDetail, setClassDetail] = useState<{ subjectId: string; commissionName: string } | null>(null)
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const restoredId = useRef<string | null>(null)
   const preselectApplied = useRef(false)
@@ -177,6 +180,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
         return subject && commission ? { subject, commission } : null
       },
       onCorrectionChange: handleCorrectionChange,
+      openClassDetail: (subjectId, commissionName) => setClassDetail({ subjectId, commissionName }),
     }),
     [subjectsById, handleCorrectionChange],
   )
@@ -469,6 +473,14 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
             // The live catalog entry, so corrections made in the dialog show up in it.
             subject={subjectsById.get(selectedCourseForModal.subject_id) ?? selectedCourseForModal}
             onAddCommissions={handleCommissionSelect}
+          />
+        )}
+
+        {classDetail && (
+          <ClassDetailModal
+            subjectId={classDetail.subjectId}
+            commissionName={classDetail.commissionName}
+            onClose={() => setClassDetail(null)}
           />
         )}
 

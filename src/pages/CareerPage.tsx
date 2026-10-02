@@ -16,26 +16,16 @@ import { normalizePlanId, denormalizePlanId } from '../utils/planUtils'
 import { DEFAULT_SCHEDULER_OPTIONS, generateSchedules } from '../services/scheduler'
 import { PossibleSchedule, SchedulerOptions, TimeBlock } from '../types/scheduler'
 import { AVAILABLE_PLANS } from '../types/careers'
+import { buildIcs, eventsFromSlots, googleCalendarUrl, type CalendarEvent } from '../utils/ics'
 import { createSavedSchedule, listSavedSchedules, MAX_SAVED_SCHEDULES, type SavedSchedule } from '../api/schedules'
 
 interface SelectedCourse extends Subject {
   selectedCommissions: string[]
 }
 
-interface CalendarEvent {
+interface CalendarLink {
   url: string
   title: string
-  commission?: string
-}
-
-interface GroupedEvent {
-  title: string
-  day: string
-  startDate: string
-  endDate: string
-  startTime: string
-  endTime: string
-  location?: string
   commission?: string
 }
 
@@ -113,8 +103,8 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   // Index into `schedules` of the option the preview shows; exports use it.
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false)
-  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarEvent[]>([])
-  const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([])
+  const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarLink[]>([])
+  const [scheduleEvents, setScheduleEvents] = useState<CalendarEvent[]>([])
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const restoredId = useRef<string | null>(null)
   const preselectApplied = useRef(false)
@@ -263,88 +253,20 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
     }
   }
 
-  const generateIcsContent = (events: GroupedEvent[]) => {
-    let ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Combinador de Horarios//EN', 'CALSCALE:GREGORIAN']
-    events.forEach(event => {
-      const eventDate = getNextDayDate(event.day, new Date(event.startDate))
-      const startTime = timeStringToDate(event.startTime, eventDate)
-      const endTime = timeStringToDate(event.endTime, eventDate)
-      const diff = new Date(event.endDate).getTime() - new Date(event.startDate).getTime()
-      const repetitions = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
-      const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-      ics = ics.concat([
-        'BEGIN:VEVENT',
-        `SUMMARY:${event.title}`,
-        `DTSTART:${fmt(startTime)}`,
-        `DTEND:${fmt(endTime)}`,
-        `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
-        `LOCATION:${event.location}`,
-        'END:VEVENT'
-      ])
-    })
-    ics.push('END:VCALENDAR')
-    return ics.join('\r\n')
-  }
-
-  const getNextDayDate = (dayName: string, startDate: Date | null = null): Date => {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-    const firstDay = new Date(startDate ?? new Date())
-    const dayIndex = days.indexOf(dayName.toLowerCase())
-    let daysUntil = dayIndex - firstDay.getDay()
-    console.log("Days until target: ", daysUntil)
-    if (daysUntil <= 0) daysUntil += 7
-    firstDay.setDate(firstDay.getDate() + daysUntil)
-    return firstDay
-  }
-
-  const timeStringToDate = (timeStr: string, baseDate: Date): Date => {
-    const [hours, minutes] = timeStr.split(':').map(Number)
-    const d = new Date(baseDate)
-    d.setHours(hours, minutes, 0, 0)
-    return d
-  }
-
   const handleExportToCalendar = () => {
     if (!currentSchedule) return
     setIsCalendarPanelOpen(true)
-    const grouped = currentSchedule.slots.reduce<Record<string, GroupedEvent>>((acc, slot) => {
-      const key = `${slot.subject_id}-${slot.day}-${slot.timeFrom}-${slot.timeTo}`
-      if (!acc[key]) {
-        acc[key] = {
-          title: `${slot.subject_id} - ${slot.subject}`,
-          day: slot.day.toLowerCase(),
-          startDate: slot.dateFrom,
-          endDate: slot.dateTo,
-          startTime: slot.timeFrom,
-          endTime: slot.timeTo,
-          location: slot.classroom || '',
-          commission: slot.commission,
-        }
-      } else if (slot.classroom && !acc[key].location?.includes(slot.classroom)) {
-        acc[key].location = `${acc[key].location}, ${slot.classroom}`
-      }
-      return acc
-    }, {})
-    const events = Object.values(grouped)
+    const events = eventsFromSlots(
+      currentSchedule.slots,
+      (slot) => `${t('calendar.commission')} ${slot.commission}`,
+    )
     setScheduleEvents(events)
-    setRemainingCalendarUrls(events.map(e => ({ url: createGoogleCalendarUrl(e), title: e.title, commission: e.commission })))
-  }
-
-  const createGoogleCalendarUrl = (event: GroupedEvent): string => {
-    const eventDate = getNextDayDate(event.day, new Date(event.startDate))
-    const startTime = timeStringToDate(event.startTime, eventDate)
-    const endTime = timeStringToDate(event.endTime, eventDate)
-    const diff = new Date(event.endDate).getTime() - new Date(event.startDate).getTime()
-    const repetitions = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
-    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-    const params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: event.title,
-      dates: `${fmt(startTime)}/${fmt(endTime)}`,
-      recur: `RRULE:FREQ=WEEKLY;COUNT=${repetitions + 1}`,
-      location: event.location || ''
-    })
-    return `https://calendar.google.com/calendar/render?${params}`
+    setRemainingCalendarUrls(
+      events.flatMap((e) => {
+        const url = googleCalendarUrl(e)
+        return url ? [{ url, title: e.title, commission: e.commission }] : []
+      }),
+    )
   }
 
   const tabs = [
@@ -510,11 +432,12 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
                 </ol>
                 <button
                   onClick={() => {
-                    const blob = new Blob([generateIcsContent(scheduleEvents)], { type: 'text/calendar' })
+                    const blob = new Blob([buildIcs(scheduleEvents)], { type: 'text/calendar;charset=utf-8' })
                     const link = document.createElement('a')
                     link.href = URL.createObjectURL(blob)
                     link.download = 'horario.ics'
                     link.click()
+                    setTimeout(() => URL.revokeObjectURL(link.href), 0)
                   }}
                   className="w-full flex items-center justify-center gap-2 min-h-[44px] px-4 bg-primary text-surface font-body font-semibold rounded-sm hover:bg-primary-600 transition-colors duration-150"
                 >

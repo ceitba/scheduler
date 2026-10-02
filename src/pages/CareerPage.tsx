@@ -117,6 +117,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   const [scheduleEvents, setScheduleEvents] = useState<GroupedEvent[]>([])
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const restoredId = useRef<string | null>(null)
+  const preselectApplied = useRef(false)
   const currentSchedule: PossibleSchedule | null = schedules[currentIndex] ?? null
 
   const liveSlots = useMemo(() => liveSlotsFromCourses(selectedCourses), [selectedCourses])
@@ -146,15 +147,22 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
     return () => document.removeEventListener('mousedown', handleClick)
   }, [isCalendarPanelOpen])
 
-  // Add preselected subjects from ?code= URL params (existing flow).
+  // Add preselected subjects from ?code= URL params, once per mount (the
+  // workspace remounts on plan change), skipping ones already selected.
   useEffect(() => {
-    if (preselectedSubjectsIds.current.length && subjects.length) {
-      const preselected = subjects.filter(s => preselectedSubjectsIds.current.includes(s.subject_id))
-      setSelectedCourses(prev => [
+    if (preselectApplied.current) return
+    if (!preselectedSubjectsIds.current.length || !subjects.length) return
+    preselectApplied.current = true
+    const preselected = subjects.filter(s => preselectedSubjectsIds.current.includes(s.subject_id))
+    setSelectedCourses(prev => {
+      const have = new Set(prev.map(c => c.subject_id))
+      return [
         ...prev,
-        ...preselected.map(s => ({ ...s, selectedCommissions: s.commissions.map(c => c.name) })),
-      ])
-    }
+        ...preselected
+          .filter(s => !have.has(s.subject_id))
+          .map(s => ({ ...s, selectedCommissions: s.commissions.map(c => c.name) })),
+      ]
+    })
   }, [subjects])
 
   // Restore from a saved schedule once the subject catalog is loaded.

@@ -31,7 +31,37 @@ export function subscribe(fn: (p: UserProfile | null) => void): () => void {
   return () => { _listeners.delete(fn) }
 }
 
-export function startGoogleSignIn(): void {
+const RETURN_TO_KEY = 'auth.returnTo'
+
+// The OAuth redirect URI is fixed (/auth/callback), so the in-app path to
+// come back to travels in sessionStorage. Only same-app paths are accepted.
+function isAppPath(path: unknown): path is string {
+  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/auth/')
+}
+
+// The path the user started signing in from, or null. Read by the
+// /auth/callback route, which clears it once it has navigated (reading
+// doesn't clear, so StrictMode's double effect run sees the same value).
+export function getSignInReturnTo(): string | null {
+  try {
+    const path = sessionStorage.getItem(RETURN_TO_KEY)
+    return isAppPath(path) ? path : null
+  } catch {
+    return null
+  }
+}
+
+export function clearSignInReturnTo(): void {
+  try { sessionStorage.removeItem(RETURN_TO_KEY) } catch { /* storage unavailable */ }
+}
+
+// `returnTo` is a router path (relative to the app's base, e.g.
+// "/informatica?plan=S10-Rev18") to land on after signing in.
+export function startGoogleSignIn(returnTo?: string): void {
+  try {
+    if (isAppPath(returnTo)) sessionStorage.setItem(RETURN_TO_KEY, returnTo)
+    else sessionStorage.removeItem(RETURN_TO_KEY)
+  } catch { /* storage unavailable: land on home as before */ }
   const redirectUri =
     (import.meta.env.VITE_GOOGLE_REDIRECT_URI as string | undefined) ??
     `${window.location.origin}${import.meta.env.BASE_URL}auth/callback`

@@ -152,6 +152,7 @@
     "blockedTime": "Horario bloqueado",
     "noSubjects": "No hay materias seleccionadas",
     "noSubjectsMessage": "Seleccioná materias en la pestaña Materias y luego volvé aquí para ver las combinaciones posibles.",
+    "generating": "Generando combinaciones…",
     "noCombinations": "No hay combinaciones posibles para esta configuración",
     "noCombinationsMessage": "Probá cambiando las opciones o seleccionando otras comisiones.",
     "livePreviewHint": "Vista previa en vivo · generá combinaciones para ver opciones válidas",

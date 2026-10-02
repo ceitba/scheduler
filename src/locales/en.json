@@ -152,6 +152,7 @@
     "blockedTime": "Blocked time",
     "noSubjects": "No subjects selected",
     "noSubjectsMessage": "Select subjects in the Courses tab then come back here to see possible combinations.",
+    "generating": "Generating combinations…",
     "noCombinations": "No possible combinations for this configuration",
     "noCombinationsMessage": "Try changing the options or selecting different commissions.",
     "livePreviewHint": "Live preview · generate combinations to see valid options",

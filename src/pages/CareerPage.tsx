@@ -13,7 +13,9 @@ import { useAuth } from '../hooks/useAuth'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { detectConflicts, liveSlotsFromCourses } from '../services/conflicts'
 import { normalizePlanId, denormalizePlanId } from '../utils/planUtils'
-import { DEFAULT_SCHEDULER_OPTIONS, generateSchedules } from '../services/scheduler'
+import { DEFAULT_SCHEDULER_OPTIONS, type GenerationResult } from '../services/scheduler'
+import { useScheduleGeneration } from '../hooks/useScheduleGeneration'
+import type { GenerationInputs } from '../workers/protocol'
 import { PossibleSchedule, SchedulerOptions, TimeBlock } from '../types/scheduler'
 import { AVAILABLE_PLANS } from '../types/careers'
 import { buildIcs, eventsFromSlots, googleCalendarUrl, type CalendarEvent } from '../utils/ics'
@@ -30,6 +32,7 @@ interface CalendarLink {
 }
 
 const VALID_CAREERS = Object.keys(AVAILABLE_PLANS)
+const NO_SCHEDULES: PossibleSchedule[] = []
 
 // Payload shape we round-trip through the saved_schedules.payload JSONB
 // column. Bump `version` if the shape ever changes; restore() should refuse
@@ -97,17 +100,29 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   // props, so a restored saved schedule reaches every mounted tab.
   const [options, setOptions] = useState<SchedulerOptions>(DEFAULT_SCHEDULER_OPTIONS)
   const [blockedTimes, setBlockedTimes] = useState<TimeBlock[]>([])
-  const [schedules, setSchedules] = useState<PossibleSchedule[]>([])
-  const [schedulesTruncated, setSchedulesTruncated] = useState(false)
-  const [hasGenerated, setHasGenerated] = useState(false)
+  // Generation is lazy: requested by opening the calendar tab or changing
+  // its options, and dropped whenever courses/blocked times change.
+  const [generationRequested, setGenerationRequested] = useState(false)
   // Index into `schedules` of the option the preview shows; exports use it.
-  const [currentIndex, setCurrentIndex] = useState(0)
+  // Tagged with the result it indexes so a new result starts at option 1.
+  const [selection, setSelection] = useState<{ result: GenerationResult | null; index: number }>({ result: null, index: 0 })
   const [isCalendarPanelOpen, setIsCalendarPanelOpen] = useState(false)
   const [remainingCalendarUrls, setRemainingCalendarUrls] = useState<CalendarLink[]>([])
   const [scheduleEvents, setScheduleEvents] = useState<CalendarEvent[]>([])
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const restoredId = useRef<string | null>(null)
   const preselectApplied = useRef(false)
+
+  // New identity only when an input changes, which is what triggers a
+  // (re)generation in the worker. Plain data, so it can be posted as is.
+  const generationInputs = useMemo<GenerationInputs | null>(
+    () => (generationRequested ? { subjects: selectedCourses, options, blockedTimes } : null),
+    [generationRequested, selectedCourses, options, blockedTimes],
+  )
+  const { result: generation, pending: generating } = useScheduleGeneration(generationInputs)
+  const schedules = generation?.schedules ?? NO_SCHEDULES
+  const currentIndex = selection.result === generation ? selection.index : 0
+  const setCurrentIndex = (index: number) => setSelection({ result: generation, index })
   const currentSchedule: PossibleSchedule | null = schedules[currentIndex] ?? null
 
   // Same URL shape the ?code= preselect flow reads: /<career>?plan=<plan>&code=<id>...
@@ -196,21 +211,10 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjects, location.state])
 
-  // Any change to the generator inputs invalidates the current results; the
-  // next visit to the calendar tab regenerates them.
+  // Any change to the course/blocked-time inputs invalidates the current
+  // results; the next visit to the calendar tab regenerates them.
   function clearSchedules() {
-    setSchedules([])
-    setSchedulesTruncated(false)
-    setHasGenerated(false)
-    setCurrentIndex(0)
-  }
-
-  function runGenerator(nextOptions: SchedulerOptions = options) {
-    const result = generateSchedules(selectedCourses, nextOptions, blockedTimes)
-    setSchedules(result.schedules)
-    setSchedulesTruncated(result.truncated)
-    setHasGenerated(true)
-    setCurrentIndex(0)
+    setGenerationRequested(false)
   }
 
   const updateSelectedCourses = (updated: SelectedCourse[]) => {
@@ -228,7 +232,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
 
   const handleOptionsChange = (next: SchedulerOptions) => {
     setOptions(next)
-    runGenerator(next)
+    setGenerationRequested(true)
   }
 
   const handleBlockedTimesChange = (blocks: TimeBlock[]) => {
@@ -311,8 +315,9 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
       content: (
         <SchedulerPreview
           schedules={schedules}
-          truncated={schedulesTruncated}
-          generated={hasGenerated}
+          truncated={generation?.truncated ?? false}
+          generated={generation !== null}
+          generating={generating}
           currentIndex={currentIndex}
           onIndexChange={setCurrentIndex}
           options={options}
@@ -325,7 +330,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
           liveConflictCount={liveConflictCount}
         />
       ),
-      onClick: () => runGenerator(),
+      onClick: () => setGenerationRequested(true),
     },
   ]
 

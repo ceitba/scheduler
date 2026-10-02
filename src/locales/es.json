@@ -227,5 +227,14 @@
     "somethingWrong": "Algo salió mal",
     "retry": "Reintentar",
     "loading": "Cargando"
+  },
+  "authErrors": {
+    "title": "No pudimos iniciar tu sesión",
+    "dismiss": "Cerrar aviso",
+    "unauthorized": "Tu email no está habilitado para ingresar. Usá tu cuenta @itba.edu.ar.",
+    "unauthorized_workspace": "El dominio de tu cuenta de Google no está habilitado. Usá tu cuenta @itba.edu.ar.",
+    "unverified_email": "El email de tu cuenta de Google no está verificado.",
+    "auth_failed": "Algo salió mal al iniciar sesión. Probá de nuevo.",
+    "invalid_state": "La solicitud de inicio de sesión expiró o no es válida. Probá de nuevo."
   }
 }

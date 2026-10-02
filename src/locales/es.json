@@ -243,7 +243,8 @@
     "unauthorized_workspace": "El dominio de tu cuenta de Google no está habilitado. Usá tu cuenta @itba.edu.ar.",
     "unverified_email": "El email de tu cuenta de Google no está verificado.",
     "auth_failed": "Algo salió mal al iniciar sesión. Probá de nuevo.",
-    "invalid_state": "La solicitud de inicio de sesión expiró o no es válida. Probá de nuevo."
+    "invalid_state": "La solicitud de inicio de sesión expiró o no es válida. Probá de nuevo.",
+    "access_denied": "Cancelaste el inicio de sesión con Google."
   },
   "common": {
     "close": "Cerrar",

@@ -23,6 +23,9 @@ import { buildIcs, eventsFromSlots, googleCalendarUrl, type CalendarEvent } from
 import { createSavedSchedule, listSavedSchedules, MAX_SAVED_SCHEDULES, type SavedSchedule } from '../api/schedules'
 import { CorrectionsContext, type CorrectionsContextValue } from '../context/correctionsContext'
 import { mergeCorrection, sameSlotSet } from '../services/corrections'
+import { discardPendingWorkspace, parsePayload, savePendingWorkspace, takePendingWorkspace, type SavedSchedulePayload } from '../services/workspaceSnapshot'
+import { SignInContext } from '../context/signInContext'
+import { startGoogleSignIn } from '../store/authStore'
 import type { CommissionCorrection } from '../types/scheduler'
 
 interface SelectedCourse extends Subject {
@@ -38,23 +41,9 @@ interface CalendarLink {
 const VALID_CAREERS = Object.keys(AVAILABLE_PLANS)
 const NO_SCHEDULES: PossibleSchedule[] = []
 
-// Payload shape we round-trip through the saved_schedules.payload JSONB
-// column. Bump `version` if the shape ever changes; restore() should refuse
-// unknown versions instead of silently mis-restoring. (Older payloads also
-// carry an unused `isPriority` per course and `avoidBuildingChange` in
-// options; both are ignored on restore.)
-interface SavedSchedulePayload {
-  version: 1
-  selectedCourses: { subject_id: string; selectedCommissions: string[] }[]
-  options: SchedulerOptions
-  blockedTimes: TimeBlock[]
-}
-
-const restoreOptions = (raw: Partial<SchedulerOptions> | undefined): SchedulerOptions => ({
-  allowOverlap: !!raw?.allowOverlap,
-  allowUnlimitedOverlap: !!raw?.allowUnlimitedOverlap,
-  allowFreeDay: !!raw?.allowFreeDay,
-})
+// Tab indexes (see `tabs` below).
+const TAB_COUNT = 3
+const CALENDAR_TAB = 2
 
 // Validates the route, then mounts the workspace keyed by career + plan so
 // switching plan starts from a clean slate (no courses or schedules from
@@ -115,9 +104,11 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   const [scheduleEvents, setScheduleEvents] = useState<CalendarEvent[]>([])
   // Class block whose detail dialog is open (opened from the calendar grid).
   const [classDetail, setClassDetail] = useState<{ subjectId: string; commissionName: string } | null>(null)
+  const [activeTab, setActiveTab] = useState(0)
   const calendarPanelRef = useRef<HTMLDivElement>(null)
   const restoredId = useRef<string | null>(null)
   const preselectApplied = useRef(false)
+  const pendingWorkspaceChecked = useRef(false)
 
   // New identity only when an input changes, which is what triggers a
   // (re)generation in the worker. Plain data, so it can be posted as is.
@@ -216,6 +207,87 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
     return () => document.removeEventListener('mousedown', handleClick)
   }, [isCalendarPanelOpen])
 
+  // Replaces the workspace inputs with a saved payload. Subjects missing
+  // from the current catalog are dropped.
+  const applyPayload = useCallback((payload: SavedSchedulePayload) => {
+    const byId = new Map(subjects.map((s) => [s.subject_id, s]))
+    const restoredCourses: SelectedCourse[] = payload.selectedCourses
+      .map((sc) => {
+        const subject = byId.get(sc.subject_id)
+        if (!subject) return null
+        return { ...subject, selectedCommissions: sc.selectedCommissions }
+      })
+      .filter((x): x is SelectedCourse => x !== null)
+    setSelectedCourses(restoredCourses)
+    setOptions(payload.options)
+    setBlockedTimes(payload.blockedTimes.map((b) => ({ ...b, id: b.id ?? crypto.randomUUID() })))
+    setGenerationRequested(false)
+  }, [subjects])
+
+  const currentPayload = (): SavedSchedulePayload => ({
+    version: 1,
+    selectedCourses: selectedCourses.map((c) => ({
+      subject_id: c.subject_id,
+      selectedCommissions: c.selectedCommissions,
+    })),
+    options,
+    blockedTimes,
+  })
+
+  // Every sign-in button on this page (navbar, corrections) goes through
+  // here: the workspace only lives in React state, so it's snapshotted to
+  // sessionStorage before the redirect to Google and restored on return
+  // (effect below).
+  const beginSignIn = () => {
+    savePendingWorkspace({
+      career,
+      plan: normalizedPlan,
+      codes: preselectedSubjectsIds.current,
+      savedAt: Date.now(),
+      activeTab,
+      payload: currentPayload(),
+    })
+    startGoogleSignIn(location.pathname + location.search)
+  }
+
+  // Restore the workspace snapshotted before a sign-in redirect, once the
+  // catalog has loaded; the snapshot is deleted whether or not it applies.
+  // Precedence:
+  //  1. A saved schedule opened from /saved (router state) wins; the
+  //     snapshot is discarded.
+  //  2. Otherwise the snapshot wins over the ?code= preselect: it only
+  //     applies on a URL with the same preselect it was taken on, so it
+  //     already holds the preselect plus the student's edits since.
+  //  3. It never replaces courses already picked on this page.
+  // Stale (> 30 min), other career/plan/preselect, unknown version or malformed
+  // snapshots are ignored (see takePendingWorkspace).
+  useEffect(() => {
+    if (pendingWorkspaceChecked.current || !subjects.length) return
+    pendingWorkspaceChecked.current = true
+    const pending = takePendingWorkspace(career, normalizedPlan, preselectedSubjectsIds.current)
+    if (!pending) return
+    const navState = location.state as { savedSchedule?: SavedSchedule } | null
+    if (navState?.savedSchedule || selectedCourses.length > 0) return
+    preselectApplied.current = true
+    // Applying a one-off snapshot handed over through sessionStorage (an
+    // external system) once the catalog it refers to has loaded.
+    applyPayload(pending.payload)
+    const tab = pending.activeTab < TAB_COUNT ? pending.activeTab : 0
+    setActiveTab(tab)
+    // The calendar tab generates on open; reopening it must too.
+    if (tab === CALENDAR_TAB) setGenerationRequested(true)
+  }, [subjects, career, normalizedPlan, location.state, selectedCourses.length, applyPayload])
+
+  // Backing out of Google (browser back) can bring this page back from the
+  // back/forward cache with its workspace still in memory: nothing needs
+  // restoring, and the snapshot left behind would otherwise resurface over
+  // a fresh visit to this page later.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => { if (e.persisted) discardPendingWorkspace() }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [])
+
   // Add preselected subjects from ?code= URL params, once per mount (the
   // workspace remounts on plan change), skipping ones already selected.
   useEffect(() => {
@@ -245,27 +317,16 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
     const saved = navState?.savedSchedule
     if (!saved) return
     if (restoredId.current === saved.id) return
-    const payload = saved.payload as unknown as Partial<SavedSchedulePayload>
-    if (payload?.version !== 1) { restoredId.current = saved.id; return }
-    const byId = new Map(subjects.map((s) => [s.subject_id, s]))
-    const restoredCourses: SelectedCourse[] = (payload.selectedCourses ?? [])
-      .map((sc) => {
-        const subject = byId.get(sc.subject_id)
-        if (!subject) return null
-        return { ...subject, selectedCommissions: sc.selectedCommissions }
-      })
-      .filter((x): x is SelectedCourse => x !== null)
+    const payload = parsePayload(saved.payload)
+    if (!payload) { restoredId.current = saved.id; return }
     // Applying a one-off snapshot handed over through router history state
     // (an external system) and then consuming it with navigate(), which is
     // a side effect and can't run during render.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
-    setSelectedCourses(restoredCourses)
-    setOptions(restoreOptions(payload.options))
-    setBlockedTimes((payload.blockedTimes ?? []).map((b) => ({ ...b, id: b.id ?? crypto.randomUUID() })))
-    setGenerationRequested(false)
+    applyPayload(payload)
     restoredId.current = saved.id
     navigate(location.pathname + location.search, { replace: true, state: null })
-  }, [subjects, location.state, location.pathname, location.search, navigate])
+  }, [subjects, location.state, location.pathname, location.search, navigate, applyPayload])
 
   // Any change to the course/blocked-time inputs invalidates the current
   // results; the next visit to the calendar tab regenerates them.
@@ -302,15 +363,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   async function handleSave(name: string) {
     setSaveBusy(true); setSaveError(null)
     try {
-      const payload: SavedSchedulePayload = {
-        version: 1,
-        selectedCourses: selectedCourses.map((c) => ({
-          subject_id: c.subject_id,
-          selectedCommissions: c.selectedCommissions,
-        })),
-        options,
-        blockedTimes,
-      }
+      const payload = currentPayload()
       const saved = await createSavedSchedule({
         name,
         careerId: career ?? null,
@@ -394,6 +447,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
   ]
 
   return (
+    <SignInContext.Provider value={beginSignIn}>
     <CorrectionsContext.Provider value={correctionsContext}>
       <div className="flex flex-col min-h-screen bg-surface dark:bg-[#18181b]">
         <Navbar currentPlan={plan || ''} />
@@ -413,7 +467,7 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
                 </button>
               </div>
             )}
-            <TabView tabs={tabs} />
+            <TabView tabs={tabs} activeTab={activeTab} onActiveTabChange={setActiveTab} />
           </div>
         </main>
 
@@ -566,5 +620,6 @@ function CareerWorkspace({ career, normalizedPlan }: { career: string; normalize
         )}
       </div>
     </CorrectionsContext.Provider>
+    </SignInContext.Provider>
   )
 }

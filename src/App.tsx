@@ -42,10 +42,15 @@ function Bootstrap() {
   return null
 }
 
+// Vite's BASE_URL ends in "/" (e.g. "/scheduler/"), and React Router treats
+// that basename as not matching "/scheduler" itself, which is exactly the URL
+// the CEITBA site links to: the router renders nothing (a blank page).
+const ROUTER_BASENAME = import.meta.env.BASE_URL.replace(/\/+$/, '') || '/'
+
 export default function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <BrowserRouter basename={ROUTER_BASENAME}>
         <Bootstrap />
         <Routes>
           <Route path="/" element={<HomePage />} />

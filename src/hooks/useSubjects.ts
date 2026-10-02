@@ -1,18 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { apiGet } from '../api/client'
-
-interface Schedule {
-  day: string
-  classroom: string
-  building: string
-  time_from: string
-  time_to: string
-}
-
-interface Commission {
-  name: string
-  schedule: Schedule[]
-}
+import type { Commission, CommissionSchedule as Schedule } from '../types/scheduler'
 
 export interface Subject {
   subject_id: string
@@ -44,6 +32,12 @@ export async function fetchSubjectsByPlan(plan: string): Promise<Subject[]> {
   const data = await apiGet<SubjectsResponse>(`/subjects?plan=${encodeURIComponent(plan)}`)
   const isValidSchedule = (schedule: Schedule) =>
     schedule.day && schedule.time_from && schedule.time_to
+  // Slots a student added in a correction carry no room (null in the JSON);
+  // the rest of the app expects strings.
+  const cleanSlots = (slots: Schedule[] | undefined): Schedule[] =>
+    Array.isArray(slots)
+      ? slots.filter(isValidSchedule).map((s) => ({ ...s, classroom: s.classroom ?? '', building: s.building ?? '' }))
+      : []
   const seen = new Set<string>()
   const flattened: Subject[] = []
   Object.entries(data).forEach(([, yearData]) => {
@@ -61,9 +55,9 @@ export async function fetchSubjectsByPlan(plan: string): Promise<Subject[]> {
             })
             .map((commission) => ({
               ...commission,
-              schedule: Array.isArray(commission.schedule)
-                ? commission.schedule.filter(isValidSchedule)
-                : [],
+              schedule: cleanSlots(commission.schedule),
+              sga_schedule: commission.sga_schedule ? cleanSlots(commission.sga_schedule) : undefined,
+              corrections: (commission.corrections ?? []).map((c) => ({ ...c, schedule: cleanSlots(c.schedule) })),
             }))
           flattened.push({
             ...subject,
@@ -91,30 +85,57 @@ export async function loadCatalogs(plans: string[]): Promise<{ loaded: [string, 
   return { loaded, failed }
 }
 
+// Shared empty catalog so callers' effects keyed on `subjects` don't rerun
+// on every render while loading.
+const NO_SUBJECTS: Subject[] = []
+
 // Loads the subject catalog for one plan. Call it once per page and pass
 // the result down: every call fires its own request.
 export function useSubjects(plan: string | null) {
-  const [subjects, setSubjects] = useState<Subject[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Outcome of the last request, tagged with its plan: until the current
+  // plan's request settles we report loading and an empty catalog, so a
+  // previous plan's subjects are never shown for the new one.
+  const [state, setState] = useState<{ plan: string; subjects: Subject[]; error: string | null } | null>(null)
 
   useEffect(() => {
     if (!plan) return
     // Responses for a plan the user already navigated away from must not
     // overwrite the current plan's catalog.
     let ignore = false
-    setLoading(true)
-    setError(null)
-    setSubjects([])
     fetchSubjectsByPlan(plan)
-      .then((result) => { if (!ignore) setSubjects(result) })
+      .then((subjects) => { if (!ignore) setState({ plan, subjects, error: null }) })
       .catch((err) => {
         if (ignore) return
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching subjects')
+        const error = err instanceof Error ? err.message : 'An error occurred while fetching subjects'
+        setState({ plan, subjects: [], error })
       })
-      .finally(() => { if (!ignore) setLoading(false) })
     return () => { ignore = true }
   }, [plan])
 
-  return { subjects, loading, error }
+  // Replaces one commission in place (e.g. after a schedule correction
+  // vote) without refetching the whole plan. `update` must be pure.
+  const updateCommission = useCallback(
+    (subjectId: string, commissionName: string, update: (c: Commission) => Commission) => {
+      setState((s) => s && {
+        ...s,
+        subjects: s.subjects.map((subject) =>
+          subject.subject_id !== subjectId
+            ? subject
+            : {
+                ...subject,
+                commissions: subject.commissions.map((c) => (c.name === commissionName ? update(c) : c)),
+              },
+        ),
+      })
+    },
+    [],
+  )
+
+  const current = state && state.plan === plan ? state : null
+  return {
+    subjects: current?.subjects ?? NO_SUBJECTS,
+    loading: current === null,
+    error: current?.error ?? null,
+    updateCommission,
+  }
 }

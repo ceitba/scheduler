@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useLanguageToggle } from '../hooks/useLanguageToggle'
-import { useThemeContext } from '../context/ThemeContext'
+import { useThemeContext } from '../context/themeContextValue'
 import AuthMenu from './AuthMenu'
 
 // Light header used by routes that don't need the career/plan picker

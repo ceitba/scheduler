@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { signOut, startGoogleSignIn } from '../store/authStore'
@@ -11,6 +11,7 @@ export default function AuthMenu() {
   const { t } = useTranslation()
   const { profile, loading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -34,7 +35,7 @@ export default function AuthMenu() {
     return (
       <button
         type="button"
-        onClick={startGoogleSignIn}
+        onClick={() => startGoogleSignIn(location.pathname + location.search)}
         className="min-h-[36px] px-3 font-mono text-label uppercase tracking-widest text-primary border border-primary rounded-sm hover:bg-primary hover:text-white transition-colors duration-150"
       >
         {t('auth.signIn')}

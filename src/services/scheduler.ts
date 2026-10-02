@@ -13,7 +13,8 @@ import { DayInterval, WEEKDAYS, overlapMinutes, timeToMinutes } from "./time";
 // UI shows a "showing the first N" notice instead of freezing the tab.
 export const MAX_GENERATED_SCHEDULES = 500;
 // Upper bound on search nodes visited, so a large selection with
-// constraints that reject almost everything can't stall the main thread.
+// constraints that reject almost everything can't run unbounded (it runs in
+// a Web Worker, see src/workers/, but slow phones still pay for every step).
 export const MAX_SEARCH_STEPS = 1_000_000;
 // "Limited overlap": two classes may share at most this many minutes.
 export const LIMITED_OVERLAP_MINUTES = 30;
@@ -28,6 +29,9 @@ export interface GenerationResult {
   schedules: PossibleSchedule[];
   // True when the result cap or the search budget cut the search short.
   truncated: boolean;
+  // True when it was the search budget (MAX_SEARCH_STEPS) that stopped it,
+  // as opposed to having found MAX_GENERATED_SCHEDULES results.
+  stepLimitReached: boolean;
 }
 
 interface GenerationLimits {
@@ -157,6 +161,8 @@ export const rankSchedules = (schedules: PossibleSchedule[]): PossibleSchedule[]
 // Builds every combination of one commission per subject that satisfies the
 // options and avoids the blocked times. Constraints are applied while
 // backtracking (not after), so rejected branches are never expanded.
+// Pure and DOM-free: the app runs it inside src/workers/scheduler.worker.ts,
+// and useScheduleGeneration falls back to calling it directly.
 export function generateSchedules(
   subjects: SchedulerSubject[],
   options: SchedulerOptions,
@@ -165,7 +171,7 @@ export function generateSchedules(
 ): GenerationResult {
   const maxResults = limits.maxResults ?? MAX_GENERATED_SCHEDULES;
   const maxSteps = limits.maxSteps ?? MAX_SEARCH_STEPS;
-  if (subjects.length === 0) return { schedules: [], truncated: false };
+  if (subjects.length === 0) return { schedules: [], truncated: false, stepLimitReached: false };
 
   const maxPairOverlap = options.allowUnlimitedOverlap
     ? Infinity
@@ -178,12 +184,13 @@ export function generateSchedules(
       .filter(slots => !slots.some(slot => intersectsBlockedTime(slot, blockedTimes)))
       .map(slots => ({ slots, intervals: slots.map(slotInterval) }))
   );
-  if (candidates.some(list => list.length === 0)) return { schedules: [], truncated: false };
+  if (candidates.some(list => list.length === 0)) return { schedules: [], truncated: false, stepLimitReached: false };
 
   const found: PossibleSchedule[] = [];
   const chosen: { slots: ScheduleSlot[]; intervals: DayInterval[] }[] = [];
   let steps = 0;
   let truncated = false;
+  let stepLimitReached = false;
 
   const fits = (option: { intervals: DayInterval[] }): boolean => {
     if (maxPairOverlap !== Infinity) {
@@ -206,7 +213,7 @@ export function generateSchedules(
 
   const backtrack = (index: number): void => {
     if (truncated) return;
-    if (++steps > maxSteps) { truncated = true; return; }
+    if (++steps > maxSteps) { truncated = true; stepLimitReached = true; return; }
     if (index === candidates.length) {
       found.push(createSchedule(chosen.flatMap(c => c.slots)));
       if (found.length >= maxResults) truncated = true;
@@ -222,5 +229,5 @@ export function generateSchedules(
   };
 
   backtrack(0);
-  return { schedules: rankSchedules(found), truncated };
+  return { schedules: rankSchedules(found), truncated, stepLimitReached };
 }

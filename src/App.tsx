@@ -7,20 +7,27 @@ import CareerPage from './pages/CareerPage'
 import SavedSchedulesPage from './pages/SavedSchedulesPage'
 import ComparisonPage from './pages/ComparisonPage'
 import SharePage from './pages/SharePage'
-import { getSession, subscribe } from './store/authStore'
+import { clearSignInReturnTo, getSession, getSignInReturnTo, subscribe } from './store/authStore'
+import CorrectionNotices from './components/corrections/CorrectionNotices'
 
 // Lands here after the API redirects post-OAuth. The session cookie is
-// already set; we just refresh the cache and bounce home.
+// already set; we just refresh the cache and go back to the page the user
+// signed in from (or home).
 function AuthCallback() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   useEffect(() => {
     const error = params.get('error')
     if (error) {
+      clearSignInReturnTo()
       navigate(`/?authError=${encodeURIComponent(error)}`, { replace: true })
       return
     }
-    getSession({ force: true }).finally(() => navigate('/', { replace: true }))
+    const returnTo = getSignInReturnTo() ?? '/'
+    getSession({ force: true }).finally(() => {
+      clearSignInReturnTo()
+      navigate(returnTo, { replace: true })
+    })
   }, [navigate, params])
   return null
 }
@@ -52,6 +59,7 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter basename={ROUTER_BASENAME}>
         <Bootstrap />
+        <CorrectionNotices />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />

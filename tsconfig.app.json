@@ -20,5 +20,8 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Worker entry points get the WebWorker lib instead (tsconfig.worker.json);
+  // loading DOM and WebWorker libs in one program makes them clash.
+  "exclude": ["src/workers/*.worker.ts"]
 }

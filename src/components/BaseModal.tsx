@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react"
+import { ReactNode, useEffect, useId, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useTranslation } from "react-i18next"
 
@@ -16,6 +16,20 @@ const BaseModal: React.FC<BaseModalProps> = ({
   children,
 }) => {
   const { t } = useTranslation()
+  const titleId = useId()
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // Move focus into the dialog when it opens and give it back to whatever
+  // had it (if still on the page) when it closes.
+  useEffect(() => {
+    if (!isOpen) return
+    const previous = document.activeElement as HTMLElement | null
+    panelRef.current?.focus()
+    return () => {
+      if (previous && previous.isConnected) previous.focus()
+    }
+  }, [isOpen])
+
   useEffect(() => {
     if (isOpen) {
       const viewport = document.querySelector("meta[name=viewport]")
@@ -38,6 +52,24 @@ const BaseModal: React.FC<BaseModalProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
+      // aria-modal promises the page behind is inert: keep Tab inside.
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const focusable = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const active = document.activeElement
+      if (e.shiftKey && (active === first || active === panelRef.current || !panelRef.current.contains(active))) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && (active === last || !panelRef.current.contains(active))) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown)
@@ -56,9 +88,16 @@ const BaseModal: React.FC<BaseModalProps> = ({
         aria-hidden="true"
       />
       {/* Panel */}
-      <div className="relative w-[90vw] sm:w-full max-w-md bg-white dark:bg-[#27272a] rounded-card border border-border dark:border-[#3f3f46] shadow-card-hover p-6 animate-fade-in">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="relative w-[90vw] sm:w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#27272a] rounded-card border border-border dark:border-[#3f3f46] shadow-card-hover p-6 animate-fade-in focus:outline-none"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-h4 font-bold text-ink-primary dark:text-[#f4f4f5]">
+          <h3 id={titleId} className="font-display text-h4 font-bold text-ink-primary dark:text-[#f4f4f5]">
             {title}
           </h3>
           <button

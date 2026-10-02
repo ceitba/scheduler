@@ -3,7 +3,8 @@ import { Navigate, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { getSavedSchedule, type SavedSchedule } from '../api/schedules'
-import { loadCatalogs, type Subject } from '../hooks/useSubjects'
+import { type Subject } from '../hooks/useSubjects'
+import { usePlanCatalogs } from '../hooks/usePlanCatalogs'
 import { ScheduleSlot } from '../types/scheduler'
 import ScheduleGrid from '../components/ScheduleGrid'
 import ScheduleGridSkeleton from '../components/ScheduleGridSkeleton'
@@ -63,49 +64,35 @@ export default function ComparisonPage() {
     return raw.split(',').map((s) => s.trim()).filter(Boolean)
   }, [params])
 
-  const [items, setItems] = useState<SavedSchedule[]>([])
-  const [subjectsByPlan, setSubjectsByPlan] = useState<Map<string, Subject[]>>(new Map())
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Result of the last fetch, tagged with the ids it was for: anything
+  // else (ids changed, still in flight) counts as loading.
+  const [fetched, setFetched] = useState<{ key: string; items: SavedSchedule[]; error: string | null } | null>(null)
 
   useEffect(() => {
-    if (!profile) return
-    if (ids.length === 0) {
-      setItems([])
-      setLoading(false)
-      return
-    }
-    setLoading(true)
+    if (!profile || ids.length === 0) return
+    const key = ids.join(',')
+    // A response for ids the user already navigated away from must not
+    // overwrite the current comparison.
+    let ignore = false
     // Show whichever saved schedules loaded; report the rest.
-    Promise.allSettled(ids.map((id) => getSavedSchedule(id)))
-      .then((results) => {
-        const ok = results.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []))
-        const failed = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
-        setItems(ok)
-        setError(failed ? (failed.reason as Error).message : null)
-      })
-      .finally(() => setLoading(false))
+    Promise.allSettled(ids.map((id) => getSavedSchedule(id))).then((results) => {
+      if (ignore) return
+      const ok = results.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []))
+      const failed = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
+      setFetched({ key, items: ok, error: failed ? (failed.reason as Error).message : null })
+    })
+    return () => { ignore = true }
   }, [profile, ids])
 
-  useEffect(() => {
-    if (items.length === 0) return
-    const plans = Array.from(new Set(items.map((i) => i.plan).filter((p): p is string => !!p)))
-    const missing = plans.filter((p) => !subjectsByPlan.has(p))
-    if (missing.length === 0) return
-    let cancelled = false
-    loadCatalogs(missing).then(({ loaded, failed }) => {
-      if (cancelled) return
-      setSubjectsByPlan((prev) => {
-        const next = new Map(prev)
-        loaded.forEach(([p, subs]) => next.set(p, subs))
-        return next
-      })
-      if (failed.length) setError(t('share.catalogLoadFailed', { plans: failed.join(', ') }))
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [items, subjectsByPlan])
+  const current = fetched?.key === ids.join(',') ? fetched : null
+  const items = useMemo(() => current?.items ?? [], [current])
+  const loading = ids.length > 0 && current === null
+  const plans = useMemo(() => items.map((i) => i.plan).filter((p): p is string => !!p), [items])
+  const { subjectsByPlan, failedPlans } = usePlanCatalogs(plans)
+  const errors = [
+    current?.error,
+    failedPlans.length > 0 ? t('share.catalogLoadFailed', { plans: failedPlans.join(', ') }) : null,
+  ].filter((e): e is string => !!e)
 
   if (authLoading) return null
   if (!profile) return <Navigate to="/" replace />
@@ -132,9 +119,9 @@ export default function ComparisonPage() {
           </Link>
         </header>
 
-        {error && (
-          <p className="mb-4 px-3 py-2 rounded-sm bg-red-50 text-red-700 font-body text-body-sm border border-red-200">{error}</p>
-        )}
+        {errors.map((error) => (
+          <p key={error} className="mb-4 px-3 py-2 rounded-sm bg-red-50 text-red-700 font-body text-body-sm border border-red-200">{error}</p>
+        ))}
 
         {loading ? (
           <div className="flex justify-center items-center h-64"><LoadingDots size="lg" /></div>

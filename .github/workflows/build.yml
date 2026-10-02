@@ -5,6 +5,13 @@ on:
   pull_request:
     branches: [main]
 
+# One run at a time per branch. Pushes queue instead of racing, so an older
+# run can never finish last and overwrite a newer deploy/image; superseded PR
+# runs are cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest

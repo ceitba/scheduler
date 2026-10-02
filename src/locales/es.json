@@ -72,7 +72,7 @@
     "semester1": "Primer cuatrimestre",
     "semester2": "Segundo cuatrimestre",
     "electives": "Electivas",
-    "year": "° Año",
+    "year_ordinal_other": "{{count}}° Año",
     "noScheduleTitle": "Materia sin horarios",
     "noScheduleMessage": "La materia {{name}} no tiene horarios o comisiones disponibles actualmente.",
     "understood": "Entendido",

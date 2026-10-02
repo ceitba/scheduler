@@ -90,7 +90,7 @@ const CourseView: React.FC<CourseViewProps> = ({
           const year = subject.year || 0
           if (!acc[year]) {
             acc[year] = {
-              year: year === 0 ? t('courses.electives').toUpperCase() : `${year}${t('courses.year')}`,
+              year: year === 0 ? t('courses.electives').toUpperCase() : t('courses.year', { count: year, ordinal: true }),
               subjects: { "1": [], "2": [] },
             }
           }

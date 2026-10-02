@@ -12,7 +12,7 @@ import { listSavedSchedules, type SavedSchedule } from '../api/schedules'
 import { ApiError } from '../api/client'
 import { usePlanCatalogs } from '../hooks/usePlanCatalogs'
 import { useAuth } from '../hooks/useAuth'
-import { startGoogleSignIn } from '../store/authStore'
+import { useBeginSignIn } from '../context/signInContext'
 import HeatmapGrid from '../components/HeatmapGrid'
 import LoadingDots from '../components/LoadingDots'
 import ErrorView from '../components/ErrorView'
@@ -24,6 +24,7 @@ import { buildHeatmap } from '../services/heatmap'
 const SHARE_POLL_INTERVAL_MS = 20_000
 
 export default function SharePage() {
+  const beginSignIn = useBeginSignIn()
   const { t } = useTranslation()
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
@@ -213,7 +214,7 @@ export default function SharePage() {
               </button>
               {!profile && (
                 <button
-                  onClick={() => startGoogleSignIn()}
+                  onClick={beginSignIn}
                   className="px-3 py-1.5 rounded-sm bg-primary text-white font-mono text-label uppercase tracking-widest hover:bg-primary-600 transition-colors"
                 >
                   {t('share.signInToJoin')}
